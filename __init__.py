@@ -11,11 +11,11 @@ def name():
 def description():
     return "Dockable dialog to find a feature by its ID in a layer."
 def version():
-    return "Version 1.0.0"
+    return "Version 1.1"
 def icon():
     return "icons/quickfinder.png"
 def qgisMinimumVersion():
-    return "1.7"
+    return "1.8"
 def classFactory(iface):
     from quickfinder import quickFinder
     return quickFinder(iface)

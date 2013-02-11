@@ -1,3 +1,12 @@
 **Quick Finder** is a [QGIS](http://www.qgis.org) plugin as a dockable dialog to find a feature by its ID in a layer.
 
 see demo at [youtube](http://www.youtube.com/v/bsqMLMqlCYQ&hd=1)
+
+##  Changelog
+
+**Version 1.1** 11.02.2013
+
+* Adapted to new vector API
+
+
+
