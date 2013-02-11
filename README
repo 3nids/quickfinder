@@ -4,6 +4,10 @@ see demo at [youtube](http://www.youtube.com/v/bsqMLMqlCYQ&hd=1)
 
 ##  Changelog
 
+**Version 1.2** 11.02.2013
+
+* Do not list raster layers in the combo box
+
 **Version 1.1** 11.02.2013
 
 * Adapted to new vector API
