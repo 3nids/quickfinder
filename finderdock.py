@@ -35,7 +35,10 @@ class FinderDock(QDockWidget , Ui_quickFinder ):
 	
 	def canvasLayersChanged(self):
 		self.enable(False)
-		self.layerList = self.iface.mapCanvas().layers()
+		self.layerList = []
+		for layer in self.iface.mapCanvas().layers():
+			if layer.type() != QgsMapLayer.VectorLayer: continue
+			self.layerList.append( layer )
 		self.layerCombo.clear()
 		self.layerCombo.addItem("")
 		for i,layer in enumerate(self.layerList):
