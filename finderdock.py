@@ -71,20 +71,10 @@ class FinderDock(QDockWidget , Ui_quickFinder ):
 		if ok is False:
 			QMessageBox.warning( self.iface.mainWindow() , "Quick Finder","ID must be strictly composed of digits." )
 			return
+		f = QgsFeature()
 		try:
-			freq = QgsFeatureRequest()
-			freq.setFilterFid( id )
-			features = []
-			for f in layer.getFeatures( freq ):
-				features.append( f )
-			if len(features)==0:
-				return
-			elif len(features)>1:
-				raise NameError( "Several features have the same id" )
-			else:
-				f = features[0]			
+			if layer.getFeatures( QgsFeatureRequest().setFilterFid( id ) ).nextFeature( f ) is False: return	
 		except: # qgis <1.9
-			f = QgsFeature()
 			if layer.dataProvider().featureAtId(id,f,True,layer.dataProvider().attributeIndexes()) is False: return
 		if self.selectBox.isChecked():
 			layer.setSelectedFeatures([id])
