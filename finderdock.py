@@ -23,6 +23,7 @@ class FinderDock(QDockWidget , Ui_quickFinder ):
 		self.setVisible(False)
 		self.layerList = []
 		self.curLayerID = []
+		QObject.connect(self.iface.mapCanvas() , SIGNAL("layersChanged ()") , self.canvasLayersChanged ) 
 
 	def enable(self,trueOrFalse):
 		self.idLine.setEnabled(trueOrFalse)

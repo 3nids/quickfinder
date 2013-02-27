@@ -19,7 +19,6 @@ class quickFinder():
 	def __init__(self, iface):
 		self.iface = iface
 		self.dock  = FinderDock(iface)
-		QObject.connect(self.iface.mapCanvas() , SIGNAL("layersChanged ()") , self.dock.canvasLayersChanged ) 
 		
 	def initGui(self):
 		# dock
