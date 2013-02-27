@@ -17,6 +17,8 @@ from qgis.core import *
 #	geomType: restrain the possible selection of layers to a certain type of geometry [not working yet]
 #	initLayer: a lambda function returning the ID of the initially selected layer (it could look for a value in settings)
 class LayerCombo(QObject):
+	layerChanged = pyqtSignal()
+	
 	def __init__(self,iface,widget,geomType=None,initLayer=lambda:""):
 		self.widget = widget
 		self.initLayer = initLayer
@@ -24,7 +26,7 @@ class LayerCombo(QObject):
 		self.canvas = iface.mapCanvas()
 		QObject.__init__(self)
 		QObject.connect(self.canvas, SIGNAL("layersChanged ()") , self.canvasLayersChanged )
-		QObject.connect(widget, SIGNAL("currentIndexChanged(int)"), self.layerChanged)
+		QObject.connect(widget, SIGNAL("currentIndexChanged(int)"), self.currentLayerChanged)
 		self.canvasLayersChanged()
 		
 	def canvasLayersChanged(self):
@@ -43,8 +45,8 @@ class LayerCombo(QObject):
 		layerId = self.widget.itemData( i ).toString()
 		return QgsMapLayerRegistry.instance().mapLayer( layerId )
 		
-	def layerChanged(self,i):
-		self.emit( SIGNAL("layerChanged"), 2 )
+	def currentLayerChanged(self,i):
+		self.layerChanged.emit()
 		print "layercombo: layer changed"
 		error_msg = ''
 		#if i > 0:
@@ -62,16 +64,19 @@ class LayerCombo(QObject):
 # 	combo: the qcombobox widget
 #	fieldType: restrain the possible selection to a certain type of field
 #	initField: a lambda function returning the name of the initially selected field (it could look for a value in settings)
-class FieldCombo():
+class FieldCombo(QObject):
 	def __init__(self,widget,layerCombo,fieldType=None,initField=lambda:""):
 		self.widget = widget
 		self.layerCombo = layerCombo
 		self.initField = initField
 		self.fieldType = fieldType
+		QObject.__init__(self)
+		
 		QObject.connect(widget, SIGNAL("currentIndexChanged(int)"), self.fieldChanged)
 
-		QObject.connect(layerCombo.widget, SIGNAL("currentIndexChanged(int)"), self.layerChanged)
-		QObject.connect(layerCombo, SIGNAL("layerChanged"), self.layerChanged)
+		QObject.connect(self.layerCombo.widget, SIGNAL("currentIndexChanged(int)"), self.layerChanged)
+		self.layerCombo.layerChanged.connect( self.layerChanged )
+		
 		self.layerChanged()
 
 	def layerChanged(self):
