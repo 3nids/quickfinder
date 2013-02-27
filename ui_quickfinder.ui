@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>275</width>
-    <height>185</height>
+    <width>328</width>
+    <height>281</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -26,10 +26,36 @@
       <property name="frameShadow">
        <enum>QFrame::Raised</enum>
       </property>
-      <layout class="QFormLayout" name="formLayout_2">
+      <layout class="QGridLayout" name="gridLayout_3">
        <property name="margin">
         <number>6</number>
        </property>
+       <item row="2" column="0">
+        <widget class="QRadioButton" name="idButton">
+         <property name="text">
+          <string>ID</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+         <attribute name="buttonGroup">
+          <string notr="true">buttonGroup</string>
+         </attribute>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QRadioButton" name="columnButton">
+         <property name="text">
+          <string>Column</string>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
+         </property>
+         <attribute name="buttonGroup">
+          <string notr="true">buttonGroup</string>
+         </attribute>
+        </widget>
+       </item>
        <item row="0" column="0">
         <widget class="QLabel" name="label">
          <property name="sizePolicy">
@@ -43,33 +69,17 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="1">
+       <item row="2" column="2">
+        <widget class="QComboBox" name="fieldCombo">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1" colspan="2">
         <widget class="QComboBox" name="layerCombo"/>
        </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="idLabel">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>ID</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="QLineEdit" name="idLine">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="0" colspan="2">
+       <item row="4" column="0" colspan="3">
         <widget class="QWidget" name="widget" native="true">
          <layout class="QGridLayout" name="gridLayout">
           <property name="margin">
@@ -155,6 +165,13 @@
          </layout>
         </widget>
        </item>
+       <item row="3" column="0" colspan="3">
+        <widget class="QLineEdit" name="idLine">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
       </layout>
      </widget>
     </item>
@@ -179,14 +196,49 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>83</x>
-     <y>83</y>
+     <x>90</x>
+     <y>130</y>
     </hint>
     <hint type="destinationlabel">
-     <x>230</x>
-     <y>131</y>
+     <x>311</x>
+     <y>215</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>columnButton</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>fieldCombo</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>169</x>
+     <y>84</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>296</x>
+     <y>81</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>idButton</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>fieldCombo</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>58</x>
+     <y>87</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>250</x>
+     <y>85</y>
     </hint>
    </hints>
   </connection>
  </connections>
+ <buttongroups>
+  <buttongroup name="buttonGroup"/>
+ </buttongroups>
 </ui>

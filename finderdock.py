@@ -11,6 +11,7 @@ from PyQt4.QtGui import *
 from qgis.core import *
 from qgis.gui import *
 
+from layer_field_combo import LayerCombo,FieldCombo
 from ui_quickfinder import Ui_quickFinder
 
 class FinderDock(QDockWidget , Ui_quickFinder ):
@@ -20,44 +21,31 @@ class FinderDock(QDockWidget , Ui_quickFinder ):
 		QDockWidget.__init__(self)
 		self.setupUi(self)
 		self.iface.addDockWidget(Qt.LeftDockWidgetArea,self)
+		self.layerComboManager = LayerCombo(iface, self.layerCombo)
+		FieldCombo(self.fieldCombo, self.layerComboManager)
+		QObject.connect(self.layerCombo, SIGNAL("currentIndexChanged(int)"), self.layerChanged)
 		self.setVisible(False)
-		self.layerList = []
-		self.curLayerID = []
-		QObject.connect(self.iface.mapCanvas() , SIGNAL("layersChanged ()") , self.canvasLayersChanged ) 
-		self.canvasLayersChanged()
 
 	def enable(self,trueOrFalse):
 		self.idLine.setEnabled(trueOrFalse)
-		self.idLabel.setEnabled(trueOrFalse)
+		self.idButton.setEnabled(trueOrFalse)
+		self.columnButton.setEnabled(trueOrFalse)
+		if self.columnButton.isChecked():
+			self.fieldCombo.setEnabled(trueOrFalse)
+		else:
+			self.fieldCombo.setEnabled(False)
 		self.panBox.setEnabled(trueOrFalse)
 		self.scaleBox.setEnabled(trueOrFalse)
 		self.selectBox.setEnabled(trueOrFalse)
 		self.formBox.setEnabled(trueOrFalse)
 		self.goButton.setEnabled(trueOrFalse)
 	
-	def canvasLayersChanged(self):
-		self.enable(False)
-		self.layerList = []
-		for layer in self.iface.mapCanvas().layers():
-			if layer.type() != QgsMapLayer.VectorLayer: continue
-			self.layerList.append( layer )
-		self.layerCombo.clear()
-		self.layerCombo.addItem("")
-		for i,layer in enumerate(self.layerList):
-			self.layerCombo.addItem(layer.name())
-			if layer.id() == self.curLayerID: self.layerCombo.setCurrentIndex(i+1)
-
-	@pyqtSignature("on_layerCombo_currentIndexChanged(int)")
-	def on_layerCombo_currentIndexChanged(self,i):
+	def layerChanged(self,i):
 		# reset
 		self.enable(False)
 		self.idLine.clear()
-		if i < 1: return
-		# get layer from list
-		layer = self.layerList[i-1]
-		self.curLayerID = layer.id()
-		# check layer
-		if layer.type() != QgsMapLayer.VectorLayer: return
+		layer = self.layerComboManager.getLayer()
+		if layer is None: return
 		self.enable(True)
 		if layer.hasGeometryType() is False:
 			self.panBox.setEnabled(False)
@@ -68,7 +56,7 @@ class FinderDock(QDockWidget , Ui_quickFinder ):
 		i = self.layerCombo.currentIndex()
 		if i < 1: return
 		# get layer from list
-		layer = self.layerList[i-1]
+		layer = self.layerComboManager.getLayer()
 		id,ok = self.idLine.text().toInt()
 		if ok is False:
 			QMessageBox.warning( self.iface.mainWindow() , "Quick Finder","ID must be strictly composed of digits." )
