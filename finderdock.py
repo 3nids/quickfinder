@@ -11,42 +11,36 @@ from PyQt4.QtGui import *
 from qgis.core import *
 from qgis.gui import *
 
-from layer_field_combo import LayerCombo,FieldCombo
+from layerfieldcombomanager import LayerCombo,FieldCombo
 from ui_quickfinder import Ui_quickFinder
 
 class FinderDock(QDockWidget , Ui_quickFinder ):
 	def __init__(self,iface):
 		self.iface = iface
-		# UI setup
 		QDockWidget.__init__(self)
 		self.setupUi(self)
 		self.iface.addDockWidget(Qt.LeftDockWidgetArea,self)
-		self.layerComboManager = LayerCombo(iface, self.layerCombo)
-		FieldCombo(self.fieldCombo, self.layerComboManager)
+		self.layerComboManager = LayerCombo(iface, self.layerCombo,"",True)
+		self.fieldComboManager = FieldCombo(self.fieldCombo, self.layerComboManager)
 		QObject.connect(self.layerCombo, SIGNAL("currentIndexChanged(int)"), self.layerChanged)
+		QObject.connect(self.modeButtonGroup, SIGNAL("buttonClicked(int)"), self.layerChanged)
+		QObject.connect(self.fieldCombo, SIGNAL("currentIndexChanged(int)"), self.layerChanged)
+		self.signBox.hide()
+		self.processWidgetGroup.hide()
+		self.layerChanged(0)
 		self.setVisible(False)
 
-	def enable(self,trueOrFalse):
-		self.idLine.setEnabled(trueOrFalse)
-		self.idButton.setEnabled(trueOrFalse)
-		self.columnButton.setEnabled(trueOrFalse)
-		if self.columnButton.isChecked():
-			self.fieldCombo.setEnabled(trueOrFalse)
-		else:
-			self.fieldCombo.setEnabled(False)
-		self.panBox.setEnabled(trueOrFalse)
-		self.scaleBox.setEnabled(trueOrFalse)
-		self.selectBox.setEnabled(trueOrFalse)
-		self.formBox.setEnabled(trueOrFalse)
-		self.goButton.setEnabled(trueOrFalse)
-	
 	def layerChanged(self,i):
-		# reset
-		self.enable(False)
+		self.modeWidgetGroup.setEnabled(False)
+		self.searchWidgetGroup.setEnabled(False)
 		self.idLine.clear()
 		layer = self.layerComboManager.getLayer()
-		if layer is None: return
-		self.enable(True)
+		if layer is None:
+			return
+		self.modeWidgetGroup.setEnabled(True)
+		if self.fieldButton.isChecked() and self.fieldCombo.currentIndex()==0:
+			return
+		self.searchWidgetGroup.setEnabled(True)
 		if layer.hasGeometryType() is False:
 			self.panBox.setEnabled(False)
 			self.scaleBox.setEnabled(False)
@@ -55,17 +49,40 @@ class FinderDock(QDockWidget , Ui_quickFinder ):
 	def on_goButton_pressed(self):
 		i = self.layerCombo.currentIndex()
 		if i < 1: return
-		# get layer from list
 		layer = self.layerComboManager.getLayer()
-		id,ok = self.idLine.text().toInt()
-		if ok is False:
-			QMessageBox.warning( self.iface.mainWindow() , "Quick Finder","ID must be strictly composed of digits." )
-			return
-		f = QgsFeature()
-		try:
-			if layer.getFeatures( QgsFeatureRequest().setFilterFid( id ) ).nextFeature( f ) is False: return	
-		except: # qgis <1.9
-			if layer.dataProvider().featureAtId(id,f,True,layer.dataProvider().attributeIndexes()) is False: return
+		toFind = self.idLine.text()
+		if self.idButton.isChecked():
+			results = []
+			f = QgsFeature()
+			id,ok = toFind.toInt()
+			if ok is False:
+				QMessageBox.warning( self.iface.mainWindow() , "Quick Finder","ID must be strictly composed of digits." )
+				return
+			try:
+				if layer.getFeatures( QgsFeatureRequest().setFilterFid( id ) ).nextFeature( f ) is False: return
+			except: # qgis <1.9
+				if layer.dataProvider().featureAtId(id,f,True,layer.dataProvider().attributeIndexes()) is False: return
+			results.append( f )
+			self.processResults( results )
+		else:
+			self.progressBar.setMinimum(0)
+			self.progressBar.setMaximum(layer.featureCount())
+			self.progressBar.setValue(0)
+			self.processWidgetGroup.show()
+			fieldName  = self.fieldComboManager.getFieldName()
+			fieldIndex = self.fieldComboManager.getFieldIndex()
+			if fieldName=="": return
+			self.search = searchThread(layer,fieldIndex,fieldName,0,toFind)
+			self.search.updateProgress.connect( self.progressBar.setValue )
+			self.search.searchFinished.connect( self.processResults )
+			#search.terminated.connect( self.processWidgetGroup.hide )
+			#QObject.connect(self.cancelButton,SIGNAL("clicked()"),searchThread.stop )
+			self.search.start()
+			
+	def processResults(self, results):
+		print "#results: ",len(results)		
+		return
+		
 		if self.selectBox.isChecked():
 			layer.setSelectedFeatures([id])
 		if self.panBox.isEnabled() and self.panBox.isChecked():
@@ -86,3 +103,36 @@ class FinderDock(QDockWidget , Ui_quickFinder ):
 			self.iface.mapCanvas().refresh()				
 		if self.formBox.isChecked():
 			self.iface.openFeatureForm(layer, f )
+			
+class searchThread(QThread):
+	updateProgress = pyqtSignal(int)
+	searchFinished = pyqtSignal(list)
+	
+	def __init__(self,layer,fieldIndex,fieldName,sign,value):
+		QThread.__init__(self)
+		self.layer = layer
+		self.fieldIndex = fieldIndex
+		self.fieldName = fieldName
+		self.value = value
+		print "thread created"
+		
+	def run(self):
+		print "thread launched"
+		k=0
+		f = QgsFeature()
+		results = []
+		featReq = QgsFeatureRequest()
+		featReq.setSubsetOfAttributes( [self.fieldIndex] )
+		iter = self.layer.getFeatures(featReq)
+		while( iter.nextFeature( f ) ):
+			print k
+			if f.attribute( self.fieldName ).toString() == self.value:				
+				results.append( f )
+			k+=1
+			self.updateProgress.emit(k)
+		self.searchFinished.emit(results)
+		return
+			
+	#def stop(self):
+	#	self.terminate()
+
