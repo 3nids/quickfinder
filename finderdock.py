@@ -32,22 +32,6 @@ class FinderDock(QDockWidget , Ui_quickFinder ):
 		self.layerChanged(0)
 		self.setVisible(False)
 
-		self.searchThread = QThread()
-		self.searchWorker = SearchWorker()
-		self.searchWorker.updateProgress.connect( self.progressBar.setValue )
-		self.searchWorker.searchFinished.connect( self.processResults )
-		#search.terminated.connect( self.processWidgetGroup.hide )
-		
-		QObject.connect(self.cancelButton,SIGNAL("clicked()"), self.searchWorker.stop )
-		
-		self.searchWorker.moveToThread( self.searchThread )
-		
-		self.startSearch.connect( self.searchWorker.doSearch )
-		
-		self.searchThread.start()
-	
-
-
 	def layerChanged(self,i):
 		self.modeWidgetGroup.setEnabled(False)
 		self.searchWidgetGroup.setEnabled(False)
@@ -63,15 +47,19 @@ class FinderDock(QDockWidget , Ui_quickFinder ):
 			self.panBox.setEnabled(False)
 			self.scaleBox.setEnabled(False)
 		
+	@pyqtSignature("on_cancelButton_pressed()")
+	def on_cancelButton_pressed(self):
+		self.continueSearch = False
+
 	@pyqtSignature("on_goButton_pressed()")
 	def on_goButton_pressed(self):
 		i = self.layerCombo.currentIndex()
 		if i < 1: return
 		layer = self.layerComboManager.getLayer()
 		toFind = self.idLine.text()
+		results = []
+		f = QgsFeature()
 		if self.idButton.isChecked():
-			results = []
-			f = QgsFeature()
 			id,ok = toFind.toInt()
 			if ok is False:
 				QMessageBox.warning( self.iface.mainWindow() , "Quick Finder","ID must be strictly composed of digits." )
@@ -90,8 +78,20 @@ class FinderDock(QDockWidget , Ui_quickFinder ):
 			fieldName  = self.fieldComboManager.getFieldName()
 			fieldIndex = self.fieldComboManager.getFieldIndex()
 			if fieldName=="": return
-			self.startSearch.emit(layer,fieldIndex,fieldName,0,toFind)
-
+			featReq = QgsFeatureRequest()
+			featReq.setSubsetOfAttributes( [fieldIndex] )
+			iter = layer.getFeatures(featReq)
+			k=0
+			self.continueSearch = True
+			while( iter.nextFeature( f ) and self.continueSearch):
+				print k
+				k+=1
+				if f.attribute( fieldName ).toString() == toFind:				
+					results.append( f )
+				self.progressBar.setValue(k)
+				QCoreApplication.processEvents()
+			if self.continueSearch:
+				self.processResults( results )
 			
 	def processResults(self, results):
 		print "#results: ",len(results)		
@@ -118,33 +118,3 @@ class FinderDock(QDockWidget , Ui_quickFinder ):
 		if self.formBox.isChecked():
 			self.iface.openFeatureForm(layer, f )
 			
-class SearchWorker( QObject ):
-	updateProgress = pyqtSignal(int)
-	searchFinished = pyqtSignal(list)
-	
-	def __init__(self):
-		QObject.__init__(self)
-		self.continueSearch = True
-		print "thread created"
-		
-	def doSearch(self,layer,fieldIndex,fieldName,sign,value):
-		print "thread launched"
-		k=0
-		f = QgsFeature()
-		results = []
-		featReq = QgsFeatureRequest()
-		featReq.setSubsetOfAttributes( [fieldIndex] )
-		iter = layer.getFeatures(featReq)
-		while( iter.nextFeature( f ) and self.continueSearch ):
-			print k
-			if f.attribute( fieldName ).toString() == value:				
-				results.append( f )
-			k+=1
-			self.updateProgress.emit(k)
-		self.searchFinished.emit(results)
-		return
-			
-	def stop(self):
-		print "stopping"
-		self.continueSearch = False
-
