@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_quickfinder.ui'
 #
-# Created: Thu Feb 28 11:56:22 2013
+# Created: Thu Feb 28 16:23:10 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!

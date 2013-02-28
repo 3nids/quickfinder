@@ -15,6 +15,7 @@ from layerfieldcombomanager import LayerCombo,FieldCombo
 from ui_quickfinder import Ui_quickFinder
 
 class FinderDock(QDockWidget , Ui_quickFinder ):
+	
 	def __init__(self,iface):
 		self.iface = iface
 		QDockWidget.__init__(self)
@@ -29,6 +30,18 @@ class FinderDock(QDockWidget , Ui_quickFinder ):
 		self.processWidgetGroup.hide()
 		self.layerChanged(0)
 		self.setVisible(False)
+
+		self.searchThread = QThread()
+		self.searchWorker = SearchWorker()
+		self.searchWorker.moveToThread( self.searchThread )
+		
+		self.searchWorker.updateProgress.connect( self.progressBar.setValue )
+		self.searchWorker.searchFinished.connect( self.processResults )
+		#search.terminated.connect( self.processWidgetGroup.hide )
+		
+		QObject.connect(self.cancelButton,SIGNAL("clicked()"), self.searchWorker.stop )
+		self.searchThread.started.connect(self.searchWorker.doSearch)
+		
 
 	def layerChanged(self,i):
 		self.modeWidgetGroup.setEnabled(False)
@@ -72,12 +85,8 @@ class FinderDock(QDockWidget , Ui_quickFinder ):
 			fieldName  = self.fieldComboManager.getFieldName()
 			fieldIndex = self.fieldComboManager.getFieldIndex()
 			if fieldName=="": return
-			self.search = searchThread(layer,fieldIndex,fieldName,0,toFind)
-			self.search.updateProgress.connect( self.progressBar.setValue )
-			self.search.searchFinished.connect( self.processResults )
-			#search.terminated.connect( self.processWidgetGroup.hide )
-			#QObject.connect(self.cancelButton,SIGNAL("clicked()"),searchThread.stop )
-			self.search.start()
+			self.searchWorker.configure(layer,fieldIndex,fieldName,0,toFind)
+			self.searchThread.start()
 			
 	def processResults(self, results):
 		print "#results: ",len(results)		
@@ -104,27 +113,31 @@ class FinderDock(QDockWidget , Ui_quickFinder ):
 		if self.formBox.isChecked():
 			self.iface.openFeatureForm(layer, f )
 			
-class searchThread(QThread):
+class SearchWorker( QObject ):
 	updateProgress = pyqtSignal(int)
 	searchFinished = pyqtSignal(list)
 	
-	def __init__(self,layer,fieldIndex,fieldName,sign,value):
+	def __init__(self):
 		QThread.__init__(self)
-		self.layer = layer
-		self.fieldIndex = fieldIndex
-		self.fieldName = fieldName
-		self.value = value
+		self.continueSearch = True
 		print "thread created"
 		
-	def run(self):
+	def configure(self,layer,fieldIndex,fieldName,sign,value):
+		self.layer      = layer
+		self.fieldIndex = fieldIndex
+		self.fieldName  = fieldName
+		self.sign       = sign
+		self.value      = value
+		
+	def doSearch(self):
 		print "thread launched"
 		k=0
 		f = QgsFeature()
 		results = []
 		featReq = QgsFeatureRequest()
 		featReq.setSubsetOfAttributes( [self.fieldIndex] )
-		iter = self.layer.getFeatures(featReq)
-		while( iter.nextFeature( f ) ):
+		self.iter = self.layer.getFeatures(featReq)
+		while( self.iter.nextFeature( f ) and self.continueSearch ):
 			print k
 			if f.attribute( self.fieldName ).toString() == self.value:				
 				results.append( f )
@@ -133,6 +146,7 @@ class searchThread(QThread):
 		self.searchFinished.emit(results)
 		return
 			
-	#def stop(self):
-	#	self.terminate()
+	def stop(self):
+		print "stopping"
+		self.continueSearch = False
 
