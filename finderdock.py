@@ -15,6 +15,7 @@ from layerfieldcombomanager import LayerCombo,FieldCombo
 from ui_quickfinder import Ui_quickFinder
 
 class FinderDock(QDockWidget , Ui_quickFinder ):
+	startSearch = pyqtSignal(QgsVectorLayer,int,str,int,int)
 	
 	def __init__(self,iface):
 		self.iface = iface
@@ -33,15 +34,19 @@ class FinderDock(QDockWidget , Ui_quickFinder ):
 
 		self.searchThread = QThread()
 		self.searchWorker = SearchWorker()
-		self.searchWorker.moveToThread( self.searchThread )
-		
 		self.searchWorker.updateProgress.connect( self.progressBar.setValue )
 		self.searchWorker.searchFinished.connect( self.processResults )
 		#search.terminated.connect( self.processWidgetGroup.hide )
 		
 		QObject.connect(self.cancelButton,SIGNAL("clicked()"), self.searchWorker.stop )
-		self.searchThread.started.connect(self.searchWorker.doSearch)
 		
+		self.searchWorker.moveToThread( self.searchThread )
+		
+		self.startSearch.connect( self.searchWorker.doSearch )
+		
+		self.searchThread.start()
+	
+
 
 	def layerChanged(self,i):
 		self.modeWidgetGroup.setEnabled(False)
@@ -85,8 +90,8 @@ class FinderDock(QDockWidget , Ui_quickFinder ):
 			fieldName  = self.fieldComboManager.getFieldName()
 			fieldIndex = self.fieldComboManager.getFieldIndex()
 			if fieldName=="": return
-			self.searchWorker.configure(layer,fieldIndex,fieldName,0,toFind)
-			self.searchThread.start()
+			self.startSearch.emit(layer,fieldIndex,fieldName,0,toFind)
+
 			
 	def processResults(self, results):
 		print "#results: ",len(results)		
@@ -118,28 +123,21 @@ class SearchWorker( QObject ):
 	searchFinished = pyqtSignal(list)
 	
 	def __init__(self):
-		QThread.__init__(self)
+		QObject.__init__(self)
 		self.continueSearch = True
 		print "thread created"
 		
-	def configure(self,layer,fieldIndex,fieldName,sign,value):
-		self.layer      = layer
-		self.fieldIndex = fieldIndex
-		self.fieldName  = fieldName
-		self.sign       = sign
-		self.value      = value
-		
-	def doSearch(self):
+	def doSearch(self,layer,fieldIndex,fieldName,sign,value):
 		print "thread launched"
 		k=0
 		f = QgsFeature()
 		results = []
 		featReq = QgsFeatureRequest()
-		featReq.setSubsetOfAttributes( [self.fieldIndex] )
-		self.iter = self.layer.getFeatures(featReq)
-		while( self.iter.nextFeature( f ) and self.continueSearch ):
+		featReq.setSubsetOfAttributes( [fieldIndex] )
+		iter = layer.getFeatures(featReq)
+		while( iter.nextFeature( f ) and self.continueSearch ):
 			print k
-			if f.attribute( self.fieldName ).toString() == self.value:				
+			if f.attribute( fieldName ).toString() == value:				
 				results.append( f )
 			k+=1
 			self.updateProgress.emit(k)
