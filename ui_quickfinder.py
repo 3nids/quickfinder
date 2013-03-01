@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_quickfinder.ui'
 #
-# Created: Fri Mar  1 13:50:54 2013
+# Created: Fri Mar  1 14:20:33 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -180,7 +180,7 @@ class Ui_quickFinder(object):
         self.formBox.setText(QtGui.QApplication.translate("quickFinder", "open form", None, QtGui.QApplication.UnicodeUTF8))
         self.panBox.setText(QtGui.QApplication.translate("quickFinder", "pan", None, QtGui.QApplication.UnicodeUTF8))
         self.scaleBox.setText(QtGui.QApplication.translate("quickFinder", "scale", None, QtGui.QApplication.UnicodeUTF8))
-        self.operatorBox.setItemText(0, QtGui.QApplication.translate("quickFinder", "IS  [all types]", None, QtGui.QApplication.UnicodeUTF8))
+        self.operatorBox.setItemText(0, QtGui.QApplication.translate("quickFinder", "IS", None, QtGui.QApplication.UnicodeUTF8))
         self.operatorBox.setItemText(1, QtGui.QApplication.translate("quickFinder", "=   [numeric]", None, QtGui.QApplication.UnicodeUTF8))
         self.operatorBox.setItemText(2, QtGui.QApplication.translate("quickFinder", "<= [numeric]", None, QtGui.QApplication.UnicodeUTF8))
         self.operatorBox.setItemText(3, QtGui.QApplication.translate("quickFinder", ">= [numeric]", None, QtGui.QApplication.UnicodeUTF8))
