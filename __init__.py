@@ -11,7 +11,7 @@ def name():
 def description():
     return "Dockable dialog to find a feature by its ID in a layer."
 def version():
-    return "Version 2.0"
+    return "Version 2.1"
 def icon():
     return "icons/quickfinder.png"
 def qgisMinimumVersion():
