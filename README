@@ -4,6 +4,11 @@ see demo on [youtube](http://www.youtube.com/v/bsqMLMqlCYQ&hd=1)
 
 ##  Changelog
 
+**Version 2.0** 01.03.2013
+
+* Search also in fields
+* fix: launch layers at start
+
 **Version 1.2** 11.02.2013
 
 * Do not list raster layers in the combo box
