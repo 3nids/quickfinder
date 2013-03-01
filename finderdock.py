@@ -91,15 +91,23 @@ class FinderDock(QDockWidget , Ui_quickFinder ):
 			self.modeWidgetGroup.setEnabled(False)
 			self.searchWidgetGroup.setEnabled(False)
 			# create feature request
-			featReq = QgsFeatureRequest()
-			featReq.setSubsetOfAttributes( [fieldIndex] )
-			iter = self.layer.getFeatures(featReq)
+			try:
+				featReq = QgsFeatureRequest()
+				featReq.setSubsetOfAttributes( [fieldIndex] )
+				iter = self.layer.getFeatures(featReq)
+			except:
+				iter = self.layer.dataProvider()
+				iter.select( [fieldIndex] )
 			# process
 			k=0
 			self.continueSearch = True
 			while( iter.nextFeature( f ) and self.continueSearch):
 				k+=1
-				if self.evaluate( f.attribute( fieldName ), toFind, operator):
+				try:
+					value = f.attribute( fieldName )
+				except:
+					value = f.attributeMap()[fieldIndex]
+				if self.evaluate(value, toFind, operator):
 					results.append( f.id() )
 				self.progressBar.setValue(k)
 				QCoreApplication.processEvents()

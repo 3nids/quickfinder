@@ -124,10 +124,12 @@ class FieldCombo():
 		for idx,field in enumerate(self.layer.pendingFields()):
 			i += 1
 			fieldAlias = self.layer.attributeDisplayName( idx )
-			fieldName  = field.name()
+			try:
+				fieldName  = field.name()
+			except: # qgis <1.9
+				fieldName = self.layer.pendingFields()[idx].name()
 			self.widget.addItem( fieldAlias , fieldName )
 			if not self.__isFieldValid(idx):
-				print "-->disable"
 				j = self.widget.model().index(i,0)
 				self.widget.model().setData(j, QVariant(0), Qt.UserRole-1)
 				continue
