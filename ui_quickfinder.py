@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_quickfinder.ui'
 #
-# Created: Fri Mar  1 11:33:15 2013
+# Created: Fri Mar  1 13:50:54 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -118,20 +118,22 @@ class Ui_quickFinder(object):
         self.gridLayout_7.setMargin(0)
         self.gridLayout_7.setMargin(0)
         self.gridLayout_7.setObjectName(_fromUtf8("gridLayout_7"))
-        self.signBox = QtGui.QComboBox(self.widget)
+        self.operatorBox = QtGui.QComboBox(self.widget)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.signBox.sizePolicy().hasHeightForWidth())
-        self.signBox.setSizePolicy(sizePolicy)
-        self.signBox.setMaximumSize(QtCore.QSize(50, 16777215))
-        self.signBox.setObjectName(_fromUtf8("signBox"))
-        self.signBox.addItem(_fromUtf8(""))
-        self.signBox.addItem(_fromUtf8(""))
-        self.signBox.addItem(_fromUtf8(""))
-        self.signBox.addItem(_fromUtf8(""))
-        self.signBox.addItem(_fromUtf8(""))
-        self.gridLayout_7.addWidget(self.signBox, 0, 0, 1, 1)
+        sizePolicy.setHeightForWidth(self.operatorBox.sizePolicy().hasHeightForWidth())
+        self.operatorBox.setSizePolicy(sizePolicy)
+        self.operatorBox.setMaximumSize(QtCore.QSize(50, 16777215))
+        self.operatorBox.setObjectName(_fromUtf8("operatorBox"))
+        self.operatorBox.addItem(_fromUtf8(""))
+        self.operatorBox.addItem(_fromUtf8(""))
+        self.operatorBox.addItem(_fromUtf8(""))
+        self.operatorBox.addItem(_fromUtf8(""))
+        self.operatorBox.addItem(_fromUtf8(""))
+        self.operatorBox.addItem(_fromUtf8(""))
+        self.operatorBox.addItem(_fromUtf8(""))
+        self.gridLayout_7.addWidget(self.operatorBox, 0, 0, 1, 1)
         self.idLine = QtGui.QLineEdit(self.widget)
         self.idLine.setEnabled(True)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
@@ -164,8 +166,8 @@ class Ui_quickFinder(object):
         QtCore.QObject.connect(self.idLine, QtCore.SIGNAL(_fromUtf8("returnPressed()")), self.goButton.click)
         QtCore.QObject.connect(self.fieldButton, QtCore.SIGNAL(_fromUtf8("clicked(bool)")), self.fieldCombo.setEnabled)
         QtCore.QObject.connect(self.idButton, QtCore.SIGNAL(_fromUtf8("clicked(bool)")), self.fieldCombo.setDisabled)
-        QtCore.QObject.connect(self.idButton, QtCore.SIGNAL(_fromUtf8("clicked(bool)")), self.signBox.hide)
-        QtCore.QObject.connect(self.fieldButton, QtCore.SIGNAL(_fromUtf8("clicked(bool)")), self.signBox.show)
+        QtCore.QObject.connect(self.idButton, QtCore.SIGNAL(_fromUtf8("clicked(bool)")), self.operatorBox.hide)
+        QtCore.QObject.connect(self.fieldButton, QtCore.SIGNAL(_fromUtf8("clicked(bool)")), self.operatorBox.show)
         QtCore.QMetaObject.connectSlotsByName(quickFinder)
 
     def retranslateUi(self, quickFinder):
@@ -178,10 +180,12 @@ class Ui_quickFinder(object):
         self.formBox.setText(QtGui.QApplication.translate("quickFinder", "open form", None, QtGui.QApplication.UnicodeUTF8))
         self.panBox.setText(QtGui.QApplication.translate("quickFinder", "pan", None, QtGui.QApplication.UnicodeUTF8))
         self.scaleBox.setText(QtGui.QApplication.translate("quickFinder", "scale", None, QtGui.QApplication.UnicodeUTF8))
-        self.signBox.setItemText(0, QtGui.QApplication.translate("quickFinder", "=", None, QtGui.QApplication.UnicodeUTF8))
-        self.signBox.setItemText(1, QtGui.QApplication.translate("quickFinder", "<=", None, QtGui.QApplication.UnicodeUTF8))
-        self.signBox.setItemText(2, QtGui.QApplication.translate("quickFinder", ">=", None, QtGui.QApplication.UnicodeUTF8))
-        self.signBox.setItemText(3, QtGui.QApplication.translate("quickFinder", "<", None, QtGui.QApplication.UnicodeUTF8))
-        self.signBox.setItemText(4, QtGui.QApplication.translate("quickFinder", ">", None, QtGui.QApplication.UnicodeUTF8))
+        self.operatorBox.setItemText(0, QtGui.QApplication.translate("quickFinder", "IS  [all types]", None, QtGui.QApplication.UnicodeUTF8))
+        self.operatorBox.setItemText(1, QtGui.QApplication.translate("quickFinder", "=   [numeric]", None, QtGui.QApplication.UnicodeUTF8))
+        self.operatorBox.setItemText(2, QtGui.QApplication.translate("quickFinder", "<= [numeric]", None, QtGui.QApplication.UnicodeUTF8))
+        self.operatorBox.setItemText(3, QtGui.QApplication.translate("quickFinder", ">= [numeric]", None, QtGui.QApplication.UnicodeUTF8))
+        self.operatorBox.setItemText(4, QtGui.QApplication.translate("quickFinder", "<   [numeric]", None, QtGui.QApplication.UnicodeUTF8))
+        self.operatorBox.setItemText(5, QtGui.QApplication.translate("quickFinder", ">   [numeric]", None, QtGui.QApplication.UnicodeUTF8))
+        self.operatorBox.setItemText(6, QtGui.QApplication.translate("quickFinder", "LIKE [text]", None, QtGui.QApplication.UnicodeUTF8))
         self.cancelButton.setText(QtGui.QApplication.translate("quickFinder", "Cancel", None, QtGui.QApplication.UnicodeUTF8))
 

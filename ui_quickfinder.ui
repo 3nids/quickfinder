@@ -210,7 +210,7 @@
               <number>0</number>
              </property>
              <item row="0" column="0">
-              <widget class="QComboBox" name="signBox">
+              <widget class="QComboBox" name="operatorBox">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
                  <horstretch>0</horstretch>
@@ -225,27 +225,37 @@
                </property>
                <item>
                 <property name="text">
-                 <string>=</string>
+                 <string>IS  [all types]</string>
                 </property>
                </item>
                <item>
                 <property name="text">
-                 <string>&lt;=</string>
+                 <string>=   [numeric]</string>
                 </property>
                </item>
                <item>
                 <property name="text">
-                 <string>&gt;=</string>
+                 <string>&lt;= [numeric]</string>
                 </property>
                </item>
                <item>
                 <property name="text">
-                 <string>&lt;</string>
+                 <string>&gt;= [numeric]</string>
                 </property>
                </item>
                <item>
                 <property name="text">
-                 <string>&gt;</string>
+                 <string>&lt;   [numeric]</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>&gt;   [numeric]</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>LIKE [text]</string>
                 </property>
                </item>
               </widget>
@@ -354,7 +364,7 @@
   <connection>
    <sender>idButton</sender>
    <signal>clicked(bool)</signal>
-   <receiver>signBox</receiver>
+   <receiver>operatorBox</receiver>
    <slot>hide()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -370,7 +380,7 @@
   <connection>
    <sender>fieldButton</sender>
    <signal>clicked(bool)</signal>
-   <receiver>signBox</receiver>
+   <receiver>operatorBox</receiver>
    <slot>show()</slot>
    <hints>
     <hint type="sourcelabel">

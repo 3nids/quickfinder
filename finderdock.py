@@ -28,7 +28,7 @@ class FinderDock(QDockWidget , Ui_quickFinder ):
 		QObject.connect(self.modeButtonGroup, SIGNAL("buttonClicked(int)"), self.layerChanged)
 		QObject.connect(self.fieldCombo, SIGNAL("currentIndexChanged(int)"), self.layerChanged)
 		self.layer = None
-		self.signBox.hide()
+		self.operatorBox.hide()
 		self.processWidgetGroup.hide()
 		self.layerChanged(0)
 		self.setVisible(False)
@@ -80,6 +80,7 @@ class FinderDock(QDockWidget , Ui_quickFinder ):
 			fieldName  = self.fieldComboManager.getFieldName()
 			fieldIndex = self.fieldComboManager.getFieldIndex()
 			if fieldName=="": return
+			operator = self.operatorBox.currentIndex()
 			# show progress bar
 			self.progressBar.setMinimum(0)
 			self.progressBar.setMaximum(self.layer.featureCount())
@@ -98,7 +99,7 @@ class FinderDock(QDockWidget , Ui_quickFinder ):
 			self.continueSearch = True
 			while( iter.nextFeature( f ) and self.continueSearch):
 				k+=1
-				if f.attribute( fieldName ).toString() == toFind:				
+				if self.evaluate( f.attribute( fieldName ), toFind, operator):
 					results.append( f.id() )
 				self.progressBar.setValue(k)
 				QCoreApplication.processEvents()
@@ -110,12 +111,29 @@ class FinderDock(QDockWidget , Ui_quickFinder ):
 			# process results
 			if self.continueSearch:
 				self.processResults( results )
+				
+	def evaluate(self, v1, v2, operator):
+		if operator == 0:
+			return v1.toString() == v2
+		elif operator == 1:
+			return v1.toDouble()[0] == v2.toDouble()[0]
+		elif operator == 2:
+			return v1.toDouble()[0] <= v2.toDouble()[0]
+		elif operator == 3:
+			return v1.toDouble()[0] >= v2.toDouble()[0]
+		elif operator == 4:
+			return v1.toDouble()[0] <  v2.toDouble()[0]
+		elif operator == 5:
+			return v1.toDouble()[0] >  v2.toDouble()[0]
+		elif operator == 6:
+			return v1.toString().contains(v2, Qt.CaseInsensitive)
 
 	def processResults(self, results):
 		if self.layer is None: return
 
 		if self.selectBox.isChecked():
 			self.layer.setSelectedFeatures(results)
+			if len(results)==0: return
 			
 			if self.panBox.isEnabled() and self.panBox.isChecked():
 				canvas = self.iface.mapCanvas()
