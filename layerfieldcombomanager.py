@@ -47,15 +47,16 @@ from qgis.core import *
 #
 class LayerCombo():
 	def __init__(self, iface, widget, initLayer="", hasGeometry=None, geomType=None):
+		self.layerType = None
 		self.widget = widget
 		self.initLayer = initLayer
 		self.hasGeometry = hasGeometry
 		self.geomType = geomType
 		self.canvas = iface.mapCanvas()
-		QObject.connect(self.canvas, SIGNAL("layersChanged ()") , self.canvasLayersChanged )
-		self.canvasLayersChanged()
+		QObject.connect(self.canvas, SIGNAL("layersChanged ()") , self.__canvasLayersChanged )
+		self.__canvasLayersChanged()
         
-	def canvasLayersChanged(self):
+	def __canvasLayersChanged(self):
 		self.widget.clear()
 		self.widget.addItem("")
 		if hasattr(self.initLayer,'__call__'):
@@ -78,8 +79,7 @@ class LayerCombo():
 		if i == 0: return None
 		layerId = self.widget.itemData( i ).toString()
 		return QgsMapLayerRegistry.instance().mapLayer( layerId )
-
-
+		
 
 
 ########################################################################
@@ -100,15 +100,14 @@ class FieldCombo():
 		self.layerCombo = layerCombo
 		self.initField = initField
 		self.fieldType = fieldType
-		QObject.connect(widget, SIGNAL("currentIndexChanged(int)"), self.fieldChanged)
-		QObject.connect(layerCombo.widget, SIGNAL("currentIndexChanged(int)"), self.layerChanged)
+		QObject.connect(layerCombo.widget, SIGNAL("currentIndexChanged(int)"), self.__layerChanged)
 		self.layer = None
-		self.layerChanged()
+		self.__layerChanged()
 
-	def layerChanged(self):
+	def __layerChanged(self):
 		if type(self.layer) == QgsVectorLayer:
-			QObject.disconnect(self.layer, SIGNAL("attributeAdded(int)"),   self.layerChanged)
-			QObject.disconnect(self.layer, SIGNAL("attributeDeleted(int)"), self.layerChanged)
+			QObject.disconnect(self.layer, SIGNAL("attributeAdded(int)"),   self.__layerChanged)
+			QObject.disconnect(self.layer, SIGNAL("attributeDeleted(int)"), self.__layerChanged)
 		if hasattr(self.initField,'__call__'):
 			initField = self.initField()
 		else:
@@ -117,24 +116,31 @@ class FieldCombo():
 		self.widget.addItem("")
 		self.layer = self.layerCombo.getLayer()
 		if self.layer is None: return
-		QObject.connect(self.layer, SIGNAL("attributeAdded(int)"),   self.layerChanged)
-		QObject.connect(self.layer, SIGNAL("attributeDeleted(int)"), self.layerChanged)
+		QObject.connect(self.layer, SIGNAL("attributeAdded(int)"),   self.__layerChanged)
+		QObject.connect(self.layer, SIGNAL("attributeDeleted(int)"), self.__layerChanged)
+		i = 0
 		for idx,field in enumerate(self.layer.pendingFields()):
+			i += 1
 			fieldAlias = self.layer.attributeDisplayName( idx )
 			fieldName  = field.name()
 			self.widget.addItem( fieldAlias , fieldName )
+			if not self.__isFieldValid(idx):
+				print "-->disable"
+				j = self.widget.model().index(i,0)
+				self.widget.model().setData(j, QVariant(0), Qt.UserRole-1)
+				continue
 			if fieldName == initField:
-				self.widget.setCurrentIndex( self.widget().count()-1 )        
-                
-	def fieldChanged(self,i):
-		if i < 1 or self.fieldType is None: return
+				self.widget.setCurrentIndex( i )
+				
+	def __isFieldValid(self, idx):
+		if self.fieldType==None: return True
+		return self.layer.dataProvider().fields()[idx].type() == self.fieldType
+				
+	def isValid(self):
 		idx = self.getFieldIndex()
-		# http://qgis.org/api/classQgsField.html#a00409d57dc65d6155c6d08085ea6c324
-		# http://developer.qt.nokia.com/doc/qt-4.8/qmetatype.html#Type-enum
-		if self.layer.dataProvider().fields()[idx].type() != self.fieldType:
-			QMessageBox.warning( self , "Field has an incorrect type" ,  QApplication.translate("Layer Field Combo", "The field must be a %s" % self.fieldType, None, QApplication.UnicodeUTF8) )
-			field.combo.setCurrentIndex(0)
-			
+		if idx == -1: return False
+		return self.__isFieldValid(idx)
+                
 	def getFieldAlias(self):
 		i = self.widget.currentIndex()
 		if i==0: return ""

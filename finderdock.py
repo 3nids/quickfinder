@@ -16,17 +16,18 @@ from ui_quickfinder import Ui_quickFinder
 
 class FinderDock(QDockWidget , Ui_quickFinder ):
 	startSearch = pyqtSignal(QgsVectorLayer,int,str,int,int)
-	
+
 	def __init__(self,iface):
 		self.iface = iface
 		QDockWidget.__init__(self)
 		self.setupUi(self)
 		self.iface.addDockWidget(Qt.LeftDockWidgetArea,self)
-		self.layerComboManager = LayerCombo(iface, self.layerCombo,"",True)
+		self.layerComboManager = LayerCombo(iface, self.layerCombo)
 		self.fieldComboManager = FieldCombo(self.fieldCombo, self.layerComboManager)
 		QObject.connect(self.layerCombo, SIGNAL("currentIndexChanged(int)"), self.layerChanged)
 		QObject.connect(self.modeButtonGroup, SIGNAL("buttonClicked(int)"), self.layerChanged)
 		QObject.connect(self.fieldCombo, SIGNAL("currentIndexChanged(int)"), self.layerChanged)
+		self.layer = None
 		self.signBox.hide()
 		self.processWidgetGroup.hide()
 		self.layerChanged(0)
@@ -36,16 +37,23 @@ class FinderDock(QDockWidget , Ui_quickFinder ):
 		self.modeWidgetGroup.setEnabled(False)
 		self.searchWidgetGroup.setEnabled(False)
 		self.idLine.clear()
-		layer = self.layerComboManager.getLayer()
-		if layer is None:
+		self.layer = self.layerComboManager.getLayer()
+		if self.layer is None:
 			return
 		self.modeWidgetGroup.setEnabled(True)
 		if self.fieldButton.isChecked() and self.fieldCombo.currentIndex()==0:
 			return
 		self.searchWidgetGroup.setEnabled(True)
-		if layer.hasGeometryType() is False:
+		self.on_selectBox_clicked()
+			
+	@pyqtSignature("on_selectBox_clicked()")
+	def on_selectBox_clicked(self):
+		if self.layer is None or not self.selectBox.isChecked():
 			self.panBox.setEnabled(False)
 			self.scaleBox.setEnabled(False)
+		else:
+			self.panBox.setEnabled( self.layer.hasGeometryType() )
+			self.scaleBox.setEnabled( self.layer.hasGeometryType() )
 		
 	@pyqtSignature("on_cancelButton_pressed()")
 	def on_cancelButton_pressed(self):
@@ -54,10 +62,8 @@ class FinderDock(QDockWidget , Ui_quickFinder ):
 	@pyqtSignature("on_goButton_pressed()")
 	def on_goButton_pressed(self):
 		i = self.layerCombo.currentIndex()
-		if i < 1: return
-		layer = self.layerComboManager.getLayer()
+		if i < 1 or self.layer is None: return
 		toFind = self.idLine.text()
-		results = []
 		f = QgsFeature()
 		if self.idButton.isChecked():
 			id,ok = toFind.toInt()
@@ -65,56 +71,72 @@ class FinderDock(QDockWidget , Ui_quickFinder ):
 				QMessageBox.warning( self.iface.mainWindow() , "Quick Finder","ID must be strictly composed of digits." )
 				return
 			try:
-				if layer.getFeatures( QgsFeatureRequest().setFilterFid( id ) ).nextFeature( f ) is False: return
+				if self.layer.getFeatures( QgsFeatureRequest().setFilterFid( id ) ).nextFeature( f ) is False: return
 			except: # qgis <1.9
-				if layer.dataProvider().featureAtId(id,f,True,layer.dataProvider().attributeIndexes()) is False: return
-			results.append( f )
-			self.processResults( results )
+				if self.layer.dataProvider().featureAtId(id,f,True,self.layer.dataProvider().attributeIndexes()) is False: return
+			self.processResults( [f.id()] )
 		else:
-			self.progressBar.setMinimum(0)
-			self.progressBar.setMaximum(layer.featureCount())
-			self.progressBar.setValue(0)
-			self.processWidgetGroup.show()
+			results = []
 			fieldName  = self.fieldComboManager.getFieldName()
 			fieldIndex = self.fieldComboManager.getFieldIndex()
 			if fieldName=="": return
+			# show progress bar
+			self.progressBar.setMinimum(0)
+			self.progressBar.setMaximum(self.layer.featureCount())
+			self.progressBar.setValue(0)
+			self.processWidgetGroup.show()
+			# disable rest of UI
+			self.layerWidgetGroup.setEnabled(False)
+			self.modeWidgetGroup.setEnabled(False)
+			self.searchWidgetGroup.setEnabled(False)
+			# create feature request
 			featReq = QgsFeatureRequest()
 			featReq.setSubsetOfAttributes( [fieldIndex] )
-			iter = layer.getFeatures(featReq)
+			iter = self.layer.getFeatures(featReq)
+			# process
 			k=0
 			self.continueSearch = True
 			while( iter.nextFeature( f ) and self.continueSearch):
-				print k
 				k+=1
 				if f.attribute( fieldName ).toString() == toFind:				
-					results.append( f )
+					results.append( f.id() )
 				self.progressBar.setValue(k)
 				QCoreApplication.processEvents()
+			# reset UI
+			self.processWidgetGroup.hide()
+			self.layerWidgetGroup.setEnabled(True)
+			self.modeWidgetGroup.setEnabled(True)
+			self.searchWidgetGroup.setEnabled(True)
+			# process results
 			if self.continueSearch:
 				self.processResults( results )
-			
+
 	def processResults(self, results):
-		print "#results: ",len(results)		
-		return
-		
+		if self.layer is None: return
+
 		if self.selectBox.isChecked():
-			layer.setSelectedFeatures([id])
-		if self.panBox.isEnabled() and self.panBox.isChecked():
-			bobo = f.geometry().boundingBox()
-			if self.scaleBox.isEnabled() and self.scaleBox.isChecked() and bobo.width() != 0 and bobo.height() != 0:
-				bobo.scale( 3 )
-			else:
-				panTo  = bobo.center()
-				bobo = self.iface.mapCanvas().extent()
-				xshift  = panTo.x() - bobo.center().x()
-				yshift  = panTo.y() - bobo.center().y()
-				x0 = bobo.xMinimum() + xshift
-				y0 = bobo.yMinimum() + yshift
-				x1 = bobo.xMaximum() + xshift
-				y1 = bobo.yMaximum() + yshift
-				bobo.set(x0,y0,x1,y1)		
-			self.iface.mapCanvas().setExtent(bobo)
-			self.iface.mapCanvas().refresh()				
-		if self.formBox.isChecked():
-			self.iface.openFeatureForm(layer, f )
+			self.layer.setSelectedFeatures(results)
 			
+			if self.panBox.isEnabled() and self.panBox.isChecked():
+				canvas = self.iface.mapCanvas()
+				rect = canvas.mapRenderer().layerExtentToOutputExtent( self.layer, self.layer.boundingBoxOfSelected() )
+				if self.scaleBox.isChecked():
+					canvas.setExtent( rect )
+				else:
+					canvas.setExtent( QgsRectangle( rect.center(), rect.center() ) )
+				canvas.refresh()				
+		if self.formBox.isChecked():
+			nResults = len(results)
+			if nResults > 25: return
+			if nResults > 3:
+				reply = QMessageBox.question( self.iface.mainWindow() , "Quick Finder", "%s results were found. Are you sure to open the %s feature forms ?" % (nResults,nResults), QMessageBox.Yes, QMessageBox.No )			
+				if reply == QMessageBox.No: return
+			f = QgsFeature()
+			try:
+				for id in results:
+					if self.layer.getFeatures( QgsFeatureRequest().setFilterFid( id ) ).nextFeature( f ):
+						self.iface.openFeatureForm(self.layer, f )
+			except:
+				for id in results:
+					if self.layer.featureAtId(id, f):
+						self.iface.openFeatureForm(self.layer, f )

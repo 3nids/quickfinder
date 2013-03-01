@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_quickfinder.ui'
 #
-# Created: Thu Feb 28 17:35:36 2013
+# Created: Fri Mar  1 11:33:15 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -17,7 +17,7 @@ except AttributeError:
 class Ui_quickFinder(object):
     def setupUi(self, quickFinder):
         quickFinder.setObjectName(_fromUtf8("quickFinder"))
-        quickFinder.resize(244, 221)
+        quickFinder.resize(268, 218)
         self.dockWidgetContents = QtGui.QWidget()
         self.dockWidgetContents.setObjectName(_fromUtf8("dockWidgetContents"))
         self.gridLayout_2 = QtGui.QGridLayout(self.dockWidgetContents)
@@ -87,32 +87,30 @@ class Ui_quickFinder(object):
         self.goButton.setMaximumSize(QtCore.QSize(50, 16777215))
         self.goButton.setObjectName(_fromUtf8("goButton"))
         self.gridLayout_4.addWidget(self.goButton, 3, 3, 1, 1)
-        spacerItem2 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.gridLayout_4.addItem(spacerItem2, 3, 1, 1, 1)
         self.widget_2 = QtGui.QWidget(self.searchWidgetGroup)
         self.widget_2.setObjectName(_fromUtf8("widget_2"))
-        self.formLayout = QtGui.QFormLayout(self.widget_2)
-        self.formLayout.setMargin(3)
-        self.formLayout.setMargin(0)
-        self.formLayout.setSpacing(3)
-        self.formLayout.setObjectName(_fromUtf8("formLayout"))
-        self.scaleBox = QtGui.QCheckBox(self.widget_2)
-        self.scaleBox.setEnabled(True)
-        self.scaleBox.setObjectName(_fromUtf8("scaleBox"))
-        self.formLayout.setWidget(1, QtGui.QFormLayout.FieldRole, self.scaleBox)
+        self.gridLayout_8 = QtGui.QGridLayout(self.widget_2)
+        self.gridLayout_8.setMargin(3)
+        self.gridLayout_8.setSpacing(3)
+        self.gridLayout_8.setMargin(0)
+        self.gridLayout_8.setObjectName(_fromUtf8("gridLayout_8"))
         self.selectBox = QtGui.QCheckBox(self.widget_2)
         self.selectBox.setEnabled(True)
         self.selectBox.setChecked(True)
         self.selectBox.setObjectName(_fromUtf8("selectBox"))
-        self.formLayout.setWidget(2, QtGui.QFormLayout.LabelRole, self.selectBox)
-        self.panBox = QtGui.QCheckBox(self.widget_2)
-        self.panBox.setEnabled(True)
-        self.panBox.setObjectName(_fromUtf8("panBox"))
-        self.formLayout.setWidget(1, QtGui.QFormLayout.LabelRole, self.panBox)
+        self.gridLayout_8.addWidget(self.selectBox, 0, 0, 1, 1)
         self.formBox = QtGui.QCheckBox(self.widget_2)
         self.formBox.setEnabled(True)
         self.formBox.setObjectName(_fromUtf8("formBox"))
-        self.formLayout.setWidget(2, QtGui.QFormLayout.FieldRole, self.formBox)
+        self.gridLayout_8.addWidget(self.formBox, 2, 0, 1, 2)
+        self.panBox = QtGui.QCheckBox(self.widget_2)
+        self.panBox.setEnabled(True)
+        self.panBox.setChecked(True)
+        self.panBox.setObjectName(_fromUtf8("panBox"))
+        self.gridLayout_8.addWidget(self.panBox, 0, 1, 1, 1)
+        self.scaleBox = QtGui.QCheckBox(self.widget_2)
+        self.scaleBox.setObjectName(_fromUtf8("scaleBox"))
+        self.gridLayout_8.addWidget(self.scaleBox, 0, 2, 1, 1)
         self.gridLayout_4.addWidget(self.widget_2, 3, 0, 1, 1)
         self.widget = QtGui.QWidget(self.searchWidgetGroup)
         self.widget.setObjectName(_fromUtf8("widget"))
@@ -169,9 +167,6 @@ class Ui_quickFinder(object):
         QtCore.QObject.connect(self.idButton, QtCore.SIGNAL(_fromUtf8("clicked(bool)")), self.signBox.hide)
         QtCore.QObject.connect(self.fieldButton, QtCore.SIGNAL(_fromUtf8("clicked(bool)")), self.signBox.show)
         QtCore.QMetaObject.connectSlotsByName(quickFinder)
-        quickFinder.setTabOrder(self.selectBox, self.formBox)
-        quickFinder.setTabOrder(self.formBox, self.panBox)
-        quickFinder.setTabOrder(self.panBox, self.scaleBox)
 
     def retranslateUi(self, quickFinder):
         quickFinder.setWindowTitle(QtGui.QApplication.translate("quickFinder", "Quick Finder", None, QtGui.QApplication.UnicodeUTF8))
@@ -179,10 +174,10 @@ class Ui_quickFinder(object):
         self.idButton.setText(QtGui.QApplication.translate("quickFinder", "ID", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setText(QtGui.QApplication.translate("quickFinder", "Layer", None, QtGui.QApplication.UnicodeUTF8))
         self.goButton.setText(QtGui.QApplication.translate("quickFinder", "Go", None, QtGui.QApplication.UnicodeUTF8))
-        self.scaleBox.setText(QtGui.QApplication.translate("quickFinder", "scale", None, QtGui.QApplication.UnicodeUTF8))
         self.selectBox.setText(QtGui.QApplication.translate("quickFinder", "select", None, QtGui.QApplication.UnicodeUTF8))
-        self.panBox.setText(QtGui.QApplication.translate("quickFinder", "pan", None, QtGui.QApplication.UnicodeUTF8))
         self.formBox.setText(QtGui.QApplication.translate("quickFinder", "open form", None, QtGui.QApplication.UnicodeUTF8))
+        self.panBox.setText(QtGui.QApplication.translate("quickFinder", "pan", None, QtGui.QApplication.UnicodeUTF8))
+        self.scaleBox.setText(QtGui.QApplication.translate("quickFinder", "scale", None, QtGui.QApplication.UnicodeUTF8))
         self.signBox.setItemText(0, QtGui.QApplication.translate("quickFinder", "=", None, QtGui.QApplication.UnicodeUTF8))
         self.signBox.setItemText(1, QtGui.QApplication.translate("quickFinder", "<=", None, QtGui.QApplication.UnicodeUTF8))
         self.signBox.setItemText(2, QtGui.QApplication.translate("quickFinder", ">=", None, QtGui.QApplication.UnicodeUTF8))

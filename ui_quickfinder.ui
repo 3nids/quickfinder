@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>244</width>
-    <height>221</height>
+    <width>268</width>
+    <height>218</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -148,42 +148,16 @@
             </property>
            </widget>
           </item>
-          <item row="3" column="1">
-           <spacer name="horizontalSpacer">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
           <item row="3" column="0">
            <widget class="QWidget" name="widget_2" native="true">
-            <layout class="QFormLayout" name="formLayout">
-             <property name="horizontalSpacing">
-              <number>3</number>
-             </property>
-             <property name="verticalSpacing">
-              <number>3</number>
-             </property>
+            <layout class="QGridLayout" name="gridLayout_8">
              <property name="margin">
               <number>3</number>
              </property>
-             <item row="1" column="1">
-              <widget class="QCheckBox" name="scaleBox">
-               <property name="enabled">
-                <bool>true</bool>
-               </property>
-               <property name="text">
-                <string>scale</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="0">
+             <property name="spacing">
+              <number>3</number>
+             </property>
+             <item row="0" column="0">
               <widget class="QCheckBox" name="selectBox">
                <property name="enabled">
                 <bool>true</bool>
@@ -196,7 +170,17 @@
                </property>
               </widget>
              </item>
-             <item row="1" column="0">
+             <item row="2" column="0" colspan="2">
+              <widget class="QCheckBox" name="formBox">
+               <property name="enabled">
+                <bool>true</bool>
+               </property>
+               <property name="text">
+                <string>open form</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
               <widget class="QCheckBox" name="panBox">
                <property name="enabled">
                 <bool>true</bool>
@@ -204,15 +188,15 @@
                <property name="text">
                 <string>pan</string>
                </property>
-              </widget>
-             </item>
-             <item row="2" column="1">
-              <widget class="QCheckBox" name="formBox">
-               <property name="enabled">
+               <property name="checked">
                 <bool>true</bool>
                </property>
+              </widget>
+             </item>
+             <item row="0" column="2">
+              <widget class="QCheckBox" name="scaleBox">
                <property name="text">
-                <string>open form</string>
+                <string>scale</string>
                </property>
               </widget>
              </item>
@@ -315,10 +299,7 @@
   </widget>
  </widget>
  <tabstops>
-  <tabstop>selectBox</tabstop>
   <tabstop>formBox</tabstop>
-  <tabstop>panBox</tabstop>
-  <tabstop>scaleBox</tabstop>
  </tabstops>
  <resources/>
  <connections>
@@ -333,8 +314,8 @@
      <y>124</y>
     </hint>
     <hint type="destinationlabel">
-     <x>515</x>
-     <y>311</y>
+     <x>424</x>
+     <y>204</y>
     </hint>
    </hints>
   </connection>
@@ -345,11 +326,11 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>419</x>
+     <x>345</x>
      <y>78</y>
     </hint>
     <hint type="destinationlabel">
-     <x>488</x>
+     <x>414</x>
      <y>75</y>
     </hint>
    </hints>
@@ -365,7 +346,7 @@
      <y>81</y>
     </hint>
     <hint type="destinationlabel">
-     <x>488</x>
+     <x>414</x>
      <y>79</y>
     </hint>
    </hints>
@@ -393,11 +374,11 @@
    <slot>show()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>440</x>
+     <x>345</x>
      <y>82</y>
     </hint>
     <hint type="destinationlabel">
-     <x>68</x>
+     <x>56</x>
      <y>109</y>
     </hint>
    </hints>
