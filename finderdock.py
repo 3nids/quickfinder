@@ -147,7 +147,7 @@ class FinderDock(QDockWidget , Ui_quickFinder ):
 				canvas = self.iface.mapCanvas()
 				rect = canvas.mapRenderer().layerExtentToOutputExtent( self.layer, self.layer.boundingBoxOfSelected() )
 				if self.scaleBox.isChecked():
-					canvas.setExtent( rect )
+					canvas.setExtent( rect.scale(1.5) )
 				else:
 					canvas.setExtent( QgsRectangle( rect.center(), rect.center() ) )
 				canvas.refresh()				
