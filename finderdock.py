@@ -15,8 +15,6 @@ from layerfieldcombomanager import LayerCombo,FieldCombo
 from ui_quickfinder import Ui_quickFinder
 
 class FinderDock(QDockWidget , Ui_quickFinder ):
-	startSearch = pyqtSignal(QgsVectorLayer,int,str,int,int)
-
 	def __init__(self,iface):
 		self.iface = iface
 		QDockWidget.__init__(self)

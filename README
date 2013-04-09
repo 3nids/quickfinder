@@ -4,6 +4,12 @@ see demo on [youtube](http://www.youtube.com/v/bsqMLMqlCYQ&hd=1)
 
 ##  Changelog
 
+**Versio 2.2 XXXXXXX
+
+* TODO: emit signals
+* TODO: put current mode, sign and field of layer in project settings
+* Added factor when scaling cnvas extent
+
 **Version 2.1** 01.03.2013
 
 * Compatibility with QGIS 1.8
