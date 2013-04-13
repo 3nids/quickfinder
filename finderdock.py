@@ -91,6 +91,7 @@ class FinderDock(QDockWidget , Ui_quickFinder ):
 			# create feature request
 			try:
 				featReq = QgsFeatureRequest()
+				featReq.setFlags( QgsFeatureRequest.NoGeometry )
 				featReq.setSubsetOfAttributes( [fieldIndex] )
 				iter = self.layer.getFeatures(featReq)
 			except: # qgis <1.9
