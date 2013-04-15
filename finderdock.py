@@ -145,10 +145,11 @@ class FinderDock(QDockWidget , Ui_quickFinder ):
 			if self.panBox.isEnabled() and self.panBox.isChecked():
 				canvas = self.iface.mapCanvas()
 				rect = canvas.mapRenderer().layerExtentToOutputExtent( self.layer, self.layer.boundingBoxOfSelected() )
-				if self.scaleBox.isChecked():
-					canvas.setExtent( rect.scale(1.5) )
-				else:
-					canvas.setExtent( QgsRectangle( rect.center(), rect.center() ) )
+				if rect is not None:
+					if self.scaleBox.isChecked():
+						canvas.setExtent( rect.scale(1.5) )
+					else:
+						canvas.setExtent( QgsRectangle( rect.center(), rect.center() ) )
 				canvas.refresh()				
 		if self.formBox.isChecked():
 			nResults = len(results)
