@@ -5,13 +5,12 @@ QGIS plugin
 Denis Rouzaud
 denis.rouzaud@gmail.com
 """
-# Import the PyQt and QGIS libraries
+
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from qgis.core import *
-from qgis.gui import *
 
-from layerfieldcombomanager import LayerCombo, FieldCombo
+from qgistools.gui import VectorLayerCombo, FieldCombo
 from ui_quickfinder import Ui_quickFinder
 
 
@@ -21,7 +20,7 @@ class FinderDock(QDockWidget, Ui_quickFinder):
         QDockWidget.__init__(self)
         self.setupUi(self)
         self.iface.addDockWidget(Qt.LeftDockWidgetArea, self)
-        self.layerComboManager = LayerCombo(iface, self.layerCombo)
+        self.layerComboManager = VectorLayerCombo(iface.legendInterface(), self.layerCombo)
         self.fieldComboManager = FieldCombo(self.fieldCombo, self.layerComboManager)
         QObject.connect(self.layerCombo, SIGNAL("currentIndexChanged(int)"), self.layerChanged)
         QObject.connect(self.modeButtonGroup, SIGNAL("buttonClicked(int)"), self.layerChanged)
