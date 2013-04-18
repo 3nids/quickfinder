@@ -69,8 +69,13 @@ class FinderDock(QDockWidget, Ui_quickFinder):
             if ok is False:
                 QMessageBox.warning(self.iface.mainWindow(), "Quick Finder", "ID must be strictly composed of digits.")
                 return
-            if self.layer.getFeatures(QgsFeatureRequest().setFilterFid(id)).nextFeature(f) is False:
-                return
+            try:
+                    if self.layer.getFeatures(QgsFeatureRequest().setFilterFid(id)).nextFeature(f) is False:
+                        return
+            except:  # qgis <1.9
+                if self.layer.dataProvider().featureAtId(id, f, True,
+                                                         self.layer.dataProvider().attributeIndexes()) is False:
+                        return
             self.processResults([f.id()])
         else:
             results = []
@@ -89,16 +94,23 @@ class FinderDock(QDockWidget, Ui_quickFinder):
             self.modeWidgetGroup.setEnabled(False)
             self.searchWidgetGroup.setEnabled(False)
             # create feature request
-            featReq = QgsFeatureRequest()
-            featReq.setFlags(QgsFeatureRequest.NoGeometry)
-            featReq.setSubsetOfAttributes([fieldIndex])
-            iter = self.layer.getFeatures(featReq)
+            try:
+                featReq = QgsFeatureRequest()
+                featReq.setFlags(QgsFeatureRequest.NoGeometry)
+                featReq.setSubsetOfAttributes([fieldIndex])
+                iter = self.layer.getFeatures(featReq)
+            except:  # qgis <1.9
+                iter = self.layer.dataProvider()
+                iter.select([fieldIndex])
             # process
             k = 0
             self.continueSearch = True
             while iter.nextFeature(f) and self.continueSearch:
                 k += 1
-                value = f.attribute(fieldName)
+                try:
+                    value = f.attribute(fieldName)
+                except:
+                    value = f.attributeMap()[fieldIndex]
                 if self.evaluate(value, toFind, operator):
                     results.append(f.id())
                 self.progressBar.setValue(k)
@@ -157,6 +169,11 @@ class FinderDock(QDockWidget, Ui_quickFinder):
                 if reply == QMessageBox.No:
                     return
             f = QgsFeature()
-            for id in results:
-                if self.layer.getFeatures(QgsFeatureRequest().setFilterFid(id)).nextFeature(f):
-                    self.iface.openFeatureForm(self.layer, f)
+            try:
+                for id in results:
+                    if self.layer.getFeatures(QgsFeatureRequest().setFilterFid(id)).nextFeature(f):
+                        self.iface.openFeatureForm(self.layer, f)
+            except:
+                for id in results:
+                        if self.layer.featureAtId(id, f):
+                            self.iface.openFeatureForm(self.layer, f)
