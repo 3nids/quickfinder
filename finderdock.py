@@ -11,7 +11,7 @@ from PyQt4.QtGui import *
 from qgis.core import *
 
 from qgistools.gui import VectorLayerCombo, FieldCombo
-from ui_quickfinder import Ui_quickFinder
+from ui.ui_quickfinder import Ui_quickFinder
 
 
 class FinderDock(QDockWidget, Ui_quickFinder):
@@ -51,7 +51,7 @@ class FinderDock(QDockWidget, Ui_quickFinder):
             self.scaleBox.setEnabled(False)
         else:
             self.panBox.setEnabled(self.layer.hasGeometryType())
-            self.scaleBox.setEnabled(self.layer.hasGeometryType())
+            self.scaleBox.setEnabled(self.layer.hasGeometryType() and self.panBox.isChecked())
 
     @pyqtSignature("on_cancelButton_pressed()")
     def on_cancelButton_pressed(self):
@@ -140,7 +140,7 @@ class FinderDock(QDockWidget, Ui_quickFinder):
                 canvas = self.iface.mapCanvas()
                 rect = canvas.mapRenderer().layerExtentToOutputExtent(self.layer, self.layer.boundingBoxOfSelected())
                 if rect is not None:
-                    if self.scaleBox.isChecked():
+                    if self.scaleBox.isEnabled() and self.scaleBox.isChecked():
                         rect.scale(1.5)
                         canvas.setExtent(rect)
                     else:

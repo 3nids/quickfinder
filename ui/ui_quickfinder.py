@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_quickfinder.ui'
 #
-# Created: Fri Mar  1 16:06:30 2013
+# Created: Thu Apr 18 08:17:09 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -168,6 +168,7 @@ class Ui_quickFinder(object):
         QtCore.QObject.connect(self.idButton, QtCore.SIGNAL(_fromUtf8("clicked(bool)")), self.fieldCombo.setDisabled)
         QtCore.QObject.connect(self.idButton, QtCore.SIGNAL(_fromUtf8("clicked(bool)")), self.operatorBox.hide)
         QtCore.QObject.connect(self.fieldButton, QtCore.SIGNAL(_fromUtf8("clicked(bool)")), self.operatorBox.show)
+        QtCore.QObject.connect(self.panBox, QtCore.SIGNAL(_fromUtf8("clicked(bool)")), self.scaleBox.setEnabled)
         QtCore.QMetaObject.connectSlotsByName(quickFinder)
 
     def retranslateUi(self, quickFinder):
