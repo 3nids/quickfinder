@@ -1,20 +1,18 @@
-# This file contains metadata for your plugin. Beginning
-# with version 1.8 this is the preferred way to supply information about a
-# plugin. The current method of embedding metadata in __init__.py will
-# be supported until version 2.0
-
-# This file should be included when you package your plugin.
-
-[general]
 name=Quick Finder
+
 description=Dockable dialog to find a feature by its ID in a layer.
-version=2.1
-qgisMinimumVersion=1.8
+
+version=2.2
+
+qgisMinimumVersion=1.9
+
 author=Denis Rouzaud
 email=denis.rouzaud@gmail.com
 
 icon=icons/quickfinder.png
+
 tags=search,find,feature,id
+
 homepage=https://github.com/3nids/quickfinder/wiki
 tracker=https://github.com/3nids/quickfinder/issues
 repository=https://github.com/3nids/quickfinder
