@@ -1,10 +1,12 @@
+[general]
+
 name=Quick Finder
 
 description=Dockable dialog to find a feature by its ID in a layer.
 
 version=2.2
 
-qgisMinimumVersion=1.9
+qgisMinimumVersion=1.8
 
 author=Denis Rouzaud
 email=denis.rouzaud@gmail.com

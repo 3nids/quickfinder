@@ -4,11 +4,15 @@ see demo on [youtube](http://www.youtube.com/v/bsqMLMqlCYQ&hd=1)
 
 ##  Changelog
 
-**Versio 2.2 XXXXXXX
-
 * TODO: emit signals
 * TODO: put current mode, sign and field of layer in project settings
-* Added factor when scaling cnvas extent
+
+**Versio 2.2** 18.04.2013
+
+* Performance improvement (for QGIS 2.0)
+* Added factor when scaling canvas extent
+* Disable scale box if pan is not selected
+* Use external [qgistools library](https://github.com/3nids/qgistools/)
 
 **Version 2.1** 01.03.2013
 
