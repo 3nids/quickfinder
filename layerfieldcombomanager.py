@@ -14,9 +14,9 @@ or
 self.LayerComboManager = LayerCombo(self.iface, self.layerComboWidget, "MyLayerId", True, QGis.Point)
 
 Then, associates some FieldCombo:
-self.firstFieldComboManager = FieldCombo(self.firstFieldComboWidget, self.LayerComboManager )
+self.firstFieldComboManager = FieldCombo(self.firstFieldComboWidget, self.LayerComboManager)
 or
-self.firstFieldComboManager = FieldCombo(self.firstFieldComboWidget, self.LayerComboManager, lambda: self.settings.value("MyFieldName", "variablex"), QMetaType.QString )
+self.firstFieldComboManager = FieldCombo(self.firstFieldComboWidget, self.LayerComboManager, lambda: self.settings.value("MyFieldName", "variablex"), QMetaType.QString)
 
 You have to save the FieldCombo in self.something, so the variable is not
 getting out of scope in python.
@@ -46,40 +46,40 @@ from qgis.core import *
 #                 http://qgis.org/api/classQGis.html#a09947eb19394302eeeed44d3e81dd74b
 #
 class LayerCombo():
-	def __init__(self, iface, widget, initLayer="", hasGeometry=None, geomType=None):
-		self.layerType = None
-		self.widget = widget
-		self.initLayer = initLayer
-		self.hasGeometry = hasGeometry
-		self.geomType = geomType
-		self.canvas = iface.mapCanvas()
-		QObject.connect(self.canvas, SIGNAL("layersChanged ()") , self.__canvasLayersChanged )
-		self.__canvasLayersChanged()
+     def __init__(self, iface, widget, initLayer="", hasGeometry=None, geomType=None):
+          self.layerType = None
+          self.widget = widget
+          self.initLayer = initLayer
+          self.hasGeometry = hasGeometry
+          self.geomType = geomType
+          self.canvas = iface.mapCanvas()
+          QObject.connect(self.canvas, SIGNAL("layersChanged ()") , self.__canvasLayersChanged)
+          self.__canvasLayersChanged()
         
-	def __canvasLayersChanged(self):
-		self.widget.clear()
-		self.widget.addItem("")
-		if hasattr(self.initLayer,'__call__'):
-			initLayer = self.initLayer()
-		else:
-			initLayer = self.initLayer
-		for layer in self.canvas.layers():
-			# only select vector layer
-			if layer.type() != QgsMapLayer.VectorLayer:	continue
-			# if wanted, filter on hasGeometry
-			if self.hasGeometry is not None and layer.hasGeometryType() != self.hasGeometry: continue
-			# if wanted, filter on the geoetry type
-			if self.geomType is not None and layer.geometryType() != self.geomType:	continue
-			self.widget.addItem( layer.name() , layer.id() )
-			if layer.id() == initLayer:
-				self.widget.setCurrentIndex( self.widget.count()-1 )
+     def __canvasLayersChanged(self):
+          self.widget.clear()
+          self.widget.addItem("")
+          if hasattr(self.initLayer, '__call__'):
+               initLayer = self.initLayer()
+          else:
+               initLayer = self.initLayer
+          for layer in self.canvas.layers():
+               # only select vector layer
+               if layer.type() != QgsMapLayer.VectorLayer:     continue
+               # if wanted, filter on hasGeometry
+               if self.hasGeometry is not None and layer.hasGeometryType() != self.hasGeometry: continue
+               # if wanted, filter on the geoetry type
+               if self.geomType is not None and layer.geometryType() != self.geomType:     continue
+               self.widget.addItem(layer.name() , layer.id())
+               if layer.id() == initLayer:
+                    self.widget.setCurrentIndex(self.widget.count()-1)
             
-	def getLayer(self):
-		i = self.widget.currentIndex()
-		if i == 0: return None
-		layerId = self.widget.itemData( i ).toString()
-		return QgsMapLayerRegistry.instance().mapLayer( layerId )
-		
+     def getLayer(self):
+          i = self.widget.currentIndex()
+          if i == 0: return None
+          layerId = self.widget.itemData(i).toString()
+          return QgsMapLayerRegistry.instance().mapLayer(layerId)
+          
 
 
 ########################################################################
@@ -97,65 +97,65 @@ class LayerCombo():
 #               http://developer.qt.nokia.com/doc/qt-4.8/qmetatype.html#Type-enum
 #
 class FieldCombo():
-	def __init__(self, widget, layerCombo, initField="", fieldType=None):
-		self.widget = widget
-		self.layerCombo = layerCombo
-		self.initField = initField
-		self.fieldType = fieldType
-		QObject.connect(layerCombo.widget, SIGNAL("currentIndexChanged(int)"), self.__layerChanged)
-		self.layer = None
-		self.__layerChanged()
+     def __init__(self, widget, layerCombo, initField="", fieldType=None):
+          self.widget = widget
+          self.layerCombo = layerCombo
+          self.initField = initField
+          self.fieldType = fieldType
+          QObject.connect(layerCombo.widget, SIGNAL("currentIndexChanged(int)"), self.__layerChanged)
+          self.layer = None
+          self.__layerChanged()
 
-	def __layerChanged(self):
-		if type(self.layer) == QgsVectorLayer:
-			QObject.disconnect(self.layer, SIGNAL("attributeAdded(int)"),   self.__layerChanged)
-			QObject.disconnect(self.layer, SIGNAL("attributeDeleted(int)"), self.__layerChanged)
-		if hasattr(self.initField,'__call__'):
-			initField = self.initField()
-		else:
-			initField = self.initField
-		self.widget.clear()
-		self.widget.addItem("")
-		self.layer = self.layerCombo.getLayer()
-		if self.layer is None: return
-		QObject.connect(self.layer, SIGNAL("attributeAdded(int)"),   self.__layerChanged)
-		QObject.connect(self.layer, SIGNAL("attributeDeleted(int)"), self.__layerChanged)
-		i = 0
-		for idx,field in enumerate(self.layer.pendingFields()):
-			i += 1
-			fieldAlias = self.layer.attributeDisplayName( idx )
-			try:
-				fieldName  = field.name()
-			except: # qgis <1.9
-				fieldName = self.layer.pendingFields()[idx].name()
-			self.widget.addItem( fieldAlias , fieldName )
-			if not self.__isFieldValid(idx):
-				j = self.widget.model().index(i,0)
-				self.widget.model().setData(j, QVariant(0), Qt.UserRole-1)
-				continue
-			if fieldName == initField:
-				self.widget.setCurrentIndex( i )
-				
-	def __isFieldValid(self, idx):
-		if self.fieldType==None: return True
-		return self.layer.dataProvider().fields()[idx].type() == self.fieldType
-				
-	def isValid(self):
-		idx = self.getFieldIndex()
-		if idx == -1: return False
-		return self.__isFieldValid(idx)
+     def __layerChanged(self):
+          if type(self.layer) == QgsVectorLayer:
+               QObject.disconnect(self.layer, SIGNAL("attributeAdded(int)"),   self.__layerChanged)
+               QObject.disconnect(self.layer, SIGNAL("attributeDeleted(int)"), self.__layerChanged)
+          if hasattr(self.initField, '__call__'):
+               initField = self.initField()
+          else:
+               initField = self.initField
+          self.widget.clear()
+          self.widget.addItem("")
+          self.layer = self.layerCombo.getLayer()
+          if self.layer is None: return
+          QObject.connect(self.layer, SIGNAL("attributeAdded(int)"),   self.__layerChanged)
+          QObject.connect(self.layer, SIGNAL("attributeDeleted(int)"), self.__layerChanged)
+          i = 0
+          for idx,field in enumerate(self.layer.pendingFields()):
+               i += 1
+               fieldAlias = self.layer.attributeDisplayName(idx)
+               try:
+                    fieldName  = field.name()
+               except: # qgis <1.9
+                    fieldName = self.layer.pendingFields()[idx].name()
+               self.widget.addItem(fieldAlias , fieldName)
+               if not self.__isFieldValid(idx):
+                    j = self.widget.model().index(i,0)
+                    self.widget.model().setData(j, QVariant(0), Qt.UserRole-1)
+                    continue
+               if fieldName == initField:
+                    self.widget.setCurrentIndex(i)
+                    
+     def __isFieldValid(self, idx):
+          if self.fieldType==None: return True
+          return self.layer.dataProvider().fields()[idx].type() == self.fieldType
+                    
+     def isValid(self):
+          idx = self.getFieldIndex()
+          if idx == -1: return False
+          return self.__isFieldValid(idx)
                 
-	def getFieldAlias(self):
-		i = self.widget.currentIndex()
-		if i==0: return ""
-		return self.widget.currentText()
-		
-	def getFieldName(self):
-		i = self.widget.currentIndex()
-		if i==0: return ""
-		return self.widget.itemData( i ).toString()
-		
-	def getFieldIndex(self):
-		i = self.widget.currentIndex()
-		if i==0: return None
-		return self.layer.fieldNameIndex( self.getFieldName() )
+     def getFieldAlias(self):
+          i = self.widget.currentIndex()
+          if i==0: return ""
+          return self.widget.currentText()
+          
+     def getFieldName(self):
+          i = self.widget.currentIndex()
+          if i==0: return ""
+          return self.widget.itemData(i).toString()
+          
+     def getFieldIndex(self):
+          i = self.widget.currentIndex()
+          if i==0: return None
+          return self.layer.fieldNameIndex(self.getFieldName())
