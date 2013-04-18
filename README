@@ -1,13 +1,15 @@
-**Quick Finder** is a [QGIS](http://www.qgis.org) plugin as a dockable dialog to find a feature by its ID in a layer.
+**Quick Finder** is a [QGIS](http://www.qgis.org) plugin as a dockable dialog to quickly find a feature by its ID in a layer or by other attributes.
 
-see demo on [youtube](http://www.youtube.com/v/bsqMLMqlCYQ&hd=1)
+You can select, pan, scale and open form for the returned features.
+
+See demo on [youtube](http://www.youtube.com/v/bsqMLMqlCYQ&hd=1) (this version is 1.0, some features have been added since)
 
 ##  Changelog
 
 * TODO: emit signals
 * TODO: put current mode, sign and field of layer in project settings
 
-**Versio 2.2** 18.04.2013
+**Version 2.2** 18.04.2013
 
 * Performance improvement (for QGIS 2.0)
 * Added factor when scaling canvas extent
