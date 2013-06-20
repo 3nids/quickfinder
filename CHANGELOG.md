@@ -1,13 +1,13 @@
-**Quick Finder** is a [QGIS](http://www.qgis.org) plugin as a dockable dialog to quickly find a feature by its ID in a layer or by other attributes.
-
-You can select, pan, scale and open form for the returned features.
-
-See demo on [youtube](http://www.youtube.com/v/bsqMLMqlCYQ&hd=1) (this version is 1.0, some features have been added since)
-
 ##  Changelog
 
 * TODO: emit signals
 * TODO: put current mode, sign and field of layer in project settings
+
+** Version 2.3** 20.06.2013
+
+* New API for QGIS 2.0
+* Remove 18 compatibility
+* Fix search in non-geometric layers
 
 **Version 2.2** 18.04.2013
 
@@ -15,12 +15,6 @@ See demo on [youtube](http://www.youtube.com/v/bsqMLMqlCYQ&hd=1) (this version i
 * Added factor when scaling canvas extent
 * Disable scale box if pan is not selected
 * Use external [qgistools library](https://github.com/3nids/qgistools/)
-
-** Version 2.2** 20.06.2013
-
-* New API for QGIS 2.0
-* Remove 18 compatibility
-* Fix search in non-geometric layers
 
 **Version 2.1** 01.03.2013
 
@@ -38,6 +32,3 @@ See demo on [youtube](http://www.youtube.com/v/bsqMLMqlCYQ&hd=1) (this version i
 **Version 1.1** 11.02.2013
 
 * Adapted to new vector API
-
-
-

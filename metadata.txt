@@ -4,7 +4,7 @@ name=Quick Finder
 
 description=Dockable dialog to find a feature by its ID in a layer.
 
-version=2.2
+version=2.3
 
 qgisMinimumVersion=2.0
 
