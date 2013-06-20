@@ -6,11 +6,12 @@ Denis Rouzaud
 denis.rouzaud@gmail.com
 """
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-from qgis.core import *
+from PyQt4.QtCore import Qt, pyqtSignature, QCoreApplication
+from PyQt4.QtGui import QDockWidget, QMessageBox
+from qgis.core import QgsFeature, QgsFeatureRequest, QgsRectangle
+from qgis.gui import QgsMessageBar
 
-from qgistools.gui import VectorLayerCombo, FieldCombo
+from qgiscombomanager import VectorLayerCombo, FieldCombo
 from ui.ui_quickfinder import Ui_quickFinder
 
 
@@ -20,11 +21,11 @@ class FinderDock(QDockWidget, Ui_quickFinder):
         QDockWidget.__init__(self)
         self.setupUi(self)
         self.iface.addDockWidget(Qt.LeftDockWidgetArea, self)
-        self.layerComboManager = VectorLayerCombo(iface.legendInterface(), self.layerCombo)
+        self.layerComboManager = VectorLayerCombo(self.layerCombo)
         self.fieldComboManager = FieldCombo(self.fieldCombo, self.layerComboManager)
-        QObject.connect(self.layerCombo, SIGNAL("currentIndexChanged(int)"), self.layerChanged)
-        QObject.connect(self.modeButtonGroup, SIGNAL("buttonClicked(int)"), self.layerChanged)
-        QObject.connect(self.fieldCombo, SIGNAL("currentIndexChanged(int)"), self.layerChanged)
+        self.layerCombo.currentIndexChanged.connect(self.layerChanged)
+        self.modeButtonGroup.buttonClicked.connect(self.layerChanged)
+        self.fieldCombo.currentIndexChanged.connect(self.layerChanged)
         self.layer = None
         self.operatorBox.hide()
         self.processWidgetGroup.hide()
@@ -65,25 +66,33 @@ class FinderDock(QDockWidget, Ui_quickFinder):
         toFind = self.idLine.text()
         f = QgsFeature()
         if self.idButton.isChecked():
-            id, ok = toFind.toInt()
-            if ok is False:
-                QMessageBox.warning(self.iface.mainWindow(), "Quick Finder", "ID must be strictly composed of digits.")
-                return
             try:
-                    if self.layer.getFeatures(QgsFeatureRequest().setFilterFid(id)).nextFeature(f) is False:
-                        return
-            except:  # qgis <1.9
-                if self.layer.dataProvider().featureAtId(id, f, True,
-                                                         self.layer.dataProvider().attributeIndexes()) is False:
-                        return
+                id = long(toFind)
+            except ValueError:
+                self.iface.messageBar().pushMessage("Quick Finder", "ID must be strictly composed of digits.",
+                                                    QgsMessageBar.WARNING, 2.5)
+                return
+
+            if self.layer.getFeatures(QgsFeatureRequest().setFilterFid(id).setFlags(QgsFeatureRequest.NoGeometry)).nextFeature(f) is False:
+                self.iface.messageBar().pushMessage("Quick Finder", "No results found.", QgsMessageBar.INFO, 1.5)
+                return
+            self.iface.messageBar().pushMessage("Quick Finder", "Feature found!", QgsMessageBar.INFO, 1.5)
             self.processResults([f.id()])
         else:
             results = []
             fieldName = self.fieldComboManager.getFieldName()
             fieldIndex = self.fieldComboManager.getFieldIndex()
             if fieldName == "":
+                self.iface.messageBar().pushMessage("Quick Finder", "Choose a field first.", QgsMessageBar.WARNING, 2.5)
                 return
             operator = self.operatorBox.currentIndex()
+            if operator in (1, 2, 3, 4, 5):
+                try:
+                    float(toFind)
+                except ValueError:
+                    self.iface.messageBar().pushMessage("Quick Finder", "Value must be numeric for chosen operator",
+                                                        QgsMessageBar.WARNING, 2.5)
+                    return
             # show progress bar
             self.progressBar.setMinimum(0)
             self.progressBar.setMaximum(self.layer.featureCount())
@@ -94,24 +103,16 @@ class FinderDock(QDockWidget, Ui_quickFinder):
             self.modeWidgetGroup.setEnabled(False)
             self.searchWidgetGroup.setEnabled(False)
             # create feature request
-            try:
-                featReq = QgsFeatureRequest()
-                featReq.setFlags(QgsFeatureRequest.NoGeometry)
-                featReq.setSubsetOfAttributes([fieldIndex])
-                iter = self.layer.getFeatures(featReq)
-            except:  # qgis <1.9
-                iter = self.layer.dataProvider()
-                iter.select([fieldIndex])
+            featReq = QgsFeatureRequest()
+            featReq.setFlags(QgsFeatureRequest.NoGeometry)
+            featReq.setSubsetOfAttributes([fieldIndex])
+            iter = self.layer.getFeatures(featReq)
             # process
             k = 0
             self.continueSearch = True
             while iter.nextFeature(f) and self.continueSearch:
                 k += 1
-                try:
-                    value = f.attribute(fieldName)
-                except:
-                    value = f.attributeMap()[fieldIndex]
-                if self.evaluate(value, toFind, operator):
+                if self.evaluate(f[fieldName], toFind, operator):
                     results.append(f.id())
                 self.progressBar.setValue(k)
                 QCoreApplication.processEvents()
@@ -122,23 +123,25 @@ class FinderDock(QDockWidget, Ui_quickFinder):
             self.searchWidgetGroup.setEnabled(True)
             # process results
             if self.continueSearch:
+                self.iface.messageBar().pushMessage("Quick Finder", "%u features found!" % len(results),
+                                                    QgsMessageBar.INFO, 1.5)
                 self.processResults(results)
                     
     def evaluate(self, v1, v2, operator):
         if operator == 0:
-            return v1.toString() == v2
+            return v1 == v2
         elif operator == 1:
-            return v1.toDouble()[0] == v2.toDouble()[0]
+            return float(v1) == float(v2)
         elif operator == 2:
-            return v1.toDouble()[0] <= v2.toDouble()[0]
+            return float(v1) <= float(v2)
         elif operator == 3:
-            return v1.toDouble()[0] >= v2.toDouble()[0]
+            return float(v1) >= float(v2)
         elif operator == 4:
-            return v1.toDouble()[0] < v2.toDouble()[0]
+            return float(v1) < float(v2)
         elif operator == 5:
-            return v1.toDouble()[0] > v2.toDouble()[0]
+            return float(v1) > float(v2)
         elif operator == 6:
-            return v1.toString().contains(v2, Qt.CaseInsensitive)
+            return v1.contains(v2, Qt.CaseInsensitive)
 
     def processResults(self, results):
         if self.layer is None:
@@ -169,11 +172,7 @@ class FinderDock(QDockWidget, Ui_quickFinder):
                 if reply == QMessageBox.No:
                     return
             f = QgsFeature()
-            try:
-                for id in results:
-                    if self.layer.getFeatures(QgsFeatureRequest().setFilterFid(id)).nextFeature(f):
-                        self.iface.openFeatureForm(self.layer, f)
-            except:
-                for id in results:
-                        if self.layer.featureAtId(id, f):
-                            self.iface.openFeatureForm(self.layer, f)
+            for id in results:
+                if self.layer.getFeatures(QgsFeatureRequest().setFilterFid(id)).nextFeature(f):
+                    self.iface.openFeatureForm(self.layer, f)
+

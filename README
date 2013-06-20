@@ -16,6 +16,12 @@ See demo on [youtube](http://www.youtube.com/v/bsqMLMqlCYQ&hd=1) (this version i
 * Disable scale box if pan is not selected
 * Use external [qgistools library](https://github.com/3nids/qgistools/)
 
+** Version 2.2** 20.06.2013
+
+* New API for QGIS 2.0
+* Remove 18 compatibility
+* Fix search in non-geometric layers
+
 **Version 2.1** 01.03.2013
 
 * Compatibility with QGIS 1.8

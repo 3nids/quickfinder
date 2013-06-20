@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_quickfinder.ui'
 #
-# Created: Thu Apr 18 08:17:09 2013
+# Created: Thu Jun 20 09:29:07 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -61,6 +61,10 @@ class Ui_quickFinder(object):
         self.gridLayout.setMargin(0)
         self.gridLayout.setMargin(0)
         self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
+        self.layerCombo = QtGui.QComboBox(self.layerWidgetGroup)
+        self.layerCombo.setSizeAdjustPolicy(QtGui.QComboBox.AdjustToContents)
+        self.layerCombo.setObjectName(_fromUtf8("layerCombo"))
+        self.gridLayout.addWidget(self.layerCombo, 0, 1, 1, 1)
         self.label = QtGui.QLabel(self.layerWidgetGroup)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
@@ -69,9 +73,8 @@ class Ui_quickFinder(object):
         self.label.setSizePolicy(sizePolicy)
         self.label.setObjectName(_fromUtf8("label"))
         self.gridLayout.addWidget(self.label, 0, 0, 1, 1)
-        self.layerCombo = QtGui.QComboBox(self.layerWidgetGroup)
-        self.layerCombo.setObjectName(_fromUtf8("layerCombo"))
-        self.gridLayout.addWidget(self.layerCombo, 0, 1, 1, 1)
+        spacerItem1 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.gridLayout.addItem(spacerItem1, 0, 2, 1, 1)
         self.gridLayout_3.addWidget(self.layerWidgetGroup, 1, 0, 1, 2)
         self.searchWidgetGroup = QtGui.QWidget(self.frame)
         self.searchWidgetGroup.setObjectName(_fromUtf8("searchWidgetGroup"))
@@ -80,8 +83,8 @@ class Ui_quickFinder(object):
         self.gridLayout_4.setSpacing(0)
         self.gridLayout_4.setMargin(0)
         self.gridLayout_4.setObjectName(_fromUtf8("gridLayout_4"))
-        spacerItem1 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.gridLayout_4.addItem(spacerItem1, 3, 2, 1, 1)
+        spacerItem2 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.gridLayout_4.addItem(spacerItem2, 3, 2, 1, 1)
         self.goButton = QtGui.QPushButton(self.searchWidgetGroup)
         self.goButton.setEnabled(True)
         self.goButton.setMaximumSize(QtCore.QSize(50, 16777215))

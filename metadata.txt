@@ -6,8 +6,7 @@ description=Dockable dialog to find a feature by its ID in a layer.
 
 version=2.2
 
-qgisMinimumVersion=1.8
-qgisMaximumVersion=2.99
+qgisMinimumVersion=2.0
 
 author=Denis Rouzaud
 email=denis.rouzaud@gmail.com

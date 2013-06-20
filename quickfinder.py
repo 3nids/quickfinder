@@ -5,11 +5,9 @@ QGIS plugin
 Denis Rouzaud
 denis.rouzaud@gmail.com
 """
-# Import the PyQt and QGIS libraries
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-from qgis.core import *
-from qgis.gui import *
+
+from PyQt4.QtCore import SIGNAL, QObject, QUrl
+from PyQt4.QtGui import QAction, QDesktopServices, QIcon
 
 import resources
 
@@ -33,7 +31,7 @@ class quickFinder():
         # help
         self.helpAction = QAction(QIcon(":/plugins/quickfinder/icons/help.png"), "Help", self.iface.mainWindow())
         QObject.connect(self.helpAction, SIGNAL("triggered()"),
-                        lambda: QDesktopServices.openUrl(QUrl("https://github.com/3nids/quickfinder/wiki")))
+                        lambda: QDesktopServices().openUrl(QUrl("https://github.com/3nids/quickfinder/wiki")))
         self.iface.addPluginToMenu("&Quick Finder", self.helpAction)
                     
     def unload(self):
