@@ -29,8 +29,9 @@ from PyQt4.QtGui import QDockWidget, QMessageBox
 from qgis.core import QgsFeature, QgsFeatureRequest, QgsRectangle
 from qgis.gui import QgsMessageBar
 
-from qgiscombomanager import VectorLayerCombo, FieldCombo
-from ui.ui_quickfinder import Ui_quickFinder
+from ..qgiscombomanager import VectorLayerCombo, FieldCombo
+from ..core.mysettings import MySettings
+from ..ui.ui_quickfinder import Ui_quickFinder
 
 
 class FinderDock(QDockWidget, Ui_quickFinder):
@@ -38,7 +39,10 @@ class FinderDock(QDockWidget, Ui_quickFinder):
         self.iface = iface
         QDockWidget.__init__(self)
         self.setupUi(self)
-        self.iface.addDockWidget(Qt.LeftDockWidgetArea, self)
+        if MySettings().value("dockArea") == 1:
+            self.iface.addDockWidget(Qt.RightDockWidgetArea, self)
+        else:
+            self.iface.addDockWidget(Qt.LeftDockWidgetArea, self)
         self.layerComboManager = VectorLayerCombo(self.layerCombo)
         self.fieldComboManager = FieldCombo(self.fieldCombo, self.layerComboManager)
         self.layerCombo.currentIndexChanged.connect(self.layerChanged)

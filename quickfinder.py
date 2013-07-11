@@ -24,12 +24,13 @@
 #---------------------------------------------------------------------
 
 
-from PyQt4.QtCore import SIGNAL, QObject, QUrl
+from PyQt4.QtCore import QUrl
 from PyQt4.QtGui import QAction, QDesktopServices, QIcon
 
-import resources
+from gui.finderdock import FinderDock
+from gui.mysettingsdialog import MySettingsDialog
 
-from finderdock import FinderDock
+import resources
 
 
 class quickFinder():
@@ -39,21 +40,29 @@ class quickFinder():
           
     def initGui(self):
         # dock
-        self.dockAction = QAction(QIcon(":/plugins/quickfinder/icons/quickfinder.png"), "Quick Finder",
+        self.dockAction = QAction(QIcon(":/plugins/quickfinder/icons/quickfinder.svg"), "Quick Finder",
                                   self.iface.mainWindow())
         self.dockAction.setCheckable(True)
-        QObject.connect(self.dockAction, SIGNAL("triggered(bool)"), self.dock.setVisible)
+        self.dockAction.triggered.connect(self.dock.setVisible)
         self.iface.addPluginToMenu("&Quick Finder", self.dockAction)
         self.iface.addToolBarIcon(self.dockAction)
-        QObject.connect(self.dock, SIGNAL("visibilityChanged(bool)"), self.dockAction.setChecked)
+        self.dock.visibilityChanged.connect(self.dockAction.setChecked)
+        # settings
+        self.settingsAction = QAction(QIcon(":/plugins/quickfinder/icons/settings.svg"), "Settings",
+                                      self.iface.mainWindow())
+        self.settingsAction.triggered.connect(self.showSettings)
+        self.iface.addPluginToMenu("&Quick Finder", self.settingsAction)
         # help
-        self.helpAction = QAction(QIcon(":/plugins/quickfinder/icons/help.png"), "Help", self.iface.mainWindow())
-        QObject.connect(self.helpAction, SIGNAL("triggered()"),
-                        lambda: QDesktopServices().openUrl(QUrl("https://github.com/3nids/quickfinder/wiki")))
+        self.helpAction = QAction(QIcon(":/plugins/quickfinder/icons/help.svg"), "Help", self.iface.mainWindow())
+        self.helpAction.triggered.connect(lambda: QDesktopServices().openUrl(QUrl("https://github.com/3nids/quickfinder/wiki")))
         self.iface.addPluginToMenu("&Quick Finder", self.helpAction)
                     
     def unload(self):
         # Remove the plugin menu item and icon
         self.iface.removePluginMenu("&Quick Finder", self.dockAction)
         self.iface.removePluginMenu("&Quick Finder", self.helpAction)
+        self.iface.removePluginMenu("&Quick Finder", self.settingsAction)
         self.iface.removeToolBarIcon(self.dockAction)
+
+    def showSettings(self):
+        MySettingsDialog().exec_()

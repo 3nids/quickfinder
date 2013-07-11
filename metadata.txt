@@ -11,7 +11,7 @@ qgisMinimumVersion=2.0
 author=Denis Rouzaud
 email=denis.rouzaud@gmail.com
 
-icon=icons/quickfinder.png
+icon=icons/quickfinder.svg
 
 tags=search,find,feature,id
 

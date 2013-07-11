@@ -1,6 +1,7 @@
 <RCC>
     <qresource prefix="/plugins/quickfinder" >
-        <file>icons/quickfinder.png</file>
-        <file>icons/help.png</file>
+        <file>icons/quickfinder.svg</file>
+        <file>icons/help.svg</file>
+        <file>icons/settings.svg</file>
     </qresource>
 </RCC>
