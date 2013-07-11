@@ -3,6 +3,11 @@
 * TODO: emit signals
 * TODO: put current mode, sign and field of layer in project settings
 
+** Version 2.4** 11.07.2013
+
+* Option for dock area
+* New SVG icons
+
 ** Version 2.3** 20.06.2013
 
 * New API for QGIS 2.0
