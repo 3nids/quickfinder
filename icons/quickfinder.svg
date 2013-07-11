@@ -7,12 +7,12 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="24"
-   height="24"
+   width="200"
+   height="100"
    id="svg2"
    version="1.1"
    inkscape:version="0.48.3.1 r9886"
-   sodipodi:docname="eye.svg">
+   sodipodi:docname="quickfinder.svg">
   <metadata
      id="metadata135">
     <rdf:RDF>
@@ -39,11 +39,11 @@
      inkscape:window-height="646"
      id="namedview131"
      showgrid="false"
-     inkscape:zoom="11.68"
-     inkscape:cx="17.986506"
-     inkscape:cy="17.318822"
-     inkscape:window-x="701"
-     inkscape:window-y="24"
+     inkscape:zoom="2.92"
+     inkscape:cx="127.02741"
+     inkscape:cy="44.591389"
+     inkscape:window-x="2455"
+     inkscape:window-y="317"
      inkscape:window-maximized="0"
      inkscape:current-layer="svg2" />
   <title
@@ -510,7 +510,7 @@
   </pattern>
   <g
      id="g123"
-     transform="matrix(0.01842619,0,0,0.01842619,0.03685138,4.4933623)">
+     transform="matrix(0.15355157,0,0,0.15355157,0.30710349,-12.555309)">
     <title
        id="title125">Layer 1</title>
     <g
