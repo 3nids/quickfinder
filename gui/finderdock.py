@@ -24,7 +24,7 @@
 #---------------------------------------------------------------------
 
 
-from PyQt4.QtCore import Qt, pyqtSignature, QCoreApplication
+from PyQt4.QtCore import Qt, pyqtSlot, QCoreApplication
 from PyQt4.QtGui import QDockWidget, QMessageBox
 from qgis.core import QgsFeature, QgsFeatureRequest, QgsRectangle
 from qgis.gui import QgsMessageBar
@@ -67,7 +67,7 @@ class FinderDock(QDockWidget, Ui_quickFinder):
         self.searchWidgetGroup.setEnabled(True)
         self.on_selectBox_clicked()
                
-    @pyqtSignature("on_selectBox_clicked()")
+    @pyqtSlot(name="on_selectBox_clicked")
     def on_selectBox_clicked(self):
         if self.layer is None or not self.selectBox.isChecked():
             self.panBox.setEnabled(False)
@@ -76,14 +76,14 @@ class FinderDock(QDockWidget, Ui_quickFinder):
             self.panBox.setEnabled(self.layer.hasGeometryType())
             self.scaleBox.setEnabled(self.layer.hasGeometryType() and self.panBox.isChecked())
 
-    @pyqtSignature("on_cancelButton_pressed()")
-    def on_cancelButton_pressed(self):
+    @pyqtSlot(name="on_cancelButton_pressed")
+    def cancelSearch(self):
         self.continueSearch = False
 
-    @pyqtSignature("on_goButton_pressed()")
-    def on_goButton_pressed(self):
-        i = self.layerCombo.currentIndex()
-        if i < 1 or self.layer is None:
+    @pyqtSlot(name="on_goButton_pressed")
+    def search(self):
+        self.layer = self.layerComboManager.getLayer()
+        if self.layer is None:
             return
         toFind = self.idLine.text()
         f = QgsFeature()
@@ -92,20 +92,20 @@ class FinderDock(QDockWidget, Ui_quickFinder):
                 id = long(toFind)
             except ValueError:
                 self.iface.messageBar().pushMessage("Quick Finder", "ID must be strictly composed of digits.",
-                                                    QgsMessageBar.WARNING, 2.5)
+                                                    QgsMessageBar.WARNING, 3)
                 return
 
             if self.layer.getFeatures(QgsFeatureRequest().setFilterFid(id).setFlags(QgsFeatureRequest.NoGeometry)).nextFeature(f) is False:
-                self.iface.messageBar().pushMessage("Quick Finder", "No results found.", QgsMessageBar.INFO, 1.5)
+                self.iface.messageBar().pushMessage("Quick Finder", "No results found.", QgsMessageBar.INFO, 2)
                 return
-            self.iface.messageBar().pushMessage("Quick Finder", "Feature found!", QgsMessageBar.INFO, 1.5)
+            self.iface.messageBar().pushMessage("Quick Finder", "Feature found!", QgsMessageBar.INFO, 2)
             self.processResults([f.id()])
         else:
             results = []
             fieldName = self.fieldComboManager.getFieldName()
             fieldIndex = self.fieldComboManager.getFieldIndex()
             if fieldName == "":
-                self.iface.messageBar().pushMessage("Quick Finder", "Choose a field first.", QgsMessageBar.WARNING, 2.5)
+                self.iface.messageBar().pushMessage("Quick Finder", "Choose a field first.", QgsMessageBar.WARNING, 3)
                 return
             operator = self.operatorBox.currentIndex()
             if operator in (1, 2, 3, 4, 5):
@@ -113,7 +113,7 @@ class FinderDock(QDockWidget, Ui_quickFinder):
                     float(toFind)
                 except ValueError:
                     self.iface.messageBar().pushMessage("Quick Finder", "Value must be numeric for chosen operator",
-                                                        QgsMessageBar.WARNING, 2.5)
+                                                        QgsMessageBar.WARNING, 3)
                     return
             # show progress bar
             self.progressBar.setMinimum(0)
@@ -146,7 +146,7 @@ class FinderDock(QDockWidget, Ui_quickFinder):
             # process results
             if self.continueSearch:
                 self.iface.messageBar().pushMessage("Quick Finder", "%u features found!" % len(results),
-                                                    QgsMessageBar.INFO, 1.5)
+                                                    QgsMessageBar.INFO, 2)
                 self.processResults(results)
                     
     def evaluate(self, v1, v2, operator):
