@@ -3,6 +3,10 @@
 * TODO: emit signals
 * TODO: put current mode, sign and field of layer in project settings
 
+** Version 2.5 ** 26.07.2013
+
+* Sort layers by name
+
 ** Version 2.4.1** 23.07.2013
 
 * Fix crash when opening a new project
