@@ -44,10 +44,6 @@ class FinderDock(QDockWidget, Ui_quickFinder):
         self.iface = iface
         QDockWidget.__init__(self)
         self.setupUi(self)
-        if MySettings().value("dockArea") == 1:
-            self.iface.addDockWidget(Qt.RightDockWidgetArea, self)
-        else:
-            self.iface.addDockWidget(Qt.LeftDockWidgetArea, self)
         self.layerComboManager = VectorLayerCombo(self.layerCombo)
         self.fieldComboManager = FieldCombo(self.fieldCombo, self.layerComboManager)
         self.layerCombo.currentIndexChanged.connect(self.layerChanged)
@@ -57,7 +53,15 @@ class FinderDock(QDockWidget, Ui_quickFinder):
         self.operatorBox.hide()
         self.processWidgetGroup.hide()
         self.layerChanged(0)
+        if MySettings().value("dockArea") == 1:
+            self.iface.addDockWidget(Qt.RightDockWidgetArea, self)
+        else:
+            self.iface.addDockWidget(Qt.LeftDockWidgetArea, self)
         self.setVisible(False)
+
+    def showEvent(self, e):
+        layer = self.iface.legendInterface().currentLayer()
+        self.layerComboManager.setLayer(layer)
 
     def layerChanged(self, i):
         self.modeWidgetGroup.setEnabled(False)
