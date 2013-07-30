@@ -23,6 +23,7 @@
 #
 #---------------------------------------------------------------------
 
+import unicodedata
 
 from PyQt4.QtCore import Qt, pyqtSlot, QCoreApplication
 from PyQt4.QtGui import QDockWidget, QMessageBox
@@ -32,6 +33,10 @@ from qgis.gui import QgsMessageBar
 from ..qgiscombomanager import VectorLayerCombo, FieldCombo
 from ..core.mysettings import MySettings
 from ..ui.ui_quickfinder import Ui_quickFinder
+
+
+def remove_accents(data):
+    return ''.join(x for x in unicodedata.normalize('NFKD', data) if unicodedata.category(x)[0] == 'L').lower()
 
 
 class FinderDock(QDockWidget, Ui_quickFinder):
@@ -163,7 +168,11 @@ class FinderDock(QDockWidget, Ui_quickFinder):
         elif operator == 5:
             return float(v1) > float(v2)
         elif operator == 6:
-            return v1.contains(v2, Qt.CaseInsensitive)
+            try:
+                remove_accents(v1).index(remove_accents(v2))
+                return True
+            except ValueError:
+                return False
 
     def processResults(self, results):
         if self.layer is None:
