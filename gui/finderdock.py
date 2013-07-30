@@ -25,7 +25,7 @@
 
 import unicodedata
 
-from PyQt4.QtCore import Qt, pyqtSlot, QCoreApplication
+from PyQt4.QtCore import Qt, pyqtSlot, QCoreApplication, QVariant
 from PyQt4.QtGui import QDockWidget, QMessageBox
 from qgis.core import QgsFeature, QgsFeatureRequest, QgsRectangle
 from qgis.gui import QgsMessageBar
@@ -46,13 +46,14 @@ class FinderDock(QDockWidget, Ui_quickFinder):
         self.setupUi(self)
         self.layerComboManager = VectorLayerCombo(self.layerCombo)
         self.fieldComboManager = FieldCombo(self.fieldCombo, self.layerComboManager)
-        self.layerCombo.currentIndexChanged.connect(self.layerChanged)
+        self.layerComboManager.layerChanged.connect(self.layerChanged)
         self.modeButtonGroup.buttonClicked.connect(self.layerChanged)
-        self.fieldCombo.currentIndexChanged.connect(self.layerChanged)
+        self.fieldComboManager.fieldChanged.connect(self.layerChanged)
+        self.fieldComboManager.fieldChanged.connect(self.fieldChanged)
         self.layer = None
         self.operatorBox.hide()
         self.processWidgetGroup.hide()
-        self.layerChanged(0)
+        self.layerChanged()
         if MySettings().value("dockArea") == 1:
             self.iface.addDockWidget(Qt.RightDockWidgetArea, self)
         else:
@@ -63,7 +64,7 @@ class FinderDock(QDockWidget, Ui_quickFinder):
         layer = self.iface.legendInterface().currentLayer()
         self.layerComboManager.setLayer(layer)
 
-    def layerChanged(self, i):
+    def layerChanged(self):
         self.modeWidgetGroup.setEnabled(False)
         self.searchWidgetGroup.setEnabled(False)
         self.idLine.clear()
@@ -71,10 +72,25 @@ class FinderDock(QDockWidget, Ui_quickFinder):
         if self.layer is None:
             return
         self.modeWidgetGroup.setEnabled(True)
-        if self.fieldButton.isChecked() and self.fieldCombo.currentIndex() == 0:
+        if self.fieldButton.isChecked() and self.fieldCombo.currentIndex() == -1:
             return
         self.searchWidgetGroup.setEnabled(True)
         self.on_selectBox_clicked()
+
+    def fieldChanged(self):
+        if self.layer is None:
+            return
+        fieldIndex = self.fieldComboManager.getFieldIndex()
+        if fieldIndex is None:
+            return
+        fieldType = self.layer.dataProvider().fields()[fieldIndex].type()
+        # if field is a string set operator to "LIKE"
+        if fieldType == QVariant.String:
+            self.operatorBox.setCurrentIndex(6)
+        # if field is not string, do not use "LIKE"
+        if fieldType != QVariant.String and self.operatorBox.currentIndex() == 6:
+            self.operatorBox.setCurrentIndex(0)
+
                
     @pyqtSlot(name="on_selectBox_clicked")
     def on_selectBox_clicked(self):

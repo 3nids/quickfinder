@@ -234,6 +234,12 @@
                  <verstretch>0</verstretch>
                 </sizepolicy>
                </property>
+               <property name="minimumSize">
+                <size>
+                 <width>100</width>
+                 <height>0</height>
+                </size>
+               </property>
                <property name="maximumSize">
                 <size>
                  <width>50</width>
@@ -341,11 +347,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>168</x>
-     <y>124</y>
+     <y>115</y>
     </hint>
     <hint type="destinationlabel">
-     <x>260</x>
-     <y>164</y>
+     <x>240</x>
+     <y>140</y>
     </hint>
    </hints>
   </connection>
@@ -356,12 +362,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>176</x>
-     <y>88</y>
+     <x>143</x>
+     <y>68</y>
     </hint>
     <hint type="destinationlabel">
-     <x>260</x>
-     <y>91</y>
+     <x>244</x>
+     <y>83</y>
     </hint>
    </hints>
   </connection>
@@ -373,11 +379,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>52</x>
-     <y>81</y>
+     <y>85</y>
     </hint>
     <hint type="destinationlabel">
-     <x>260</x>
-     <y>91</y>
+     <x>244</x>
+     <y>83</y>
     </hint>
    </hints>
   </connection>
@@ -389,11 +395,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>32</x>
-     <y>74</y>
+     <y>85</y>
     </hint>
     <hint type="destinationlabel">
      <x>37</x>
-     <y>112</y>
+     <y>115</y>
     </hint>
    </hints>
   </connection>
@@ -404,12 +410,12 @@
    <slot>show()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>176</x>
-     <y>88</y>
+     <x>143</x>
+     <y>68</y>
     </hint>
     <hint type="destinationlabel">
      <x>56</x>
-     <y>109</y>
+     <y>115</y>
     </hint>
    </hints>
   </connection>
@@ -421,11 +427,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>104</x>
-     <y>135</y>
+     <y>145</y>
     </hint>
     <hint type="destinationlabel">
      <x>176</x>
-     <y>149</y>
+     <y>145</y>
     </hint>
    </hints>
   </connection>
