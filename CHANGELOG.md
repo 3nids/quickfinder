@@ -1,9 +1,15 @@
 ##  Changelog
 
-* TODO: emit signals
 * TODO: put current mode, sign and field of layer in project settings
 
-** Version 2.5 ** 26.07.2013
+** Version 2.6** 30.07.2013
+
+* Auto choose current layer when opening the dock
+* Improved text search: take care of accents
+* Fix text search for new API
+* Auto select operator from chosen field type
+
+** Version 2.5** 26.07.2013
 
 * Sort layers by name
 
