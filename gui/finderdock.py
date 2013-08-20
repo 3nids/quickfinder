@@ -36,7 +36,8 @@ from ..ui.ui_quickfinder import Ui_quickFinder
 
 
 def remove_accents(data):
-    return ''.join(x for x in unicodedata.normalize('NFKD', data) if unicodedata.category(x)[0] == 'L').lower()
+    # http://www.unicode.org/reports/tr44/#GC_Values_Table
+    return ''.join(x for x in unicodedata.normalize('NFKD', data) if unicodedata.category(x)[0] in ('L', 'N', 'P', 'Zs')).lower()
 
 
 class FinderDock(QDockWidget, Ui_quickFinder):
@@ -189,7 +190,10 @@ class FinderDock(QDockWidget, Ui_quickFinder):
             return float(v1) > float(v2)
         elif operator == 6:
             try:
-                remove_accents(v1).index(remove_accents(v2))
+                print unicode(v1), v2
+                print remove_accents(unicode(v1))
+                print remove_accents(unicode(v1)).index(remove_accents(v2))
+                remove_accents(unicode(v1)).index(remove_accents(v2))
                 return True
             except ValueError:
                 return False
