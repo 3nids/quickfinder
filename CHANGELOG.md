@@ -2,6 +2,10 @@
 
 * TODO: put current mode, sign and field of layer in project settings
 
+** Version 2.6.1** 20.08.2013
+
+* fix using LIKE operator for non-text fields
+
 ** Version 2.6** 30.07.2013
 
 * Auto choose current layer when opening the dock
