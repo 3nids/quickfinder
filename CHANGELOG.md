@@ -2,6 +2,10 @@
 
 * TODO: put current mode, sign and field of layer in project settings
 
+** Version 2.6.2** 11.09.2013
+
+* resize combo box
+
 ** Version 2.6.1** 20.08.2013
 
 * fix using LIKE operator for non-text fields
