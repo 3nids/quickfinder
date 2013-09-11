@@ -4,7 +4,7 @@
 
 ** Version 2.6.2** 11.09.2013
 
-* resize combo box
+* resize field combo box
 
 ** Version 2.6.1** 20.08.2013
 
