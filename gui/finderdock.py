@@ -190,9 +190,6 @@ class FinderDock(QDockWidget, Ui_quickFinder):
             return float(v1) > float(v2)
         elif operator == 6:
             try:
-                print unicode(v1), v2
-                print remove_accents(unicode(v1))
-                print remove_accents(unicode(v1)).index(remove_accents(v2))
                 remove_accents(unicode(v1)).index(remove_accents(v2))
                 return True
             except ValueError:
