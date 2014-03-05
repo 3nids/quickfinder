@@ -56,6 +56,8 @@ class quickFinder():
         self.helpAction = QAction(QIcon(":/plugins/quickfinder/icons/help.svg"), "Help", self.iface.mainWindow())
         self.helpAction.triggered.connect(lambda: QDesktopServices().openUrl(QUrl("https://github.com/3nids/quickfinder/wiki")))
         self.iface.addPluginToMenu("&Quick Finder", self.helpAction)
+
+        self.dock.show()
                     
     def unload(self):
         # Remove the plugin menu item and icon
