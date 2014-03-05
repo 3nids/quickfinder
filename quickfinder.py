@@ -64,5 +64,8 @@ class quickFinder():
         self.iface.removePluginMenu("&Quick Finder", self.settingsAction)
         self.iface.removeToolBarIcon(self.dockAction)
 
+        self.dock.close()
+        self.dock.deleteLater()
+
     def showSettings(self):
         MySettingsDialog().exec_()
