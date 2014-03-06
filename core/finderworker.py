@@ -19,6 +19,7 @@ class FinderWorker(QObject):
     progress = pyqtSignal(int)
 
     def __init__(self):
+        QObject.__init__(self)
         self.continueSearch = True
 
     def define(self, layer, field, isExpression, operator, toFind):
@@ -32,7 +33,7 @@ class FinderWorker(QObject):
         self.continueSearch = False
 
 
-    def process(self):
+    def find(self):
         self.continueSearch = True
 
         f = QgsFeature()
@@ -54,8 +55,6 @@ class FinderWorker(QObject):
             return
 
         # Standard search
-        fieldIndex = self.fieldComboManager.getFieldIndex()
-
         if self.operator in (1, 2, 3, 4, 5):
             try:
                 float(self.toFind)
@@ -63,23 +62,34 @@ class FinderWorker(QObject):
                 self.message.emit("Value must be numeric for chosen operator", QgsMessageBar.WARNING)
                 self.finished.emit()
                 return
-
-        featReq = QgsFeatureRequest().setSubsetOfAttributes([fieldIndex])
+        featReq = QgsFeatureRequest()
+        if self.isExpression:
+            fieldIndex = self.layer.getFieldNameIndex(self.field)
+            featReq.setSubsetOfAttributes([fieldIndex])
         k = 0
         for f in self.layer.getFeatures(featReq):
+            print k+1
             k += 1
             if not self.continueSearch:
                 break
             if self.evaluate(f):
                 self.resultFound.emit(f)
             self.progress.emit(k)
-
         self.finished.emit()
 
     def evaluate(self, f):
-
         if not self.isExpression:
             value = f[self.field]
+        else:
+            value = self.field.evaluate(f)
+            if self.operator == 6:
+                value = str(value)
+            elif self.operator in (1, 2, 3, 4, 5):
+                try:
+                    value = float(value)
+                except ValueError:
+                    self.message.emit("Expression result must be numeric for chosen operator", QgsMessageBar.WARNING)
+                    return False
 
         if self.operator == 0:
             return value == self.toFind

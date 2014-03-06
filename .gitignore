@@ -1,5 +1,5 @@
 .idea
-*.qgs
+*.qgs*
 tmp/
 resources.py
 ui_*.py

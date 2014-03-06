@@ -57,12 +57,12 @@ class FinderDock(QDockWidget, Ui_quickFinder):
         self.searchWidget.setEnabled(False)
 
         self.thread = QThread()
-        worker = FinderWorker()
-        worker.moveToThread(self.thread)
-        self.thread.started.connect(worker.find)
+        self.worker = FinderWorker()
+        self.worker.moveToThread(self.thread)
+        self.thread.started.connect(self.worker.find)
         self.thread.finished.connect(self.searchFinished)
-        self.thread.progress.connect(self.progressBar.setValue)
-        self.cancelButton.clicked.connect(self.thread.stop)
+        self.worker.progress.connect(self.progressBar.setValue)
+        self.cancelButton.clicked.connect(self.worker.stop)
 
         self.layerChanged()
 
@@ -113,7 +113,7 @@ class FinderDock(QDockWidget, Ui_quickFinder):
 
     @pyqtSlot(name="on_searchEdit_returnPressed")
     def search(self):
-        self.thread.stop()
+        self.worker.stop()
         self.thread.wait()
 
         # give search parameters to thread
@@ -125,13 +125,16 @@ class FinderDock(QDockWidget, Ui_quickFinder):
             return
         toFind = self.searchEdit.text()
         operator = self.operatorBox.currentIndex()
-        self.thread.define(self.layer, field, isExpression, operator, toFind)
+        self.worker.define(self.layer, field, isExpression, operator, toFind)
 
         # show progress bar
         self.progressBar.setMinimum(0)
         self.progressBar.setMaximum(self.layer.featureCount())
         self.progressBar.setValue(0)
         self.progressWidget.show()
+
+        # start
+        self.thread.start()
 
     def processResults(self, results):
         if self.layer is None:
