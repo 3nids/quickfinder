@@ -30,7 +30,7 @@ from PyQt4.QtGui import QAction, QDesktopServices, QIcon
 from gui.finderdock import FinderDock
 from gui.mysettingsdialog import MySettingsDialog
 
-import resources
+import resources_rc
 
 
 class quickFinder():
@@ -43,6 +43,7 @@ class quickFinder():
         self.dockAction = QAction(QIcon(":/plugins/quickfinder/icons/quickfinder.svg"), "Quick Finder",
                                   self.iface.mainWindow())
         self.dockAction.setCheckable(True)
+        self.dockAction.setChecked(True)
         self.dockAction.triggered.connect(self.dock.setVisible)
         self.iface.addPluginToMenu("&Quick Finder", self.dockAction)
         self.iface.addToolBarIcon(self.dockAction)
@@ -57,8 +58,6 @@ class quickFinder():
         self.helpAction.triggered.connect(lambda: QDesktopServices().openUrl(QUrl("https://github.com/3nids/quickfinder/wiki")))
         self.iface.addPluginToMenu("&Quick Finder", self.helpAction)
 
-        self.dock.show()
-                    
     def unload(self):
         # Remove the plugin menu item and icon
         self.iface.removePluginMenu("&Quick Finder", self.dockAction)

@@ -23,21 +23,18 @@
 #
 #---------------------------------------------------------------------
 
-import unicodedata
-
-from PyQt4.QtCore import Qt, pyqtSlot, QCoreApplication, QVariant
+from PyQt4.QtCore import Qt, pyqtSlot, QVariant, QThread
 from PyQt4.QtGui import QDockWidget, QMessageBox
 from qgis.core import QgsFeature, QgsFeatureRequest, QgsRectangle
 from qgis.gui import QgsMessageBar
 
-from ..qgiscombomanager import VectorLayerCombo, FieldCombo
+from ..qgiscombomanager import VectorLayerCombo, ExpressionFieldCombo
 from ..core.mysettings import MySettings
+from ..core.finderworker import FinderWorker
 from ..ui.ui_quickfinder import Ui_quickFinder
 
 
-def remove_accents(data):
-    # http://www.unicode.org/reports/tr44/#GC_Values_Table
-    return ''.join(x for x in unicodedata.normalize('NFKD', data) if unicodedata.category(x)[0] in ('L', 'N', 'P', 'Zs')).lower()
+
 
 
 class FinderDock(QDockWidget, Ui_quickFinder):
@@ -45,155 +42,96 @@ class FinderDock(QDockWidget, Ui_quickFinder):
         self.iface = iface
         QDockWidget.__init__(self)
         self.setupUi(self)
+        self.settings = MySettings()
+
         self.layerComboManager = VectorLayerCombo(self.layerCombo)
-        self.fieldComboManager = FieldCombo(self.fieldCombo, self.layerComboManager)
+        self.fieldComboManager = ExpressionFieldCombo(self.fieldCombo, self.expressionButton, self.layerComboManager)
+
         self.layerComboManager.layerChanged.connect(self.layerChanged)
-        self.modeButtonGroup.buttonClicked.connect(self.layerChanged)
-        self.fieldComboManager.fieldChanged.connect(self.layerChanged)
-        self.fieldComboManager.fieldChanged.connect(self.fieldChanged)
+        self.fieldCombo.activated.connect(self.fieldChanged)
+
         self.layer = None
-        self.operatorBox.hide()
-        self.processWidgetGroup.hide()
+
+        self.progressWidget.hide()
+        self.fieldWidget.setEnabled(False)
+        self.searchWidget.setEnabled(False)
+
+        self.thread = QThread()
+        worker = FinderWorker()
+        worker.moveToThread(self.thread)
+        self.thread.started.connect(worker.find)
+        self.thread.finished.connect(self.searchFinished)
+        self.thread.progress.connect(self.progressBar.setValue)
+        self.cancelButton.clicked.connect(self.thread.stop)
+
         self.layerChanged()
+
         if MySettings().value("dockArea") == 1:
             self.iface.addDockWidget(Qt.RightDockWidgetArea, self)
         else:
             self.iface.addDockWidget(Qt.LeftDockWidgetArea, self)
-        self.setVisible(False)
+
 
     def showEvent(self, e):
         layer = self.iface.legendInterface().currentLayer()
         self.layerComboManager.setLayer(layer)
 
     def layerChanged(self):
-        self.modeWidgetGroup.setEnabled(False)
-        self.searchWidgetGroup.setEnabled(False)
-        self.idLine.clear()
+        print "layerChanged"
+        self.searchWidget.setEnabled(False)
+        self.fieldWidget.setEnabled(False)
         self.layer = self.layerComboManager.getLayer()
         if self.layer is None:
             return
-        self.modeWidgetGroup.setEnabled(True)
-        if self.fieldButton.isChecked() and self.fieldCombo.currentIndex() == -1:
-            return
-        self.searchWidgetGroup.setEnabled(True)
-        self.on_selectBox_clicked()
+        self.fieldWidget.setEnabled(True)
 
     def fieldChanged(self):
+        print "fieldchanged"
+        self.searchWidget.setEnabled(False)
         if self.layer is None:
             return
-        fieldIndex = self.fieldComboManager.getFieldIndex()
-        if fieldIndex is None:
+        field, isExpression = self.fieldComboManager.getExpression()
+        print field
+        if field is None:
+            print "ret"
             return
-        fieldType = self.layer.dataProvider().fields()[fieldIndex].type()
-        # if field is a string set operator to "LIKE"
-        if fieldType == QVariant.String:
-            self.operatorBox.setCurrentIndex(6)
-        # if field is not string, do not use "LIKE"
-        if fieldType != QVariant.String and self.operatorBox.currentIndex() == 6:
-            self.operatorBox.setCurrentIndex(0)
+        self.searchWidget.setEnabled(True)
+        if not isExpression:
+            fieldType = self.layer.pendingFields().field(field).type()
+            # if field is a string set operator to "LIKE"
+            if fieldType == QVariant.String:
+                self.operatorBox.setCurrentIndex(6)
+            # if field is not string, do not use "LIKE"
+            if fieldType != QVariant.String and self.operatorBox.currentIndex() == 6:
+                self.operatorBox.setCurrentIndex(0)
+            return
+        # is expression, use string by default
+        self.operator.setCurrentIndex(6)
 
-               
-    @pyqtSlot(name="on_selectBox_clicked")
-    def on_selectBox_clicked(self):
-        if self.layer is None or not self.selectBox.isChecked():
-            self.panBox.setEnabled(False)
-            self.scaleBox.setEnabled(False)
-        else:
-            self.panBox.setEnabled(self.layer.hasGeometryType())
-            self.scaleBox.setEnabled(self.layer.hasGeometryType() and self.panBox.isChecked())
+    def searchFinished(self):
+        self.progressWidget.hide()
 
-    @pyqtSlot(name="on_cancelButton_pressed")
-    def cancelSearch(self):
-        self.continueSearch = False
-
-    @pyqtSlot(name="on_goButton_pressed")
+    @pyqtSlot(name="on_searchEdit_returnPressed")
     def search(self):
+        self.thread.stop()
+        self.thread.wait()
+
+        # give search parameters to thread
         self.layer = self.layerComboManager.getLayer()
         if self.layer is None:
             return
-        toFind = self.idLine.text()
-        f = QgsFeature()
-        if self.idButton.isChecked():
-            try:
-                id = long(toFind)
-            except ValueError:
-                self.iface.messageBar().pushMessage("Quick Finder", "ID must be strictly composed of digits.",
-                                                    QgsMessageBar.WARNING, 3)
-                return
+        field, isExpression = self.fieldComboManager.getExpression()
+        if field is None:
+            return
+        toFind = self.searchEdit.text()
+        operator = self.operatorBox.currentIndex()
+        self.thread.define(self.layer, field, isExpression, operator, toFind)
 
-            if self.layer.getFeatures(QgsFeatureRequest().setFilterFid(id).setFlags(QgsFeatureRequest.NoGeometry)).nextFeature(f) is False:
-                self.iface.messageBar().pushMessage("Quick Finder", "No results found.", QgsMessageBar.INFO, 2)
-                return
-            self.iface.messageBar().pushMessage("Quick Finder", "Feature found!", QgsMessageBar.INFO, 2)
-            self.processResults([f.id()])
-        else:
-            results = []
-            fieldName = self.fieldComboManager.getFieldName()
-            fieldIndex = self.fieldComboManager.getFieldIndex()
-            if fieldName == "":
-                self.iface.messageBar().pushMessage("Quick Finder", "Choose a field first.", QgsMessageBar.WARNING, 3)
-                return
-            operator = self.operatorBox.currentIndex()
-            if operator in (1, 2, 3, 4, 5):
-                try:
-                    float(toFind)
-                except ValueError:
-                    self.iface.messageBar().pushMessage("Quick Finder", "Value must be numeric for chosen operator",
-                                                        QgsMessageBar.WARNING, 3)
-                    return
-            # show progress bar
-            self.progressBar.setMinimum(0)
-            self.progressBar.setMaximum(self.layer.featureCount())
-            self.progressBar.setValue(0)
-            self.processWidgetGroup.show()
-            # disable rest of UI
-            self.layerWidgetGroup.setEnabled(False)
-            self.modeWidgetGroup.setEnabled(False)
-            self.searchWidgetGroup.setEnabled(False)
-            # create feature request
-            featReq = QgsFeatureRequest()
-            featReq.setFlags(QgsFeatureRequest.NoGeometry)
-            featReq.setSubsetOfAttributes([fieldIndex])
-            iter = self.layer.getFeatures(featReq)
-            # process
-            k = 0
-            self.continueSearch = True
-            while iter.nextFeature(f) and self.continueSearch:
-                k += 1
-                if self.evaluate(f[fieldName], toFind, operator):
-                    results.append(f.id())
-                self.progressBar.setValue(k)
-                QCoreApplication.processEvents()
-            # reset UI
-            self.processWidgetGroup.hide()
-            self.layerWidgetGroup.setEnabled(True)
-            self.modeWidgetGroup.setEnabled(True)
-            self.searchWidgetGroup.setEnabled(True)
-            # process results
-            if self.continueSearch:
-                self.iface.messageBar().pushMessage("Quick Finder", "%u features found!" % len(results),
-                                                    QgsMessageBar.INFO, 2)
-                self.processResults(results)
-                    
-    def evaluate(self, v1, v2, operator):
-        if operator == 0:
-            return v1 == v2
-        elif operator == 1:
-            return float(v1) == float(v2)
-        elif operator == 2:
-            return float(v1) <= float(v2)
-        elif operator == 3:
-            return float(v1) >= float(v2)
-        elif operator == 4:
-            return float(v1) < float(v2)
-        elif operator == 5:
-            return float(v1) > float(v2)
-        elif operator == 6:
-            try:
-                remove_accents(unicode(v1)).index(remove_accents(v2))
-                return True
-            except ValueError:
-                return False
+        # show progress bar
+        self.progressBar.setMinimum(0)
+        self.progressBar.setMaximum(self.layer.featureCount())
+        self.progressBar.setValue(0)
+        self.progressWidget.show()
 
     def processResults(self, results):
         if self.layer is None:
