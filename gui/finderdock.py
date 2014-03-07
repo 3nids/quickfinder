@@ -56,13 +56,7 @@ class FinderDock(QDockWidget, Ui_quickFinder):
         self.fieldWidget.setEnabled(False)
         self.searchWidget.setEnabled(False)
 
-        self.thread = QThread()
-        self.worker = FinderWorker()
-        self.worker.moveToThread(self.thread)
-        self.thread.started.connect(self.worker.find)
-        self.thread.finished.connect(self.searchFinished)
-        self.worker.progress.connect(self.progressBar.setValue)
-        self.cancelButton.clicked.connect(self.worker.stop)
+
 
         self.layerChanged()
 
@@ -71,10 +65,12 @@ class FinderDock(QDockWidget, Ui_quickFinder):
         else:
             self.iface.addDockWidget(Qt.LeftDockWidgetArea, self)
 
-
     def showEvent(self, e):
         layer = self.iface.legendInterface().currentLayer()
         self.layerComboManager.setLayer(layer)
+
+    def displayMessage(self, message, level):
+        self.iface.messageBar().pushMessage("Quick Finder", message, level, 3)
 
     def layerChanged(self):
         print "layerChanged"
@@ -113,8 +109,19 @@ class FinderDock(QDockWidget, Ui_quickFinder):
 
     @pyqtSlot(name="on_searchEdit_returnPressed")
     def search(self):
-        self.worker.stop()
-        self.thread.wait()
+        self.thread = QThread()
+        self.worker = FinderWorker()
+        self.worker.moveToThread(self.thread)
+        self.thread.started.connect(self.worker.find)
+        self.thread.finished.connect(self.searchFinished)
+        self.worker.progress.connect(self.progressBar.setValue)
+        self.cancelButton.clicked.connect(self.worker.stop)
+        self.worker.message.connect(self.displayMessage)
+        self.worker.finished.connect(self.thread.quit)
+        self.worker.finished.connect(self.worker.deleteLater)
+        self.thread.finished.connect(self.thread.deleteLater)
+        self.searchEdit.returnPressed.connect(self.worker.stop)
+
 
         # give search parameters to thread
         self.layer = self.layerComboManager.getLayer()
@@ -129,7 +136,7 @@ class FinderDock(QDockWidget, Ui_quickFinder):
 
         # show progress bar
         self.progressBar.setMinimum(0)
-        self.progressBar.setMaximum(self.layer.featureCount())
+        self.progressBar.setMaximum(self.layer.pendingFeatureCount())
         self.progressBar.setValue(0)
         self.progressWidget.show()
 

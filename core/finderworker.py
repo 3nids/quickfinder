@@ -1,7 +1,7 @@
 
 import unicodedata
 
-from PyQt4.QtCore import QObject, pyqtSignal
+from PyQt4.QtCore import QObject, pyqtSignal, QCoreApplication
 
 from qgis.core import QgsFeature, QgsFeatureRequest
 from qgis.gui import QgsMessageBar
@@ -34,19 +34,21 @@ class FinderWorker(QObject):
 
 
     def find(self):
+        print "search started"
         self.continueSearch = True
 
         f = QgsFeature()
 
         # feature at id
         pk = self.layer.pendingPkAttributesList()
+
         fid = None
         idOk = True
         try:
             fid = long(self.toFind)
         except ValueError:
             idOk = False
-        if pk.count() == 1 and idOk and self.layer.getFieldNameIndex(self.field) == pk[0]:
+        if len(pk) == 1 and idOk and self.layer.pendingFields().field(self.field) == pk[0]:
             if self.layer.getFeatures(QgsFeatureRequest().setFilterFid(fid)).nextFeature(f):
                 self.resultFound.emit(f)
             else:
@@ -55,6 +57,7 @@ class FinderWorker(QObject):
             return
 
         # Standard search
+        print "standard"
         if self.operator in (1, 2, 3, 4, 5):
             try:
                 float(self.toFind)
@@ -62,13 +65,15 @@ class FinderWorker(QObject):
                 self.message.emit("Value must be numeric for chosen operator", QgsMessageBar.WARNING)
                 self.finished.emit()
                 return
+
+        print "start loop"
         featReq = QgsFeatureRequest()
         if self.isExpression:
             fieldIndex = self.layer.getFieldNameIndex(self.field)
             featReq.setSubsetOfAttributes([fieldIndex])
         k = 0
         for f in self.layer.getFeatures(featReq):
-            print k+1
+            QCoreApplication.processEvents()
             k += 1
             if not self.continueSearch:
                 break
