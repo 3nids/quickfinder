@@ -23,7 +23,7 @@
 #
 #---------------------------------------------------------------------
 
-from PyQt4.QtCore import Qt, pyqtSlot, QVariant, QThread
+from PyQt4.QtCore import Qt, pyqtSlot, QVariant
 from PyQt4.QtGui import QDockWidget, QMessageBox
 from qgis.core import QgsFeature, QgsFeatureRequest, QgsRectangle
 from qgis.gui import QgsMessageBar
@@ -56,7 +56,11 @@ class FinderDock(QDockWidget, Ui_quickFinder):
         self.fieldWidget.setEnabled(False)
         self.searchWidget.setEnabled(False)
 
-
+        self.worker = FinderWorker()
+        #self.worker.resultFound.connect()
+        self.worker.message.connect(self.displayMessage)
+        self.worker.finished.connect(self.searchFinished)
+        self.cancelButton.clicked.connect(self.worker.stop)
 
         self.layerChanged()
 
@@ -109,19 +113,7 @@ class FinderDock(QDockWidget, Ui_quickFinder):
 
     @pyqtSlot(name="on_searchEdit_returnPressed")
     def search(self):
-        self.thread = QThread()
-        self.worker = FinderWorker()
-        self.worker.moveToThread(self.thread)
-        self.thread.started.connect(self.worker.find)
-        self.thread.finished.connect(self.searchFinished)
-        self.worker.progress.connect(self.progressBar.setValue)
-        self.cancelButton.clicked.connect(self.worker.stop)
-        self.worker.message.connect(self.displayMessage)
-        self.worker.finished.connect(self.thread.quit)
-        self.worker.finished.connect(self.worker.deleteLater)
-        self.thread.finished.connect(self.thread.deleteLater)
-        self.searchEdit.returnPressed.connect(self.worker.stop)
-
+        self.worker.stop()
 
         # give search parameters to thread
         self.layer = self.layerComboManager.getLayer()
@@ -132,6 +124,7 @@ class FinderDock(QDockWidget, Ui_quickFinder):
             return
         toFind = self.searchEdit.text()
         operator = self.operatorBox.currentIndex()
+
         self.worker.define(self.layer, field, isExpression, operator, toFind)
 
         # show progress bar
@@ -141,7 +134,7 @@ class FinderDock(QDockWidget, Ui_quickFinder):
         self.progressWidget.show()
 
         # start
-        self.thread.start()
+        self.worker.start()
 
     def processResults(self, results):
         if self.layer is None:

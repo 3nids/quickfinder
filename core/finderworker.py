@@ -32,8 +32,7 @@ class FinderWorker(QObject):
     def stop(self):
         self.continueSearch = False
 
-
-    def find(self):
+    def start(self):
         print "search started"
         self.continueSearch = True
 
