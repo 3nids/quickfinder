@@ -3,3 +3,7 @@
 tmp/
 resources.py
 ui_*.py
+**.pyc
+.project
+.pydevproject
+.settings/
