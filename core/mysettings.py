@@ -30,13 +30,16 @@
 from PyQt4.QtGui import QColor
 from ..qgissettingmanager import *
 
-pluginName = "quickfinder"
+pluginName = "quickfinder_plugin"
 
 
 class MySettings(SettingManager):
     def __init__(self):
         SettingManager.__init__(self, pluginName)
-         
+
         # global settings
         self.addSetting("dockArea", "integer", "global", 0)
+        self.addSetting("layerId", "string", "project", '')
+        self.addSetting("fieldName", "string", "project", '')
+        # self.addSetting("operator", "integer", "project", 0)
 
