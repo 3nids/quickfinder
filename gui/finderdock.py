@@ -24,14 +24,15 @@
 #---------------------------------------------------------------------
 
 from PyQt4.QtCore import Qt, pyqtSlot
-from PyQt4.QtGui import QDockWidget, QMessageBox
+from PyQt4.QtGui import QDockWidget, QMessageBox, QTreeView
 from qgis.core import (QgsFeature, QgsFeatureRequest, QgsRectangle)
 from qgis.gui import QgsMessageBar
 
-from quickfinder.gui.resultstree import ResultsTree
+from quickfinder.core.resultmodel import ResultModel
 from quickfinder.core.projectfinder import ProjectFinder
 from quickfinder.core.osmfinder import OsmFinder
 from quickfinder.core.mysettings import MySettings
+from quickfinder.gui.resultstree import ResultsTree
 from quickfinder.ui.ui_quickfinder import Ui_quickFinder
 
 class FinderDock(QDockWidget, Ui_quickFinder):
@@ -48,7 +49,13 @@ class FinderDock(QDockWidget, Ui_quickFinder):
 
         self.resultsTree = ResultsTree(self)
         self.resultsWidget.layout().addWidget(self.resultsTree)
-        # self.searchBox.setView(self.resultsTree)
+
+        self.resultModel = ResultModel(self.searchBox)
+        self.searchBox.setModel(self.resultModel)
+
+        self.resultView = QTreeView()
+        self.resultView.setHeaderHidden(True)
+        self.searchBox.setView(self.resultView)
 
         self.progressWidget.hide()
 
@@ -88,6 +95,7 @@ class FinderDock(QDockWidget, Ui_quickFinder):
     def search(self):
         self.stop()
         self.resultsTree.clear()
+        self.resultModel.clear()
 
         self.searchButton.setChecked(True)
         self.searchButton.setText(self.tr('stop'))
@@ -107,8 +115,13 @@ class FinderDock(QDockWidget, Ui_quickFinder):
         '''
         self.finders['project'].start(toFind)
 
+        self.searchBox.showPopup()
+
     def resultFound(self, category, layername, value, geometry):
         self.resultsTree.addResult(category, layername, value, geometry)
+
+        self.resultModel.addResult(category, layername, value, geometry)
+        self.resultView.expandAll()
 
     def processResults(self, results):
         if self.layer is None:

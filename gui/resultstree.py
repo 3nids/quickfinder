@@ -14,9 +14,6 @@ class ResultsTree(QTreeWidget):
         self.setHeaderHidden(True)
         self.itemClicked.connect(self.onItemClicked)
 
-    def clear(self):
-        QTreeWidget.clear(self)
-
     def getCategoryItem(self, category, create=True):
         for i in xrange(0, self.topLevelItemCount()):
             if self.topLevelItem(i).text(1) == category:

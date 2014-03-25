@@ -16,7 +16,6 @@ def remove_accents(data):
 
 
 class ProjectFinder(BaseFinder):
-
     def __init__(self):
         BaseFinder.__init__(self)
 
@@ -35,11 +34,13 @@ class ProjectFinder(BaseFinder):
         layerId = MySettings().value("layerId")
         self.layer = QgsMapLayerRegistry.instance().mapLayer(layerId)
         if self.layer is None:
+            self.finished.emit()
             return
 
         self.field = MySettings().value("fieldName")
         self.isExpression = False
         if self.field is None:
+            self.finished.emit()
             return
 
         self.operator = 6

@@ -32,3 +32,6 @@ class BaseFinder(QObject):
     def start(self, toFind, bbox=None):
         self.continueSearch = True
         print "search started"
+
+    def isRunning(self):
+        return not self.continueSearch

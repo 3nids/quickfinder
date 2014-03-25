@@ -56,18 +56,20 @@ class MySettingsDialog(QDialog, Ui_Settings, SettingDialog):
         self.fieldName.activated.connect(self.fieldChanged)
 
         self.layer = None
-        self.fieldWidget.setEnabled(False)
+        self.fieldName.setEnabled(False)
+        self.expressionButton.setEnabled(False)
 
         self.layerChanged()
 
     def layerChanged(self):
         print "layerChanged"
-        # self.searchWidget.setEnabled(False)
-        self.fieldWidget.setEnabled(False)
+        self.fieldName.setEnabled(False)
+        self.expressionButton.setEnabled(False)
         self.layer = self.layerComboManager.getLayer()
         if self.layer is None:
             return
-        self.fieldWidget.setEnabled(True)
+        self.fieldName.setEnabled(True)
+        self.expressionButton.setEnabled(True)
 
     def fieldChanged(self):
         print "fieldchanged"
@@ -90,4 +92,4 @@ class MySettingsDialog(QDialog, Ui_Settings, SettingDialog):
                 self.operatorBox.setCurrentIndex(0)
             return
         # is expression, use string by default
-        self.operator.setCurrentIndex(6)
+        self.operatorBox.setCurrentIndex(6)
