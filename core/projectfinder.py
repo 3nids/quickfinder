@@ -1,10 +1,13 @@
 
 import unicodedata
 
-from PyQt4.QtCore import QObject, pyqtSignal, QCoreApplication
+from PyQt4.QtCore import QCoreApplication
 
-from qgis.core import QgsFeature, QgsFeatureRequest
+from qgis.core import QgsMapLayerRegistry, QgsFeatureRequest, QgsFeature, QgsGeometry
 from qgis.gui import QgsMessageBar
+
+from basefinder import BaseFinder
+from quickfinder.core.mysettings import MySettings
 
 
 def remove_accents(data):
@@ -12,58 +15,36 @@ def remove_accents(data):
     return ''.join(x for x in unicodedata.normalize('NFKD', data) if unicodedata.category(x)[0] in ('L', 'N', 'P', 'Zs')).lower()
 
 
-class FinderWorker(QObject):
-    resultFound = pyqtSignal(QgsFeature)
-    finished = pyqtSignal()
-    message = pyqtSignal(str, QgsMessageBar.MessageLevel)
-    progress = pyqtSignal(int)
+class ProjectFinder(BaseFinder):
 
     def __init__(self):
-        QObject.__init__(self)
-        self.continueSearch = True
+        BaseFinder.__init__(self)
 
-    def define(self, layer, field, isExpression, operator, toFind):
+    def define(self, layer, field, isExpression, operator):
         self.layer = layer
         self.field = field
         self.isExpression = isExpression
         self.operator = operator
+
+    def start(self, toFind, bbox=None):
+        BaseFinder.start(self, toFind, bbox)
+
         self.toFind = toFind
 
-    def stop(self):
-        self.continueSearch = False
-
-    def start(self):
-        print "search started"
-        self.continueSearch = True
-
-        f = QgsFeature()
-
-        # feature at id
-        pk = self.layer.pendingPkAttributesList()
-
-        fid = None
-        idOk = True
-        try:
-            fid = long(self.toFind)
-        except ValueError:
-            idOk = False
-        if len(pk) == 1 and idOk and self.layer.pendingFields().field(self.field) == pk[0]:
-            if self.layer.getFeatures(QgsFeatureRequest().setFilterFid(fid)).nextFeature(f):
-                self.resultFound.emit(f)
-            else:
-                self.message.emit("No features found at id", QgsMessageBar.INFO)
-            self.finished.emit()
+        # give search parameters to thread
+        layerId = MySettings().value("layerId")
+        self.layer = QgsMapLayerRegistry.instance().mapLayer(layerId)
+        if self.layer is None:
             return
 
-        # Standard search
-        print "standard"
-        if self.operator in (1, 2, 3, 4, 5):
-            try:
-                float(self.toFind)
-            except ValueError:
-                self.message.emit("Value must be numeric for chosen operator", QgsMessageBar.WARNING)
-                self.finished.emit()
-                return
+        self.field = MySettings().value("fieldName")
+        self.isExpression = False
+        if self.field is None:
+            return
+
+        self.operator = 6
+
+        f = QgsFeature()
 
         print "start loop"
         featReq = QgsFeatureRequest()
@@ -77,7 +58,11 @@ class FinderWorker(QObject):
             if not self.continueSearch:
                 break
             if self.evaluate(f):
-                self.resultFound.emit(f)
+                if not self.isExpression:
+                    value = f[self.field]
+                else:
+                    value = self.field.evaluate(f)
+                self.resultFound.emit('project', self.layer.name(), value, f.geometry())
             self.progress.emit(k)
         self.finished.emit()
 
