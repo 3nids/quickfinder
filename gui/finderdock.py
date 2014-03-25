@@ -23,118 +23,92 @@
 #
 #---------------------------------------------------------------------
 
-from PyQt4.QtCore import Qt, pyqtSlot, QVariant
+from PyQt4.QtCore import Qt, pyqtSlot
 from PyQt4.QtGui import QDockWidget, QMessageBox
-from qgis.core import QgsFeature, QgsFeatureRequest, QgsRectangle
+from qgis.core import (QgsFeature, QgsFeatureRequest, QgsRectangle)
 from qgis.gui import QgsMessageBar
 
-from ..qgiscombomanager import VectorLayerCombo, ExpressionFieldCombo
-from ..core.mysettings import MySettings
-from ..core.finderworker import FinderWorker
-from ..ui.ui_quickfinder import Ui_quickFinder
-
-
-
-
+from quickfinder.gui.resultstree import ResultsTree
+from quickfinder.core.projectfinder import ProjectFinder
+from quickfinder.core.osmfinder import OsmFinder
+from quickfinder.core.mysettings import MySettings
+from quickfinder.ui.ui_quickfinder import Ui_quickFinder
 
 class FinderDock(QDockWidget, Ui_quickFinder):
+
+    finders = {}
+
     def __init__(self, iface):
         self.iface = iface
         QDockWidget.__init__(self)
         self.setupUi(self)
         self.settings = MySettings()
 
-        self.layerComboManager = VectorLayerCombo(self.layerCombo)
-        self.fieldComboManager = ExpressionFieldCombo(self.fieldCombo, self.expressionButton, self.layerComboManager)
+        self.searchButton.clicked.connect(self.onSearchButtonClicked)
 
-        self.layerComboManager.layerChanged.connect(self.layerChanged)
-        self.fieldCombo.activated.connect(self.fieldChanged)
-
-        self.layer = None
+        self.resultsTree = ResultsTree(self)
+        self.resultsWidget.layout().addWidget(self.resultsTree)
+        # self.searchBox.setView(self.resultsTree)
 
         self.progressWidget.hide()
-        self.fieldWidget.setEnabled(False)
-        self.searchWidget.setEnabled(False)
 
-        self.worker = FinderWorker()
-        #self.worker.resultFound.connect()
-        self.worker.message.connect(self.displayMessage)
-        self.worker.finished.connect(self.searchFinished)
-        self.cancelButton.clicked.connect(self.worker.stop)
+        # self.searchWidget.setEnabled(False)
+        self.finders['project'] = ProjectFinder()
+        self.finders['osm'] = OsmFinder()
 
-        self.layerChanged()
+        for finder in self.finders.values():
+            finder.resultFound.connect(self.resultFound)
+            finder.message.connect(self.displayMessage)
+            finder.finished.connect(self.searchFinished)
+            self.cancelButton.clicked.connect(finder.stop)
 
-        if MySettings().value("dockArea") == 1:
-            self.iface.addDockWidget(Qt.RightDockWidgetArea, self)
-        else:
-            self.iface.addDockWidget(Qt.LeftDockWidgetArea, self)
-
-    def showEvent(self, e):
-        layer = self.iface.legendInterface().currentLayer()
-        self.layerComboManager.setLayer(layer)
+        self.iface.addDockWidget(Qt.LeftDockWidgetArea, self)
 
     def displayMessage(self, message, level):
         self.iface.messageBar().pushMessage("Quick Finder", message, level, 3)
 
-    def layerChanged(self):
-        print "layerChanged"
-        self.searchWidget.setEnabled(False)
-        self.fieldWidget.setEnabled(False)
-        self.layer = self.layerComboManager.getLayer()
-        if self.layer is None:
-            return
-        self.fieldWidget.setEnabled(True)
-
-    def fieldChanged(self):
-        print "fieldchanged"
-        self.searchWidget.setEnabled(False)
-        if self.layer is None:
-            return
-        field, isExpression = self.fieldComboManager.getExpression()
-        print field
-        if field is None:
-            print "ret"
-            return
-        self.searchWidget.setEnabled(True)
-        if not isExpression:
-            fieldType = self.layer.pendingFields().field(field).type()
-            # if field is a string set operator to "LIKE"
-            if fieldType == QVariant.String:
-                self.operatorBox.setCurrentIndex(6)
-            # if field is not string, do not use "LIKE"
-            if fieldType != QVariant.String and self.operatorBox.currentIndex() == 6:
-                self.operatorBox.setCurrentIndex(0)
-            return
-        # is expression, use string by default
-        self.operator.setCurrentIndex(6)
-
     def searchFinished(self):
         self.progressWidget.hide()
+        self.stop()
+
+    def onSearchButtonClicked(self, checked):
+        if checked:
+            self.search()
+        else:
+            self.stop()
+
+    def stop(self):
+        for finder in self.finders.values():
+            finder.stop()
+
+        self.searchButton.setChecked(False)
+        self.searchButton.setText(self.tr('search'))
 
     @pyqtSlot(name="on_searchEdit_returnPressed")
     def search(self):
-        self.worker.stop()
+        self.stop()
+        self.resultsTree.clear()
 
-        # give search parameters to thread
-        self.layer = self.layerComboManager.getLayer()
-        if self.layer is None:
-            return
-        field, isExpression = self.fieldComboManager.getExpression()
-        if field is None:
-            return
-        toFind = self.searchEdit.text()
-        operator = self.operatorBox.currentIndex()
+        self.searchButton.setChecked(True)
+        self.searchButton.setText(self.tr('stop'))
 
-        self.worker.define(self.layer, field, isExpression, operator, toFind)
-
+        '''
         # show progress bar
         self.progressBar.setMinimum(0)
         self.progressBar.setMaximum(self.layer.pendingFeatureCount())
         self.progressBar.setValue(0)
         self.progressWidget.show()
+        '''
 
-        # start
-        self.worker.start()
+        toFind = self.searchEdit.text()
+        '''
+        for finder in self.finders.values():
+            finder.start(toFind)
+        '''
+        self.finders['project'].start(toFind)
+
+    def resultFound(self, category, layername, value, geometry):
+        self.resultsTree.addResult(category, layername, value, geometry)
 
     def processResults(self, results):
         if self.layer is None:
