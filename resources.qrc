@@ -6,5 +6,6 @@
         <file>icons/expression.svg</file>
         <file>icons/magnifier13.svg</file>
         <file>icons/wrong2.svg</file>
+        <file>icons/loading.gif</file>
     </qresource>
 </RCC>

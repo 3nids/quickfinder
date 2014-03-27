@@ -28,14 +28,12 @@
 from PyQt4.QtCore import QVariant
 from PyQt4.QtGui import QDialog
 
-from ..qgissettingmanager import SettingDialog
+from qgis.gui import QgsGenericProjectionSelector
 
-from ..core.mysettings import MySettings
-
-from ..ui.ui_settings import Ui_Settings
-
-from ..qgiscombomanager import VectorLayerCombo, ExpressionFieldCombo
-
+from quickfinder.qgissettingmanager import SettingDialog
+from quickfinder.core.mysettings import MySettings
+from quickfinder.ui.ui_settings import Ui_Settings
+from quickfinder.qgiscombomanager import VectorLayerCombo, ExpressionFieldCombo
 
 class MySettingsDialog(QDialog, Ui_Settings, SettingDialog):
     def __init__(self):
@@ -60,6 +58,8 @@ class MySettingsDialog(QDialog, Ui_Settings, SettingDialog):
         self.expressionButton.setEnabled(False)
 
         self.layerChanged()
+
+        self.geomapfish_crsButton.clicked.connect(self.geomapfish_crsButtonClicked)
 
     def layerChanged(self):
         print "layerChanged"
@@ -88,8 +88,19 @@ class MySettingsDialog(QDialog, Ui_Settings, SettingDialog):
             if fieldType == QVariant.String:
                 self.operatorBox.setCurrentIndex(6)
             # if field is not string, do not use "LIKE"
-            if fieldType != QVariant.String and self.operatorBox.currentIndex() == 6:
+            if (fieldType != QVariant.String
+                and self.operatorBox.currentIndex() == 6):
                 self.operatorBox.setCurrentIndex(0)
             return
         # is expression, use string by default
         self.operatorBox.setCurrentIndex(6)
+
+    def geomapfish_crsButtonClicked(self):
+        dlg = QgsGenericProjectionSelector(self)
+        dlg.setMessage('Select GeoMapFish serveur CRS')
+        dlg.setSelectedAuthId(self.geomapfish_crs.text())
+        dlg.exec_()
+        self.geomapfish_crs.setText(dlg.selectedAuthId())
+        del dlg
+
+

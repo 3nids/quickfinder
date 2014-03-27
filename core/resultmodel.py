@@ -4,9 +4,11 @@ Created on 25 mars 2014
 @author: arnaud
 '''
 
-from PyQt4.QtCore import Qt, pyqtSignal
-from PyQt4.QtGui import QStandardItemModel, QStandardItem, QFont
-from qgis import QgsGeometry
+from PyQt4.QtCore import Qt
+from PyQt4.QtGui import QStandardItemModel, QStandardItem, QFont, QIcon
+
+from .mysettings import MySettings
+
 
 class GroupItem(QStandardItem):
 
@@ -65,6 +67,13 @@ class ResultModel(QStandardItemModel):
     def __init__(self, parent):
         super(ResultModel, self).__init__(parent)
 
+    def setLoading(self, icon=None):
+        root = self.invisibleRootItem()
+        item = root.child(0)
+        if not icon:
+            icon = QIcon()
+        item.setIcon(icon)
+
     def truncateHistory(self, limit):
         root = self.invisibleRootItem()
         for i in xrange(limit, root.rowCount()):
@@ -74,7 +83,7 @@ class ResultModel(QStandardItemModel):
 
     def clearResults(self):
         root = self.invisibleRootItem()
-        for i in xrange(0, root.rowCount()):
+        for i in xrange(root.rowCount() - 1, -1, -1):
             item = root.child(i)
             if isinstance(item, GroupItem):
                 root.removeRow(item.row())
@@ -90,14 +99,25 @@ class ResultModel(QStandardItemModel):
             parent.appendRow(child)
             return child
 
-    def addResult(self, category, layer, value, geometry):
-        print self.__class__.__name__, 'addResult', category, layer, value
+    def addResult(self, category, layer='', value='', geometry=None):
+        # print self.__class__.__name__, 'addResult', category, layer, value
         root_item = self.invisibleRootItem()
 
         category_item = self._childItem(root_item, category, GroupItem)
-        category_item.increment()
 
+        if layer == '':
+            return
         layer_item = self._childItem(category_item, layer, GroupItem)
+
+        '''
+        if layer_item.count >= MySettings().value('limit'):
+            self.addEllipsys(category, layer)
+            return
+        '''
+
+        if value == '':
+            return
+        category_item.increment()
         layer_item.increment()
 
         item = ResultItem(value)
@@ -108,7 +128,7 @@ class ResultModel(QStandardItemModel):
         print self.__class__.__name__, 'addEllipsys', category, layer
         root_item = self.invisibleRootItem()
 
-        category_item = self.childItem(root_item, category, GroupItem)
+        category_item = self._childItem(root_item, category, GroupItem)
 
-        layer_item = self.childItem(category_item, layer, GroupItem)
+        layer_item = self._childItem(category_item, layer, GroupItem)
         layer_item.setMore(True)

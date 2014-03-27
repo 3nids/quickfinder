@@ -24,23 +24,21 @@
 #---------------------------------------------------------------------
 
 import os.path
+from collections import OrderedDict
 
-from PyQt4.QtCore import Qt, QObject, pyqtSlot, QSettings, QCoreApplication, \
+from PyQt4.QtCore import Qt, QObject, QSettings, QCoreApplication, \
                          QTranslator, QUrl, QEventLoop
-from PyQt4.QtGui import QAction, QIcon, QColor, \
+from PyQt4.QtGui import QApplication, QAction, QIcon, QColor, \
                         QComboBox, QTreeView, QSizePolicy, \
                         QDesktopServices
 
-from qgis.core import QgsVectorLayer, QgsFeature, QgsGeometry, \
-                        QGis
 from qgis.gui import QgsRubberBand
 
-
 from quickfinder.core.mysettings import MySettings
-from quickfinder.core.resultmodel import ResultModel, ResultItem
+from quickfinder.core.resultmodel import ResultModel, GroupItem, ResultItem
 from quickfinder.core.projectfinder import ProjectFinder
 from quickfinder.core.osmfinder import OsmFinder
-# from quickfinder.gui.finderbox import FinderBox
+from quickfinder.core.geomapfishfinder import GeomapfishFinder
 from quickfinder.gui.mysettingsdialog import MySettingsDialog
 
 import resources_rc
@@ -53,6 +51,9 @@ class quickFinder(QObject):
     toolbar = None
     finders = None
     running = False
+    toFinish = 0
+
+    loadingIcon = None
 
     def __init__(self, iface):
         """Constructor for the plugin.
@@ -108,13 +109,8 @@ class quickFinder(QObject):
         self.rubber.setWidth(4)
         self.rubber.setBrushStyle(Qt.NoBrush)
 
-        '''
-        self.iface.projectRead.connect(self.searchText_placeholderTextUpdate)
-        self.iface.newProjectCreated.connect(self.searchText_placeholderTextUpdate)
-        '''
-
     def unload(self):
-        # Remove the plugin menu item and icon
+        """Remove the plugin menu item and icon """
         for action in self.actions.itervalues():
             self.iface.removePluginMenu(self.name, action)
 
@@ -124,11 +120,6 @@ class quickFinder(QObject):
         if self.rubber:
             self.iface.mapCanvas().scene().removeItem(self.rubber)
             del self.rubber
-
-        '''
-        self.iface.projectRead.disconnect(self.searchText_placeholderTextUpdate)
-        self.iface.newProjectCreated.disconnect(self.searchText_placeholderTextUpdate)
-        '''
 
     def _initToolbar(self):
         """setup the plugin toolbar."""
@@ -152,11 +143,12 @@ class quickFinder(QObject):
 
         self.resultView = QTreeView()
         self.resultView.setHeaderHidden(True)
-        self.resultView.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded);
         self.resultView.setMinimumHeight(300);
-        self.resultView.clicked.connect(self.itemClicked)
         self.resultView.activated.connect(self.itemActivated)
+        self.resultView.pressed.connect(self.itemPressed)
         self.finderBox.setView(self.resultView)
+
+        self.loadingIcon = QIcon(":/plugins/quickfinder/icons/loading.gif")
 
         self.searchAction = QAction(
             QIcon(":/plugins/quickfinder/icons/magnifier13.svg"),
@@ -176,8 +168,11 @@ class quickFinder(QObject):
         self.toolbar.setVisible(True)
 
     def _initFinders(self):
+        """Create finders and connect signals"""
+        self.finders = OrderedDict()
+        self.finders['geomapfish'] = GeomapfishFinder(self)
+        self.finders['osm'] = OsmFinder(self)
         self.finders['project'] = ProjectFinder(self)
-        # self.finders['osm'] = OsmFinder(self)
 
         for finder in self.finders.itervalues():
             finder.resultFound.connect(self.resultFound)
@@ -197,55 +192,56 @@ class quickFinder(QObject):
         if not toFind:
             return
 
-        print self.__class__.__name__, 'search', toFind
-
         self.running = True
-
-        self.searchAction.setVisible(False)
-        self.stopAction.setVisible(True)
-        QCoreApplication.processEvents(QEventLoop.ExcludeUserInputEvents)
 
         self.resultModel.clearResults()
         self.resultModel.truncateHistory(MySettings().value("historyLength"))
-
+        self.resultModel.addResult(self.finders['project'].name)
+        self.resultModel.addResult(self.finders['geomapfish'].name)
+        self.resultModel.addResult(self.finders['osm'].name)
+        self.resultModel.setLoading(self.loadingIcon)
         self.finderBox.showPopup()
 
-        '''
-        # show progress bar
-        self.progressBar.setMinimum(0)
-        self.progressBar.setMaximum(self.layer.pendingFeatureCount())
-        self.progressBar.setValue(0)
-        self.progressWidget.show()
-        '''
+        self.searchAction.setVisible(False)
+        self.stopAction.setVisible(True)
 
+        QCoreApplication.processEvents(QEventLoop.ExcludeUserInputEvents)
+
+        self.toFinish = len(self.finders)
+
+        canvas = self.iface.mapCanvas()
+        crs = canvas.mapRenderer().destinationCrs()
+        bbox = canvas.fullExtent()
         for finder in self.finders.itervalues():
-            finder.start(toFind)
+            finder.start(toFind, crs=crs, bbox=bbox)
 
     def stop(self):
-        print self.__class__.__name__, 'stop'
         for finder in self.finders.itervalues():
             if finder.isRunning():
                 finder.stop()
 
     def resultFound(self, finder, layername, value, geometry):
-        print self.__class__.__name__, 'resultFound', finder.name, layername, value
         self.resultModel.addResult(finder.name, layername, value, geometry)
         self.resultView.expandAll()
 
     def limitReached(self, finder, layername):
-        print self.__class__.__name__, 'limitReached', finder.name, layername
         self.resultModel.addEllipsys(finder.name, layername)
 
     def finished(self, finder):
         # wait for all running finders
+        '''
         for finder in self.finders.itervalues():
             if finder.isRunning():
                 return
+        '''
+        self.toFinish -= 1
+        if self.toFinish > 0:
+            return
 
-        print self.__class__.__name__, 'searchFinished'
         self.running = False
 
-        # self.progressWidget.hide()
+        self.resultModel.setLoading(None)
+
         self.stopAction.setVisible(False)
         self.searchAction.setVisible(True)
         QCoreApplication.processEvents(QEventLoop.ExcludeUserInputEvents)
@@ -255,23 +251,38 @@ class quickFinder(QObject):
 
     def itemActivated(self, index):
         item = self.resultModel.itemFromIndex(index)
-        print self.__class__.__name__, 'itemActivated', item
-        if isinstance(item, ResultItem):
-            self.showGeometry(item.geometry)
+        self.showItem(item)
 
-    def itemClicked(self, index):
+    def itemPressed(self, index):
         item = self.resultModel.itemFromIndex(index)
-        print self.__class__.__name__, 'itemClicked', item
+        if QApplication.mouseButtons() == Qt.LeftButton:
+            self.showItem(item)
+
+    def showItem(self, item):
         if isinstance(item, ResultItem):
-            self.showGeometry(item.geometry)
+            geometry = item.geometry
+            self.rubber.reset(geometry.type())
+            self.rubber.setToGeometry(geometry, None)
+            self.zoomToRubberBand()
+            return
 
-    def showGeometry(self, geometry):
-        print self.__class__.__name__, 'showGeometry'
+        if isinstance(item, GroupItem):
+            child = item.child(0)
+            if isinstance(child, ResultItem):
+                self.rubber.reset(child.geometry.type())
+            for i in xrange(0, item.rowCount()):
+                child = item.child(i)
+                self.rubber.addGeometry(item.child(i).geometry, None)
+            self.zoomToRubberBand()
+            return
 
-        rect = geometry.boundingBox()
+        if item.__class__.__name__ == 'QStandardItem':
+            self.rubber.reset()
+            return
+
+    def zoomToRubberBand(self):
+        rect = self.rubber.asGeometry().boundingBox()
         rect.scale(1.5)
         self.iface.mapCanvas().setExtent(rect)
         self.iface.mapCanvas().refresh()
 
-        self.rubber.reset(geometry.type())
-        self.rubber.setToGeometry(geometry, None)
