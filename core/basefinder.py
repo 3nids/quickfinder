@@ -8,8 +8,10 @@ import unicodedata
 
 from PyQt4.QtCore import QObject, pyqtSignal
 
-from qgis.core import QgsGeometry
+from qgis.core import QgsVectorLayer, QgsFeature, QgsGeometry
 from qgis.gui import QgsMessageBar
+
+from quickfinder.core.mysettings import MySettings
 
 
 def remove_accents(data):
@@ -18,20 +20,34 @@ def remove_accents(data):
 
 
 class BaseFinder(QObject):
-    resultFound = pyqtSignal(str, str, str, QgsGeometry)
-    finished = pyqtSignal()
-    message = pyqtSignal(str, QgsMessageBar.MessageLevel)
-    progress = pyqtSignal(int)
 
-    def __init__(self):
-        QObject.__init__(self)
+    name = ''  # to be defined in subclasses
 
-    def stop(self):
-        self.continueSearch = False
+    continueSearch = False
+    limit = 10
+
+    progress = pyqtSignal(QObject, int, int)  # total current
+    resultFound = pyqtSignal(QObject, str, str, QgsGeometry)
+    limitReached = pyqtSignal(QObject, str)
+    finished = pyqtSignal(QObject)
+    message = pyqtSignal(QObject, str, QgsMessageBar.MessageLevel)
+
+    def __init__(self, parent):
+        QObject.__init__(self, parent)
 
     def start(self, toFind, bbox=None):
+        print self.__class__.__name__, "start"
         self.continueSearch = True
-        print "search started"
+        self.limit = MySettings().value("limit")
+
+    def stop(self):
+        print self.__class__.__name__, "stop"
+        self.continueSearch = False
+
+    def _finish(self):
+        print self.__class__.__name__, "_finish"
+        self.continueSearch = False
+        self.finished.emit(self)
 
     def isRunning(self):
-        return not self.continueSearch
+        return self.continueSearch

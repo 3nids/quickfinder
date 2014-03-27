@@ -25,15 +25,22 @@
 
 import os.path
 
-from PyQt4.QtCore import Qt, QObject, QSettings, QCoreApplication, \
+from PyQt4.QtCore import Qt, QObject, pyqtSlot, QSettings, QCoreApplication, \
                          QTranslator, QUrl, QEventLoop
-from PyQt4.QtGui import QAction, QIcon, \
-                        QTreeView, QSizePolicy, QDesktopServices
+from PyQt4.QtGui import QAction, QIcon, QColor, \
+                        QComboBox, QTreeView, QSizePolicy, \
+                        QDesktopServices
 
-from quickfinder.core.resultmodel import ResultModel
+from qgis.core import QgsVectorLayer, QgsFeature, QgsGeometry, \
+                        QGis
+from qgis.gui import QgsRubberBand
+
+
+from quickfinder.core.mysettings import MySettings
+from quickfinder.core.resultmodel import ResultModel, ResultItem
 from quickfinder.core.projectfinder import ProjectFinder
 from quickfinder.core.osmfinder import OsmFinder
-from quickfinder.gui.finderbox import FinderBox
+# from quickfinder.gui.finderbox import FinderBox
 from quickfinder.gui.mysettingsdialog import MySettingsDialog
 
 import resources_rc
@@ -42,9 +49,9 @@ import resources_rc
 class quickFinder(QObject):
 
     name = u"&Quick Finder"
-    actions = {}
+    actions = None
     toolbar = None
-    finders = {}
+    finders = None
     running = False
 
     def __init__(self, iface):
@@ -57,6 +64,10 @@ class quickFinder(QObject):
 
         # Save reference to the QGIS interface
         self.iface = iface
+
+        self.actions = {}
+        self.finders = {}
+
         # initialize plugin directory
         self.plugin_dir = os.path.dirname(__file__)
         # initialize locale
@@ -90,6 +101,13 @@ class quickFinder(QObject):
         self._initToolbar()
         self._initFinders()
 
+        self.rubber = QgsRubberBand(self.iface.mapCanvas())
+        self.rubber.setColor(QColor(255, 255, 50, 200))
+        self.rubber.setIcon(self.rubber.ICON_CIRCLE)
+        self.rubber.setIconSize(15)
+        self.rubber.setWidth(4)
+        self.rubber.setBrushStyle(Qt.NoBrush)
+
         '''
         self.iface.projectRead.connect(self.searchText_placeholderTextUpdate)
         self.iface.newProjectCreated.connect(self.searchText_placeholderTextUpdate)
@@ -97,13 +115,15 @@ class quickFinder(QObject):
 
     def unload(self):
         # Remove the plugin menu item and icon
-        for action in self.actions.values():
+        for action in self.actions.itervalues():
             self.iface.removePluginMenu(self.name, action)
 
         if self.toolbar:
-            # self.toolbar.deleteLater()
             del self.toolbar
-            # self.toolbar = None
+
+        if self.rubber:
+            self.iface.mapCanvas().scene().removeItem(self.rubber)
+            del self.rubber
 
         '''
         self.iface.projectRead.disconnect(self.searchText_placeholderTextUpdate)
@@ -115,13 +135,16 @@ class quickFinder(QObject):
         self.toolbar = self.iface.addToolBar(self.name)
         self.toolbar.setObjectName('mQuickFinderToolBar')
 
-        self.finderBox = FinderBox(self.toolbar)
+        self.finderBox = QComboBox(self.toolbar)
+        self.finderBox.setEditable(True)
+        self.finderBox.setInsertPolicy(QComboBox.InsertAtTop)
         self.finderBox.setMinimumHeight(27)
         self.finderBox.setSizePolicy(QSizePolicy.Expanding,
                                      QSizePolicy.Fixed)
 
         self.finderBoxAction = self.toolbar.addWidget(self.finderBox)
-        self.finderBoxAction.setVisible(True);
+        self.finderBoxAction.setVisible(True)
+        self.finderBox.insertSeparator(0)
         self.finderBox.lineEdit().returnPressed.connect(self.search)
 
         self.resultModel = ResultModel(self.finderBox)
@@ -130,21 +153,20 @@ class quickFinder(QObject):
         self.resultView = QTreeView()
         self.resultView.setHeaderHidden(True)
         self.resultView.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded);
-        self.resultView.setFixedHeight(300);
+        self.resultView.setMinimumHeight(300);
+        self.resultView.clicked.connect(self.itemClicked)
+        self.resultView.activated.connect(self.itemActivated)
         self.finderBox.setView(self.resultView)
 
-        self.searchIcon = QIcon(":/plugins/quickfinder/icons/magnifier13.svg")
-        self.stopIcon = QIcon(":/plugins/quickfinder/icons/wrong2.svg")
-
         self.searchAction = QAction(
-            self.searchIcon,
+            QIcon(":/plugins/quickfinder/icons/magnifier13.svg"),
             self.tr("Search"),
             self.toolbar)
-        self.searchAction.triggered.connect(self.onSearchAction)
+        self.searchAction.triggered.connect(self.search)
         self.toolbar.addAction(self.searchAction)
 
         self.stopAction = QAction(
-            self.stopIcon,
+            QIcon(":/plugins/quickfinder/icons/wrong2.svg"),
             self.tr("Cancel"),
             self.toolbar)
         self.stopAction.setVisible(False)
@@ -154,57 +176,37 @@ class quickFinder(QObject):
         self.toolbar.setVisible(True)
 
     def _initFinders(self):
-        self.finders['project'] = ProjectFinder()
-        self.finders['osm'] = OsmFinder()
+        self.finders['project'] = ProjectFinder(self)
+        # self.finders['osm'] = OsmFinder(self)
 
-        for finder in self.finders.values():
+        for finder in self.finders.itervalues():
             finder.resultFound.connect(self.resultFound)
-            finder.message.connect(self.displayMessage)
-            finder.finished.connect(self.searchFinished)
+            finder.limitReached.connect(self.limitReached)
+            finder.finished.connect(self.finished)
+            finder.message.connect(self.message)
 
     def showSettings(self):
         MySettingsDialog().exec_()
 
-    def onSearchAction(self):
-        if self.running:
-            self.stop()
-        else:
-            self.search()
-
-    def stop(self):
-        self.running = False
-        # self.searchAction.setIcon(self.searchIcon)
-        '''
-        self.toolbar.widgetForAction(self.stopAction).setVisible(False)
-        self.toolbar.widgetForAction(self.searchAction).setVisible(True)
-        '''
-        self.stopAction.setVisible(False)
-        self.searchAction.setVisible(True)
-        QCoreApplication.processEvents(QEventLoop.ExcludeUserInputEvents)
-
-        for finder in self.finders.values():
-            if finder.isRunning():
-                finder.stop()
-
-        # self.progressWidget.hide()
-
     def search(self):
+        if self.running:
+            return
+
+        # toFind = self.finderBox.currentText()
+        toFind = self.finderBox.lineEdit().text()
+        if not toFind:
+            return
+
+        print self.__class__.__name__, 'search', toFind
+
         self.running = True
-        # self.searchAction.setIcon(self.stopIcon)
-        # self.toolbar.widgetForAction(self.searchAction).setIcon(self.stopIcon)
-        '''
-        self.toolbar.widgetForAction(self.searchAction).setVisible(False)
-        self.toolbar.widgetForAction(self.stopAction).setVisible(True)
-        '''
+
         self.searchAction.setVisible(False)
         self.stopAction.setVisible(True)
-        # QCoreApplication.processEvents(QEventLoop.ExcludeUserInputEvents)
-        QCoreApplication.processEvents()
+        QCoreApplication.processEvents(QEventLoop.ExcludeUserInputEvents)
 
-        toFind = self.finderBox.currentText()
-
-        self.stop()
         self.resultModel.clearResults()
+        self.resultModel.truncateHistory(MySettings().value("historyLength"))
 
         self.finderBox.showPopup()
 
@@ -216,21 +218,60 @@ class quickFinder(QObject):
         self.progressWidget.show()
         '''
 
-        '''
-        for finder in self.finders.values():
+        for finder in self.finders.itervalues():
             finder.start(toFind)
-        '''
-        self.finders['project'].start(toFind)
 
-    def resultFound(self, category, layername, value, geometry):
-        self.resultModel.addResult(category, layername, value, geometry)
+    def stop(self):
+        print self.__class__.__name__, 'stop'
+        for finder in self.finders.itervalues():
+            if finder.isRunning():
+                finder.stop()
+
+    def resultFound(self, finder, layername, value, geometry):
+        print self.__class__.__name__, 'resultFound', finder.name, layername, value
+        self.resultModel.addResult(finder.name, layername, value, geometry)
         self.resultView.expandAll()
 
-    def displayMessage(self, message, level):
-        self.iface.messageBar().pushMessage("Quick Finder", message, level, 3)
+    def limitReached(self, finder, layername):
+        print self.__class__.__name__, 'limitReached', finder.name, layername
+        self.resultModel.addEllipsys(finder.name, layername)
 
-    def searchFinished(self):
-        for finder in self.finders.values:
+    def finished(self, finder):
+        # wait for all running finders
+        for finder in self.finders.itervalues():
             if finder.isRunning():
                 return
-        self.stop()
+
+        print self.__class__.__name__, 'searchFinished'
+        self.running = False
+
+        # self.progressWidget.hide()
+        self.stopAction.setVisible(False)
+        self.searchAction.setVisible(True)
+        QCoreApplication.processEvents(QEventLoop.ExcludeUserInputEvents)
+
+    def message(self, finder, message, level):
+        self.iface.messageBar().pushMessage("Quick Finder", message, level, 3)
+
+    def itemActivated(self, index):
+        item = self.resultModel.itemFromIndex(index)
+        print self.__class__.__name__, 'itemActivated', item
+        if isinstance(item, ResultItem):
+            self.showGeometry(item.geometry)
+
+    def itemClicked(self, index):
+        item = self.resultModel.itemFromIndex(index)
+        print self.__class__.__name__, 'itemClicked', item
+        if isinstance(item, ResultItem):
+            self.showGeometry(item.geometry)
+
+    def showGeometry(self, geometry):
+        print self.__class__.__name__, 'showGeometry'
+
+        rect = geometry.boundingBox()
+        rect.scale(1.5)
+        self.iface.mapCanvas().setExtent(rect)
+        self.iface.mapCanvas().refresh()
+
+        self.rubber.reset(geometry.type())
+        self.rubber.setToGeometry(geometry, None)

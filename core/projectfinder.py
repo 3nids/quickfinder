@@ -16,14 +16,11 @@ def remove_accents(data):
 
 
 class ProjectFinder(BaseFinder):
-    def __init__(self):
-        BaseFinder.__init__(self)
 
-    def define(self, layer, field, isExpression, operator):
-        self.layer = layer
-        self.field = field
-        self.isExpression = isExpression
-        self.operator = operator
+    name = 'Project'
+
+    def __init__(self, parent):
+        BaseFinder.__init__(self, parent)
 
     def start(self, toFind, bbox=None):
         BaseFinder.start(self, toFind, bbox)
@@ -34,38 +31,47 @@ class ProjectFinder(BaseFinder):
         layerId = MySettings().value("layerId")
         self.layer = QgsMapLayerRegistry.instance().mapLayer(layerId)
         if self.layer is None:
-            self.finished.emit()
+            self._finish()
             return
 
         self.field = MySettings().value("fieldName")
         self.isExpression = False
         if self.field is None:
-            self.finished.emit()
+            self._finish()
             return
 
         self.operator = 6
 
         f = QgsFeature()
 
-        print "start loop"
+        print self.__class__.__name__, "start loop"
         featReq = QgsFeatureRequest()
         if self.isExpression:
             fieldIndex = self.layer.getFieldNameIndex(self.field)
             featReq.setSubsetOfAttributes([fieldIndex])
-        k = 0
+
+        total = self.layer.pendingFeatureCount()
+        current = 0
+        found = 0
         for f in self.layer.getFeatures(featReq):
+            current += 1
+            self.progress.emit(self, total, current)
             QCoreApplication.processEvents()
-            k += 1
             if not self.continueSearch:
                 break
+
             if self.evaluate(f):
                 if not self.isExpression:
                     value = f[self.field]
                 else:
                     value = self.field.evaluate(f)
-                self.resultFound.emit('project', self.layer.name(), value, f.geometry())
-            self.progress.emit(k)
-        self.finished.emit()
+                self.resultFound.emit(self, self.layer.name(), value, QgsGeometry(f.geometry()))
+                found += 1
+                if found >= self.limit:
+                    self.limitReached.emit(self, self.layer.name())
+                    break
+
+        self._finish()
 
     def evaluate(self, f):
         if not self.isExpression:
@@ -78,7 +84,7 @@ class ProjectFinder(BaseFinder):
                 try:
                     value = float(value)
                 except ValueError:
-                    self.message.emit("Expression result must be numeric for chosen operator", QgsMessageBar.WARNING)
+                    self.message.emit(self, "Expression result must be numeric for chosen operator", QgsMessageBar.WARNING)
                     return False
 
         if self.operator == 0:
@@ -95,6 +101,7 @@ class ProjectFinder(BaseFinder):
             return float(value) > float(self.toFind)
         elif self.operator == 6:
             try:
+                # print self.__class__.__name__, 'evaluate', value, self.toFind
                 remove_accents(unicode(value)).index(remove_accents(self.toFind))
                 return True
             except ValueError:

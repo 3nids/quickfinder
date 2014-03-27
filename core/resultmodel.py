@@ -4,67 +4,111 @@ Created on 25 mars 2014
 @author: arnaud
 '''
 
-from PyQt4.QtCore import Qt
+from PyQt4.QtCore import Qt, pyqtSignal
 from PyQt4.QtGui import QStandardItemModel, QStandardItem, QFont
+from qgis import QgsGeometry
+
+class GroupItem(QStandardItem):
+
+    name = ''
+    count = 0
+    more = False
+
+    def __init__(self, name):
+        super(GroupItem, self).__init__(name)
+
+        self.name = name
+        self.count = 0
+        self.more = False
+
+        font = self.font()
+        font.setWeight(QFont.Bold)
+        self.setFont(font)
+
+        self.setSelectable(False)
+
+    def setName(self, name):
+        self.name = name
+        self.emitDataChanged()
+
+    def increment(self):
+        self.count += 1
+        self.emitDataChanged()
+
+    def setMore(self, more):
+        self.more = more
+        self.emitDataChanged()
+
+    def data(self, role):
+        if role == Qt.DisplayRole:
+            if self.more:
+                return '{0} ({1} ...)'.format(self.name, self.count)
+            else:
+                return '{0} ({1})'.format(self.name, self.count)
+        else:
+            return super(GroupItem, self).data(role)
+
+
+class ResultItem(QStandardItem):
+
+    name = ''
+    geometry = None
+
+    def __init__(self, name):
+        super(ResultItem, self).__init__(name)
+        self.name = name
+        self.setSelectable(False)
+
 
 class ResultModel(QStandardItemModel):
 
-    categories = {}
+    def __init__(self, parent):
+        super(ResultModel, self).__init__(parent)
 
-    textRole = Qt.UserRole + 1
-    countRole = Qt.UserRole + 2
-    geometryRole = Qt.UserRole + 3
+    def truncateHistory(self, limit):
+        root = self.invisibleRootItem()
+        for i in xrange(limit, root.rowCount()):
+            item = root.child(i)
+            if not isinstance(item, GroupItem):
+                root.removeRow(item.row())
 
     def clearResults(self):
         root = self.invisibleRootItem()
-        for category in self.categories.values():
-            root.removeRow(category.row())
-        self.categories.clear()
+        for i in xrange(0, root.rowCount()):
+            item = root.child(i)
+            if isinstance(item, GroupItem):
+                root.removeRow(item.row())
 
-    def _childItem(self, parent, text, create=False, increment=False, group=False):
-        item = None
+    def _childItem(self, parent, name, createclass=None):
         for i in xrange(0, parent.rowCount()):
             child = parent.child(i)
-            if child.data(self.textRole) == text:
-                item = child
-                break
+            if isinstance(child, createclass) and child.name == name:
+                return child
 
-        if create and not item:
-            child = QStandardItem(text)
-            child.setData(text, self.textRole)
-            if group:
-                font = child.font()
-                font.setWeight(QFont.Bold)
-                child.setFont(font)
-                child.setSelectable(False)
-            child.setData(0, self.countRole)
+        if createclass:
+            child = createclass(name)
             parent.appendRow(child)
-
-        if increment:
-            count = int(child.data(self.countRole)) + 1
-            child.setData(count, self.countRole)
-            text = child.data(self.textRole)
-            display = '{0} ({1})'.format(text, count)
-            child.setText(display)
-
-        return child
-
-    def _categoryItem(self, category, create=False, increment=False):
-        root = self.invisibleRootItem()
-        item = self._childItem(root, category, create, increment, True)
-        self.categories[category] = item
-        return item
-
-    def _layerItem(self, category, layer, create=False, increment=False):
-        parent = self._categoryItem(category, create, increment)
-        item = self._childItem(parent, layer, create, increment, True)
-        return item
-
-    def _valueItem(self, category, layer, value, geometry, create=False, increment=False):
-        parent = self._layerItem(category, layer, create, increment)
-        item = self._childItem(parent, value, create)
-        item.setData(geometry, self.geometryRole)
-        return item
+            return child
 
     def addResult(self, category, layer, value, geometry):
-        return self._valueItem(category, layer, value, geometry, True, True)
+        print self.__class__.__name__, 'addResult', category, layer, value
+        root_item = self.invisibleRootItem()
+
+        category_item = self._childItem(root_item, category, GroupItem)
+        category_item.increment()
+
+        layer_item = self._childItem(category_item, layer, GroupItem)
+        layer_item.increment()
+
+        item = ResultItem(value)
+        item.geometry = geometry
+        layer_item.appendRow(item)
+
+    def addEllipsys(self, category, layer):
+        print self.__class__.__name__, 'addEllipsys', category, layer
+        root_item = self.invisibleRootItem()
+
+        category_item = self.childItem(root_item, category, GroupItem)
+
+        layer_item = self.childItem(category_item, layer, GroupItem)
+        layer_item.setMore(True)

@@ -28,7 +28,7 @@
 #---------------------------------------------------------------------
 
 from PyQt4.QtGui import QColor
-from ..qgissettingmanager import *
+from quickfinder.qgissettingmanager import SettingManager
 
 pluginName = "quickfinder_plugin"
 
@@ -38,7 +38,10 @@ class MySettings(SettingManager):
         SettingManager.__init__(self, pluginName)
 
         # global settings
-        self.addSetting("dockArea", "integer", "global", 0)
+        self.addSetting("historyLength", "integer", "global", 3)
+        self.addSetting("limit", "integer", "global", 10)
+
+        # project settings
         self.addSetting("layerId", "string", "project", '')
         self.addSetting("fieldName", "string", "project", '')
         # self.addSetting("operator", "integer", "project", 0)

@@ -17,33 +17,89 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="optionsTab">
       <attribute name="title">
        <string>Options</string>
       </attribute>
       <layout class="QFormLayout" name="formLayout">
-       <item row="0" column="0">
-        <widget class="QLabel" name="dockAreaLabel">
+       <property name="fieldGrowthPolicy">
+        <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+       </property>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label">
          <property name="text">
-          <string>Dock area</string>
+          <string>History length</string>
          </property>
         </widget>
        </item>
-       <item row="0" column="1">
-        <widget class="QComboBox" name="dockArea">
+       <item row="1" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
          <item>
-          <property name="text">
-           <string>left</string>
-          </property>
+          <widget class="QSpinBox" name="historyLength">
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>10</number>
+           </property>
+           <property name="value">
+            <number>3</number>
+           </property>
+          </widget>
          </item>
          <item>
-          <property name="text">
-           <string>right</string>
-          </property>
+          <spacer name="horizontalSpacer_2">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
          </item>
+        </layout>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="limitLabel">
+         <property name="text">
+          <string>Per layer results limit</string>
+         </property>
         </widget>
+       </item>
+       <item row="2" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <item>
+          <widget class="QSpinBox" name="limit">
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>1000</number>
+           </property>
+           <property name="value">
+            <number>10</number>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
        </item>
       </layout>
      </widget>
