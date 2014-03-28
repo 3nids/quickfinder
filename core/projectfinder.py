@@ -1,9 +1,10 @@
 
-import unicodedata
+import unicodedata, time
 
 from PyQt4.QtCore import QCoreApplication
 
-from qgis.core import QgsMapLayerRegistry, QgsFeatureRequest, QgsFeature, QgsGeometry
+from qgis.core import QgsMapLayerRegistry, QgsFeatureRequest, \
+                        QgsFeature, QgsGeometry, QgsCoordinateTransform
 from qgis.gui import QgsMessageBar
 
 from basefinder import BaseFinder
@@ -20,10 +21,13 @@ class ProjectFinder(BaseFinder):
     name = 'Project'
 
     def __init__(self, parent):
-        BaseFinder.__init__(self, parent)
+        super(ProjectFinder, self).__init__(parent)
 
-    def start(self, toFind, bbox=None):
-        BaseFinder.start(self, toFind, bbox)
+    def activated(self):
+        return MySettings().value('project')
+
+    def start(self, toFind, crs=None, bbox=None):
+        super(ProjectFinder, self).start(toFind, crs, bbox)
 
         self.toFind = toFind
 
@@ -34,42 +38,70 @@ class ProjectFinder(BaseFinder):
             self._finish()
             return
 
+        self.transform = None
+        if self.crs.authid() != self.layer.crs().authid():
+            self.transform = QgsCoordinateTransform(self.layer.crs(), self.crs)
+
         self.field = MySettings().value("fieldName")
-        self.isExpression = False
         if self.field is None:
             self._finish()
             return
+        self.isExpression = False
 
         self.operator = 6
 
-        f = QgsFeature()
+        print self.name, "start loop"
+        chrono = time.time()
 
-        print self.__class__.__name__, "start loop"
         featReq = QgsFeatureRequest()
-        if self.isExpression:
-            fieldIndex = self.layer.getFieldNameIndex(self.field)
+        if not self.isExpression:
+            fieldIndex = self.layer.fieldNameIndex(self.field)
             featReq.setSubsetOfAttributes([fieldIndex])
+        # featReq.setFlags(QgsFeatureRequest.NoGeometry)
 
+        layerlimit = MySettings().value("layerlimit")
         total = self.layer.pendingFeatureCount()
         current = 0
         found = 0
+
+        f = QgsFeature()
         for f in self.layer.getFeatures(featReq):
             current += 1
             self.progress.emit(self, total, current)
             QCoreApplication.processEvents()
+
             if not self.continueSearch:
                 break
 
             if self.evaluate(f):
+                feat = f
+
+                '''
+                featReq = QgsFeatureRequest()
+                fieldIndex = self.layer.fieldNameIndex(self.field)
+                featReq.setFilterFid(f.id())
+                for feat in self.layer.getFeatures(featReq):
+                '''
+
                 if not self.isExpression:
-                    value = f[self.field]
+                    value = feat[self.field]
                 else:
-                    value = self.field.evaluate(f)
-                self.resultFound.emit(self, self.layer.name(), value, QgsGeometry(f.geometry()))
+                    value = self.field.evaluate(feat)
+
+                if not self._resultFound(self.layer.name(),
+                                        value,
+                                        QgsGeometry(feat.geometry())):
+                    return
+
                 found += 1
-                if found >= self.limit:
+                if found >= layerlimit:
                     self.limitReached.emit(self, self.layer.name())
-                    break
+                    self._finish()
+                    return
+
+        # '%H:%M:%S'
+        duration = time.strftime('%X', time.localtime(time.time() - chrono))
+        print self.name, "end loop, duration :", duration
 
         self._finish()
 
