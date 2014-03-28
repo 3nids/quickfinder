@@ -64,6 +64,8 @@ class ResultItem(QStandardItem):
 
 class ResultModel(QStandardItemModel):
 
+    selected = None
+
     def __init__(self, parent):
         super(ResultModel, self).__init__(parent)
 
@@ -132,3 +134,16 @@ class ResultModel(QStandardItemModel):
 
         layer_item = self._childItem(category_item, layer, GroupItem)
         layer_item.setMore(True)
+
+    def setSelected(self, item, palette):
+        if self.selected:
+            self.selected.setData(self.selected.initialBackgroundColor, Qt.BackgroundColorRole)
+            self.selected.setData(self.selected.initialBackgroundColor, Qt.ForegroundRole)
+
+        if item:
+            item.initialBackgroundColor = item.data(Qt.BackgroundColorRole)
+            item.initialBackgroundColor = item.data(Qt.BackgroundColorRole)
+            item.setData(palette.highlight(), Qt.BackgroundColorRole)
+            item.setData(palette.highlightedText(), Qt.ForegroundRole)
+
+        self.selected = item

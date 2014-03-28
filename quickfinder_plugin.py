@@ -260,6 +260,7 @@ class quickFinder(QObject):
 
     def showItem(self, item):
         if isinstance(item, ResultItem):
+            self.resultModel.setSelected(item, self.resultView.palette())
             geometry = item.geometry
             self.rubber.reset(geometry.type())
             self.rubber.setToGeometry(geometry, None)
@@ -269,14 +270,16 @@ class quickFinder(QObject):
         if isinstance(item, GroupItem):
             child = item.child(0)
             if isinstance(child, ResultItem):
+                self.resultModel.setSelected(item, self.resultView.palette())
                 self.rubber.reset(child.geometry.type())
-            for i in xrange(0, item.rowCount()):
-                child = item.child(i)
-                self.rubber.addGeometry(item.child(i).geometry, None)
-            self.zoomToRubberBand()
+                for i in xrange(0, item.rowCount()):
+                    child = item.child(i)
+                    self.rubber.addGeometry(item.child(i).geometry, None)
+                self.zoomToRubberBand()
             return
 
         if item.__class__.__name__ == 'QStandardItem':
+            self.resultModel.setSelected(None, self.resultView.palette())
             self.rubber.reset()
             return
 
