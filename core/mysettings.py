@@ -41,17 +41,20 @@ class MySettings(SettingManager):
         self.addSetting("historyLength", "integer", "global", 3)
 
         # project settings
+        self.addSetting("project", "bool", "project", True)
         self.addSetting("layerId", "string", "project", '')
         self.addSetting("fieldName", "string", "project", '')
         # self.addSetting("operator", "integer", "project", 0)
         self.addSetting("layerlimit", "integer", "project", 10)
 
         # OpenStreetMap settings
+        self.addSetting("osm", "bool", "project", True)
         self.addSetting("osm_url", "string", "global",
                         'http://nominatim.openstreetmap.org/search')
         self.addSetting("osm_limit", "integer", "global", 10)
 
         # GeoMapFish settings
+        self.addSetting("geomapfish", "bool", "project", True)
         self.addSetting("geomapfish_url", "string", "global",
                         'http://mapfish-geoportal.demo-camptocamp.com/demo/wsgi/fulltextsearch')
         self.addSetting("geomapfish_crs", "string", "global", 'EPSG:21781')

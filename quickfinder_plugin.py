@@ -196,9 +196,6 @@ class quickFinder(QObject):
 
         self.resultModel.clearResults()
         self.resultModel.truncateHistory(MySettings().value("historyLength"))
-        self.resultModel.addResult(self.finders['project'].name)
-        self.resultModel.addResult(self.finders['geomapfish'].name)
-        self.resultModel.addResult(self.finders['osm'].name)
         self.resultModel.setLoading(self.loadingIcon)
         self.finderBox.showPopup()
 
@@ -207,13 +204,19 @@ class quickFinder(QObject):
 
         QCoreApplication.processEvents(QEventLoop.ExcludeUserInputEvents)
 
-        self.toFinish = len(self.finders)
+        # create categories in special order and count activated ones
+        for key in ['project', 'geomapfish', 'osm']:
+            finder = self.finders[key]
+            if finder.activated():
+                self.resultModel.addResult(finder.name)
+                self.toFinish += 1
 
         canvas = self.iface.mapCanvas()
         crs = canvas.mapRenderer().destinationCrs()
         bbox = canvas.fullExtent()
         for finder in self.finders.itervalues():
-            finder.start(toFind, crs=crs, bbox=bbox)
+            if finder.activated():
+                finder.start(toFind, crs=crs, bbox=bbox)
 
     def stop(self):
         for finder in self.finders.itervalues():
