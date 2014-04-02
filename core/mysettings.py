@@ -28,15 +28,35 @@
 #---------------------------------------------------------------------
 
 from PyQt4.QtGui import QColor
-from ..qgissettingmanager import *
+from quickfinder.qgissettingmanager import SettingManager
 
-pluginName = "quickfinder"
+pluginName = "quickfinder_plugin"
 
 
 class MySettings(SettingManager):
     def __init__(self):
         SettingManager.__init__(self, pluginName)
-         
-        # global settings
-        self.addSetting("dockArea", "integer", "global", 0)
 
+        # general settings
+        self.addSetting("historyLength", "integer", "global", 3)
+
+        # project settings
+        self.addSetting("project", "bool", "project", True)
+        self.addSetting("layerId", "string", "project", '')
+        self.addSetting("fieldName", "string", "project", '')
+        # self.addSetting("operator", "integer", "project", 0)
+        self.addSetting("layerlimit", "integer", "project", 10)
+
+        # OpenStreetMap settings
+        self.addSetting("osm", "bool", "project", True)
+        self.addSetting("osm_url", "string", "global",
+                        'http://nominatim.openstreetmap.org/search')
+        self.addSetting("osm_limit", "integer", "global", 10)
+
+        # GeoMapFish settings
+        self.addSetting("geomapfish", "bool", "project", True)
+        self.addSetting("geomapfish_url", "string", "global",
+                        'http://mapfish-geoportal.demo-camptocamp.com/demo/wsgi/fulltextsearch')
+        self.addSetting("geomapfish_crs", "string", "global", 'EPSG:21781')
+        self.addSetting("geomapfish_limit", "integer", "global", 20)
+        self.addSetting("geomapfish_partitionlimit", "integer", "global", 10)

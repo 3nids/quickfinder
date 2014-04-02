@@ -1,7 +1,7 @@
 .idea
 *.qgs*
 tmp/
-resources.py
+resources_rc.py
 ui_*.py
 **.pyc
 .project

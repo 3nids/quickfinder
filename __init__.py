@@ -25,5 +25,5 @@
 
 
 def classFactory(iface):
-    from quickfinder import quickFinder
+    from quickfinder_plugin import quickFinder
     return quickFinder(iface)
