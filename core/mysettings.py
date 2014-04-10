@@ -44,8 +44,9 @@ class MySettings(SettingManager):
         self.addSetting("project", "bool", "project", True)
         self.addSetting("layerId", "string", "project", '')
         self.addSetting("fieldName", "string", "project", '')
-        # self.addSetting("operator", "integer", "project", 0)
         self.addSetting("layerlimit", "integer", "project", 10)
+
+
 
         # OpenStreetMap settings
         self.addSetting("osm", "bool", "project", True)

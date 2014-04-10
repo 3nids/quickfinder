@@ -14,10 +14,10 @@ from qgis.core import QgsGeometry, QgsCoordinateReferenceSystem, \
                       QgsCoordinateTransform
 from qgis.gui import QgsMessageBar
 
-from .basefinder import BaseFinder
+from .abstractfinder import AbstractFinder
 from .mysettings import MySettings
 
-class OsmFinder(BaseFinder):
+class OsmFinder(AbstractFinder):
 
     name = 'OpenStreetMap'
     asynchonous = True

@@ -27,19 +27,19 @@ import os.path
 from collections import OrderedDict
 
 from PyQt4.QtCore import Qt, QObject, QSettings, QCoreApplication, \
-                         QTranslator, QUrl, QEventLoop
+                         QTranslator, QUrl
 from PyQt4.QtGui import QApplication, QAction, QIcon, QColor, \
-                        QComboBox, QTreeView, QSizePolicy, \
                         QDesktopServices
 
 from qgis.gui import QgsRubberBand
 
-from quickfinder.core.mysettings import MySettings
-from quickfinder.core.resultmodel import ResultModel, GroupItem, ResultItem
+
 from quickfinder.core.projectfinder import ProjectFinder
 from quickfinder.core.osmfinder import OsmFinder
 from quickfinder.core.geomapfishfinder import GeomapfishFinder
-from quickfinder.gui.mysettingsdialog import MySettingsDialog
+from quickfinder.gui.configurationdialog import ConfigurationDialog
+
+from quickfinder.gui.finderbox import FinderBox
 
 import resources_rc
 
@@ -50,8 +50,6 @@ class quickFinder(QObject):
     actions = None
     toolbar = None
     finders = None
-    running = False
-    toFinish = 0
 
     loadingIcon = None
 
@@ -69,16 +67,15 @@ class quickFinder(QObject):
         self.actions = {}
         self.finders = {}
 
-        # initialize plugin directory
-        self.plugin_dir = os.path.dirname(__file__)
-        # initialize locale
-        locale = QSettings().value("locale/userLocale")[0:2]
-        localePath = os.path.join(self.plugin_dir, 'i18n', 'easysearch_{}.qm'.format(locale))
+        self._initFinders()
 
+        # translation environment
+        self.plugin_dir = os.path.dirname(__file__)
+        locale = QSettings().value("locale/userLocale")[0:2]
+        localePath = os.path.join(self.plugin_dir, 'i18n', 'quickfinder_{}.qm'.format(locale))
         if os.path.exists(localePath):
             self.translator = QTranslator()
             self.translator.load(localePath)
-
             if qVersion() > '4.3.3':
                 QCoreApplication.installTranslator(self.translator)
 
@@ -100,7 +97,6 @@ class quickFinder(QObject):
         self.iface.addPluginToMenu(self.name, self.actions['help'])
 
         self._initToolbar()
-        self._initFinders()
 
         self.rubber = QgsRubberBand(self.iface.mapCanvas())
         self.rubber.setColor(QColor(255, 255, 50, 200))
@@ -126,43 +122,28 @@ class quickFinder(QObject):
         self.toolbar = self.iface.addToolBar(self.name)
         self.toolbar.setObjectName('mQuickFinderToolBar')
 
-        self.finderBox = QComboBox(self.toolbar)
-        self.finderBox.setEditable(True)
-        self.finderBox.setInsertPolicy(QComboBox.InsertAtTop)
-        self.finderBox.setMinimumHeight(27)
-        self.finderBox.setSizePolicy(QSizePolicy.Expanding,
-                                     QSizePolicy.Fixed)
-
-        self.finderBoxAction = self.toolbar.addWidget(self.finderBox)
-        self.finderBoxAction.setVisible(True)
-        self.finderBox.insertSeparator(0)
-        self.finderBox.lineEdit().returnPressed.connect(self.search)
-
-        self.resultModel = ResultModel(self.finderBox)
-        self.finderBox.setModel(self.resultModel)
-
-        self.resultView = QTreeView()
-        self.resultView.setHeaderHidden(True)
-        self.resultView.setMinimumHeight(300);
-        self.resultView.activated.connect(self.itemActivated)
-        self.resultView.pressed.connect(self.itemPressed)
-        self.finderBox.setView(self.resultView)
-
-        self.loadingIcon = QIcon(":/plugins/quickfinder/icons/loading.gif")
-
-        self.searchAction = QAction(
-            QIcon(":/plugins/quickfinder/icons/magnifier13.svg"),
-            self.tr("Search"),
-            self.toolbar)
-        self.searchAction.triggered.connect(self.search)
-        self.toolbar.addAction(self.searchAction)
-
+        self.searchAction = QAction( QIcon(":/plugins/quickfinder/icons/magnifier13.svg"),
+                                     self.tr("Search"),
+                                     self.toolbar)
         self.stopAction = QAction(
             QIcon(":/plugins/quickfinder/icons/wrong2.svg"),
             self.tr("Cancel"),
             self.toolbar)
+
+        self.finderBox = FinderBox(self.finders, self.iface, self.toolbar)
+        self.finderBox.searchStarted.connect(self.enableSearch)
+        self.finderBox.searchFinished.connect(self.disableSearch)
+
+        self.finderBoxAction = self.toolbar.addWidget(self.finderBox)
+        self.finderBoxAction.setVisible(True)
+
+
+        self.searchAction.triggered.connect(self.finderBox.search)
+        self.toolbar.addAction(self.searchAction)
+
+
         self.stopAction.setVisible(False)
-        self.stopAction.triggered.connect(self.stop)
+        self.stopAction.triggered.connect(self.finderBox.stop)
         self.toolbar.addAction(self.stopAction)
 
         self.toolbar.setVisible(True)
@@ -174,121 +155,15 @@ class quickFinder(QObject):
         self.finders['osm'] = OsmFinder(self)
         self.finders['project'] = ProjectFinder(self)
 
-        for finder in self.finders.itervalues():
-            finder.resultFound.connect(self.resultFound)
-            finder.limitReached.connect(self.limitReached)
-            finder.finished.connect(self.finished)
-            finder.message.connect(self.message)
-
     def showSettings(self):
-        MySettingsDialog().exec_()
+        ConfigurationDialog().exec_()
 
-    def search(self):
-        if self.running:
-            return
+    def enableSearch(self):
+        self.searchAction.setVisible(True)
+        self.stopAction.setVisible(False)
 
-        # toFind = self.finderBox.currentText()
-        toFind = self.finderBox.lineEdit().text()
-        if not toFind:
-            return
-
-        self.running = True
-
-        self.resultModel.clearResults()
-        self.resultModel.truncateHistory(MySettings().value("historyLength"))
-        self.resultModel.setLoading(self.loadingIcon)
-        self.finderBox.showPopup()
-
+    def disableSearch(self):
         self.searchAction.setVisible(False)
         self.stopAction.setVisible(True)
 
-        QCoreApplication.processEvents(QEventLoop.ExcludeUserInputEvents)
-
-        # create categories in special order and count activated ones
-        for key in ['project', 'geomapfish', 'osm']:
-            finder = self.finders[key]
-            if finder.activated():
-                self.resultModel.addResult(finder.name)
-                self.toFinish += 1
-
-        canvas = self.iface.mapCanvas()
-        crs = canvas.mapRenderer().destinationCrs()
-        bbox = canvas.fullExtent()
-        for finder in self.finders.itervalues():
-            if finder.activated():
-                finder.start(toFind, crs=crs, bbox=bbox)
-
-    def stop(self):
-        for finder in self.finders.itervalues():
-            if finder.isRunning():
-                finder.stop()
-
-    def resultFound(self, finder, layername, value, geometry):
-        self.resultModel.addResult(finder.name, layername, value, geometry)
-        self.resultView.expandAll()
-
-    def limitReached(self, finder, layername):
-        self.resultModel.addEllipsys(finder.name, layername)
-
-    def finished(self, finder):
-        # wait for all running finders
-        '''
-        for finder in self.finders.itervalues():
-            if finder.isRunning():
-                return
-        '''
-        self.toFinish -= 1
-        if self.toFinish > 0:
-            return
-
-        self.running = False
-
-        self.resultModel.setLoading(None)
-
-        self.stopAction.setVisible(False)
-        self.searchAction.setVisible(True)
-        QCoreApplication.processEvents(QEventLoop.ExcludeUserInputEvents)
-
-    def message(self, finder, message, level):
-        self.iface.messageBar().pushMessage("Quick Finder", message, level, 3)
-
-    def itemActivated(self, index):
-        item = self.resultModel.itemFromIndex(index)
-        self.showItem(item)
-
-    def itemPressed(self, index):
-        item = self.resultModel.itemFromIndex(index)
-        if QApplication.mouseButtons() == Qt.LeftButton:
-            self.showItem(item)
-
-    def showItem(self, item):
-        if isinstance(item, ResultItem):
-            self.resultModel.setSelected(item, self.resultView.palette())
-            geometry = item.geometry
-            self.rubber.reset(geometry.type())
-            self.rubber.setToGeometry(geometry, None)
-            self.zoomToRubberBand()
-            return
-
-        if isinstance(item, GroupItem):
-            child = item.child(0)
-            if isinstance(child, ResultItem):
-                self.resultModel.setSelected(item, self.resultView.palette())
-                self.rubber.reset(child.geometry.type())
-                for i in xrange(0, item.rowCount()):
-                    child = item.child(i)
-                    self.rubber.addGeometry(item.child(i).geometry, None)
-                self.zoomToRubberBand()
-            return
-
-        if item.__class__.__name__ == 'QStandardItem':
-            self.resultModel.setSelected(None, self.resultView.palette())
-            self.rubber.reset()
-            return
-
-    def zoomToRubberBand(self):
-        rect = self.rubber.asGeometry().boundingBox()
-        rect.scale(1.5)
-        self.iface.mapCanvas().setExtent(rect)
-        self.iface.mapCanvas().refresh()
 

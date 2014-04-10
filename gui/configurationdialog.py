@@ -35,7 +35,7 @@ from quickfinder.core.mysettings import MySettings
 from quickfinder.ui.ui_settings import Ui_Settings
 from quickfinder.qgiscombomanager import VectorLayerCombo, ExpressionFieldCombo
 
-class MySettingsDialog(QDialog, Ui_Settings, SettingDialog):
+class ConfigurationDialog(QDialog, Ui_Settings, SettingDialog):
     def __init__(self):
         QDialog.__init__(self)
         self.setupUi(self)

@@ -12,7 +12,7 @@ from qgis.gui import QgsMessageBar
 from quickfinder.core.mysettings import MySettings
 
 
-class BaseFinder(QObject):
+class AbstractFinder(QObject):
 
     name = ''  # to be defined in subclasses
 

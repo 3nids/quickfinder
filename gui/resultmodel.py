@@ -7,7 +7,7 @@ Created on 25 mars 2014
 from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QStandardItemModel, QStandardItem, QFont, QIcon
 
-from .mysettings import MySettings
+# from quickfinder.core.mysettings import MySettings
 
 
 class GroupItem(QStandardItem):

@@ -7,7 +7,7 @@ from qgis.core import QgsMapLayerRegistry, QgsFeatureRequest, \
                         QgsFeature, QgsGeometry, QgsCoordinateTransform
 from qgis.gui import QgsMessageBar
 
-from basefinder import BaseFinder
+from abstractfinder import AbstractFinder
 from quickfinder.core.mysettings import MySettings
 
 
@@ -16,7 +16,7 @@ def remove_accents(data):
     return ''.join(x for x in unicodedata.normalize('NFKD', data) if unicodedata.category(x)[0] in ('L', 'N', 'P', 'Zs')).lower()
 
 
-class ProjectFinder(BaseFinder):
+class ProjectFinder(AbstractFinder):
 
     name = 'Project'
 

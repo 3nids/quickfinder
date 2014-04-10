@@ -13,10 +13,10 @@ from qgis.core import QgsGeometry, QgsCoordinateReferenceSystem, \
                       QgsCoordinateTransform
 from qgis.gui import QgsMessageBar
 
-from .basefinder import BaseFinder
+from .abstractfinder import AbstractFinder
 from .mysettings import MySettings
 
-class GeomapfishFinder(BaseFinder):
+class GeomapfishFinder(AbstractFinder):
 
     name = 'GeoMapFish'
     asynchonous = True
