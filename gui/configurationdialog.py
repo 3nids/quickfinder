@@ -99,8 +99,8 @@ class ConfigurationDialog(QDialog, Ui_Settings, SettingDialog):
         dlg = QgsGenericProjectionSelector(self)
         dlg.setMessage('Select GeoMapFish serveur CRS')
         dlg.setSelectedAuthId(self.geomapfish_crs.text())
-        dlg.exec_()
-        self.geomapfish_crs.setText(dlg.selectedAuthId())
-        del dlg
+        if dlg.exec_():
+            self.geomapfish_crs.setText(dlg.selectedAuthId())
+
 
 
