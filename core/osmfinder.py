@@ -28,9 +28,6 @@ class OsmFinder(AbstractFinder):
         self.manager = QNetworkAccessManager(self)
         self.manager.finished.connect(self.replyFinished)
 
-    def activated(self):
-        return MySettings().value('osm')
-
     def start(self, toFind, crs=None, bbox=None):
         super(OsmFinder, self).start(toFind, crs, bbox)
 

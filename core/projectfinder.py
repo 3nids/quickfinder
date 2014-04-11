@@ -23,9 +23,6 @@ class ProjectFinder(AbstractFinder):
     def __init__(self, parent):
         super(ProjectFinder, self).__init__(parent)
 
-    def activated(self):
-        return MySettings().value('project')
-
     def start(self, toFind, crs=None, bbox=None):
         super(ProjectFinder, self).start(toFind, crs, bbox)
 

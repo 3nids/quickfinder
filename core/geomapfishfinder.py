@@ -27,9 +27,6 @@ class GeomapfishFinder(AbstractFinder):
         self.manager = QNetworkAccessManager(self)
         self.manager.finished.connect(self.replyFinished)
 
-    def activated(self):
-        return MySettings().value('geomapfish')
-
     def start(self, toFind, crs=None, bbox=None):
         super(GeomapfishFinder, self).start(toFind, crs, bbox)
 

@@ -36,6 +36,9 @@ class AbstractFinder(QObject):
     def stop(self):
         self.continueSearch = False
 
+    def activated(self):
+        return MySettings().value(self.name)
+
     def _resultFound(self, layername, value, geometry):
         geometry = self._transform(geometry)
         if not geometry:
