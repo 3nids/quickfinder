@@ -6,18 +6,18 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>598</width>
-    <height>670</height>
+    <width>513</width>
+    <height>427</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Quick Finder - Configuration</string>
+   <string>Quick Finder :: Configuration</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="optionsTab">
       <attribute name="title">
@@ -27,15 +27,15 @@
        <property name="fieldGrowthPolicy">
         <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
        </property>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Search history length</string>
+         </property>
+        </widget>
+       </item>
        <item row="1" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_2">
-         <item>
-          <widget class="QLabel" name="label">
-           <property name="text">
-            <string>Keep last</string>
-           </property>
-          </widget>
-         </item>
          <item>
           <widget class="QSpinBox" name="historyLength">
            <property name="minimum">
@@ -72,106 +72,106 @@
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_4">
        <item>
-        <widget class="QGroupBox" name="project">
+        <spacer name="verticalSpacer_4">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="Project">
          <property name="title">
-          <string>Search in project layers</string>
+          <string>Project</string>
          </property>
          <property name="checkable">
           <bool>true</bool>
          </property>
-         <layout class="QGridLayout" name="gridLayout">
-          <item row="2" column="0">
-           <widget class="QTableWidget" name="tableWidget"/>
-          </item>
-          <item row="1" column="0">
-           <layout class="QHBoxLayout" name="horizontalLayout_10">
-            <item>
-             <widget class="QToolButton" name="toolButton_2">
-              <property name="text">
-               <string>...</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QToolButton" name="toolButton_3">
-              <property name="text">
-               <string>...</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QToolButton" name="toolButton_5">
-              <property name="text">
-               <string>...</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QToolButton" name="toolButton_4">
-              <property name="text">
-               <string>...</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QToolButton" name="toolButton_6">
-              <property name="text">
-               <string>...</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <spacer name="horizontalSpacer_6">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>40</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-            <item>
-             <widget class="QPushButton" name="pushButton">
-              <property name="text">
-               <string>update index for all layers</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
+         <layout class="QFormLayout" name="formLayout_2">
+          <property name="fieldGrowthPolicy">
+           <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+          </property>
           <item row="0" column="0">
-           <layout class="QHBoxLayout" name="horizontalLayout_9">
+           <widget class="QLabel" name="layerLabel">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Layer</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QComboBox" name="layerId">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="sizeAdjustPolicy">
+             <enum>QComboBox::AdjustToContents</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="FieldNameLabel">
+            <property name="text">
+             <string>Field</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <layout class="QHBoxLayout" name="fieldNameLayout">
             <item>
-             <widget class="QLabel" name="label_2">
-              <property name="text">
-               <string>Index file location</string>
+             <widget class="QComboBox" name="fieldName">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="sizeAdjustPolicy">
+               <enum>QComboBox::AdjustToContents</enum>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QLineEdit" name="lineEdit"/>
-            </item>
-            <item>
-             <widget class="QToolButton" name="toolButton">
+             <widget class="QToolButton" name="expressionButton">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
               <property name="text">
                <string>...</string>
+              </property>
+              <property name="icon">
+               <iconset resource="../resources.qrc">
+                <normaloff>:/plugins/quickfinder/icons/expression.svg</normaloff>:/plugins/quickfinder/icons/expression.svg</iconset>
               </property>
              </widget>
             </item>
            </layout>
           </item>
           <item row="3" column="0">
+           <widget class="QLabel" name="project_layerlimitLabel">
+            <property name="text">
+             <string>Per layer limit</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
            <layout class="QHBoxLayout" name="horizontalLayout">
-            <item>
-             <widget class="QLabel" name="project_layerlimitLabel">
-              <property name="text">
-               <string>Per layer limit</string>
-              </property>
-             </widget>
-            </item>
             <item>
              <widget class="QSpinBox" name="project_layerlimit">
               <property name="minimum">
@@ -220,7 +220,7 @@
      </widget>
      <widget class="QWidget" name="servicesTab">
       <attribute name="title">
-       <string>Remote services</string>
+       <string>Services</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
@@ -237,7 +237,7 @@
         </spacer>
        </item>
        <item>
-        <widget class="QGroupBox" name="osm">
+        <widget class="QGroupBox" name="OpenStreetMap">
          <property name="title">
           <string>OpenStreetMap</string>
          </property>
@@ -316,7 +316,7 @@
         </spacer>
        </item>
        <item>
-        <widget class="QGroupBox" name="geomapfish">
+        <widget class="QGroupBox" name="GeoMapFish">
          <property name="title">
           <string>GeoMapFish</string>
          </property>
@@ -380,7 +380,7 @@
             <item row="1" column="0">
              <widget class="QLabel" name="geomapfish_limitLabel">
               <property name="text">
-               <string>Category limit</string>
+               <string>Total limit</string>
               </property>
              </widget>
             </item>
@@ -417,7 +417,7 @@
             <item row="2" column="0">
              <widget class="QLabel" name="geomapfish_partitionlimitLabel">
               <property name="text">
-               <string>Feature limit</string>
+               <string>Per layer limit</string>
               </property>
              </widget>
             </item>
