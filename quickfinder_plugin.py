@@ -28,7 +28,7 @@ from collections import OrderedDict
 
 from PyQt4.QtCore import Qt, QObject, QSettings, QCoreApplication, \
                          QTranslator, QUrl
-from PyQt4.QtGui import QApplication, QAction, QIcon, QColor, \
+from PyQt4.QtGui import QAction, QIcon, QColor, \
                         QDesktopServices
 
 from qgis.gui import QgsRubberBand

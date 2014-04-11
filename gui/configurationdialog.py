@@ -32,68 +32,30 @@ from qgis.gui import QgsGenericProjectionSelector
 
 from quickfinder.qgissettingmanager import SettingDialog
 from quickfinder.core.mysettings import MySettings
+from quickfinder.gui.projectsearchdialog import ProjectSearchDialog
+from quickfinder.gui.projectlayersmodel import ProjectLayersModel
 from quickfinder.ui.ui_configuration import Ui_Configuration
-from quickfinder.qgiscombomanager import VectorLayerCombo, ExpressionFieldCombo
+
 
 class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
     def __init__(self):
         QDialog.__init__(self)
         self.setupUi(self)
         self.settings = MySettings()
-
         SettingDialog.__init__(self, self.settings)
-
-        self.layerComboManager = VectorLayerCombo(self.layerId,
-                                                  lambda: self.settings.value("layerId"))
-        self.fieldComboManager = ExpressionFieldCombo(self.fieldName,
-                                                      self.expressionButton,
-                                                      self.layerComboManager,
-                                                      lambda: self.settings.value("fieldName"))
-
-        self.layerComboManager.layerChanged.connect(self.layerChanged)
-        self.fieldName.activated.connect(self.fieldChanged)
-
-        self.layer = None
-        self.fieldName.setEnabled(False)
-        self.expressionButton.setEnabled(False)
-
-        self.layerChanged()
 
         self.geomapfish_crsButton.clicked.connect(self.geomapfish_crsButtonClicked)
 
-    def layerChanged(self):
-        print "layerChanged"
-        self.fieldName.setEnabled(False)
-        self.expressionButton.setEnabled(False)
-        self.layer = self.layerComboManager.getLayer()
-        if self.layer is None:
-            return
-        self.fieldName.setEnabled(True)
-        self.expressionButton.setEnabled(True)
+        self.addButton.clicked.connect(self.addProjectSearch)
 
-    def fieldChanged(self):
-        print "fieldchanged"
-        # self.searchWidget.setEnabled(False)
-        if self.layer is None:
-            return
-        field, isExpression = self.fieldComboManager.getExpression()
-        print field
-        if field is None:
-            print "ret"
-            return
-        # self.searchWidget.setEnabled(True)
-        if not isExpression:
-            fieldType = self.layer.pendingFields().field(field).type()
-            # if field is a string set operator to "LIKE"
-            if fieldType == QVariant.String:
-                self.operatorBox.setCurrentIndex(6)
-            # if field is not string, do not use "LIKE"
-            if (fieldType != QVariant.String
-                and self.operatorBox.currentIndex() == 6):
-                self.operatorBox.setCurrentIndex(0)
-            return
-        # is expression, use string by default
-        self.operatorBox.setCurrentIndex(6)
+        self.projectLayersModel = ProjectLayersModel()
+        self.projectLayersTable.setModel(self.projectLayersModel)
+
+
+    def addProjectSearch(self):
+        self.dlg = ProjectSearchDialog()
+        self.dlg.exec_()
+
 
     def geomapfish_crsButtonClicked(self):
         dlg = QgsGenericProjectionSelector(self)
@@ -101,6 +63,8 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
         dlg.setSelectedAuthId(self.geomapfish_crs.text())
         if dlg.exec_():
             self.geomapfish_crs.setText(dlg.selectedAuthId())
+
+
 
 
 
