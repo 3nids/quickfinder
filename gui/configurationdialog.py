@@ -32,10 +32,10 @@ from qgis.gui import QgsGenericProjectionSelector
 
 from quickfinder.qgissettingmanager import SettingDialog
 from quickfinder.core.mysettings import MySettings
-from quickfinder.ui.ui_settings import Ui_Settings
+from quickfinder.ui.ui_configuration import Ui_Configuration
 from quickfinder.qgiscombomanager import VectorLayerCombo, ExpressionFieldCombo
 
-class ConfigurationDialog(QDialog, Ui_Settings, SettingDialog):
+class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
     def __init__(self):
         QDialog.__init__(self)
         self.setupUi(self)
@@ -99,8 +99,8 @@ class ConfigurationDialog(QDialog, Ui_Settings, SettingDialog):
         dlg = QgsGenericProjectionSelector(self)
         dlg.setMessage('Select GeoMapFish serveur CRS')
         dlg.setSelectedAuthId(self.geomapfish_crs.text())
-        dlg.exec_()
-        self.geomapfish_crs.setText(dlg.selectedAuthId())
-        del dlg
+        if dlg.exec_():
+            self.geomapfish_crs.setText(dlg.selectedAuthId())
+
 
 
