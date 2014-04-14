@@ -25,15 +25,18 @@
 #
 #---------------------------------------------------------------------
 
-from PyQt4.QtCore import QVariant
-from PyQt4.QtGui import QDialog
+from PyQt4.QtGui import QDialog, QFileDialog
 
+from qgis.core import QgsProject
 from qgis.gui import QgsGenericProjectionSelector
+
+from os import remove, path
 
 from quickfinder.qgissettingmanager import SettingDialog
 from quickfinder.core.mysettings import MySettings
+from quickfinder.core.ftsconnection import FtsConnection, createFTSfile
 from quickfinder.gui.projectsearchdialog import ProjectSearchDialog
-from quickfinder.gui.projectlayersmodel import ProjectLayersModel
+from quickfinder.gui.localsearchmodel import LocalSearchModel
 from quickfinder.ui.ui_configuration import Ui_Configuration
 
 
@@ -44,17 +47,54 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
         self.settings = MySettings()
         SettingDialog.__init__(self, self.settings)
 
+        # table model
+        self.localSearchModel = LocalSearchModel()
+        self.localSearchTable.setModel(self.localSearchModel)
+
+        # open/create QuickFinder file
+        self.createFileButton.clicked.connect(self.createQFTSfile)
+        self.openFileButton.clicked.connect(self.openQFTSfile)
+        self.readQFTSfile()
+
+        # add local search
+        self.addSearchButton.clicked.connect(self.addProjectSearch)
+
+        # geomapfish
         self.geomapfish_crsButton.clicked.connect(self.geomapfish_crsButtonClicked)
 
-        self.addButton.clicked.connect(self.addProjectSearch)
+    def readQFTSfile(self):
+        filepath = self.qftsfilepath.text()
+        fts = FtsConnection(filepath)
+        print filepath, fts.isValid
+        self.localSearchTable.setEnabled(fts.isValid)
+        self.localSearchModel.setFtsConnection(fts)
 
-        self.projectLayersModel = ProjectLayersModel()
-        self.projectLayersTable.setModel(self.projectLayersModel)
+    def createQFTSfile(self):
+        prjPath = QgsProject.instance().homePath()
+        filepath = QFileDialog.getSaveFileName(self, "Create Quickfinder index file", prjPath, "Quickfinder file (*.qfts)")
+        if filepath:
+            if path.isfile(filepath):
+                remove(filepath)
+            createFTSfile(filepath)
+            self.qftsfilepath.setText(filepath)
+            self.readQFTSfile()
 
+    def openQFTSfile(self):
+        prjPath = QgsProject.instance().homePath()
+        filepath = QFileDialog.getOpenFileName(self, "Create Quickfinder index file", prjPath, "Quickfinder file (*.qfts)")
+        if filepath:
+            self.qftsfilepath.setText(filepath)
+            self.readQFTSfile()
 
     def addProjectSearch(self):
         self.dlg = ProjectSearchDialog()
-        self.dlg.exec_()
+        if self.dlg.exec_():
+            name = self.dlg.searchName.text()
+            layer = self.dlg.layerCombo.currentLayer()
+            expression = self.dlg.fieldCombo.currentField()[0]
+            priority = self.dlg.priorityBox.value()
+            evaluateDirectly = self.dlg.evaluateCheckBox.isChecked()
+            self.localSearchModel.addSearch(name, layer.id(), layer.name(), expression, priority, evaluateDirectly)
 
 
     def geomapfish_crsButtonClicked(self):

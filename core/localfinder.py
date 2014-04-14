@@ -16,15 +16,15 @@ def remove_accents(data):
     return ''.join(x for x in unicodedata.normalize('NFKD', data) if unicodedata.category(x)[0] in ('L', 'N', 'P', 'Zs')).lower()
 
 
-class ProjectFinder(AbstractFinder):
+class LocalFinder(AbstractFinder):
 
     name = 'Project'
 
     def __init__(self, parent):
-        super(ProjectFinder, self).__init__(parent)
+        super(LocalFinder, self).__init__(parent)
 
     def start(self, toFind, crs=None, bbox=None):
-        super(ProjectFinder, self).start(toFind, crs, bbox)
+        super(LocalFinder, self).start(toFind, crs, bbox)
 
         self.toFind = toFind
 

@@ -34,7 +34,7 @@ from PyQt4.QtGui import QAction, QIcon, QColor, \
 from qgis.gui import QgsRubberBand
 
 
-from quickfinder.core.projectfinder import ProjectFinder
+from quickfinder.core.localfinder import LocalFinder
 from quickfinder.core.osmfinder import OsmFinder
 from quickfinder.core.geomapfishfinder import GeomapfishFinder
 from quickfinder.gui.configurationdialog import ConfigurationDialog
@@ -153,7 +153,7 @@ class quickFinder(QObject):
         self.finders = OrderedDict()
         self.finders['geomapfish'] = GeomapfishFinder(self)
         self.finders['osm'] = OsmFinder(self)
-        self.finders['project'] = ProjectFinder(self)
+        self.finders['local'] = LocalFinder(self)
 
     def showSettings(self):
         ConfigurationDialog().exec_()

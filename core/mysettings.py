@@ -41,14 +41,12 @@ class MySettings(SettingManager):
         self.addSetting("historyLength", "integer", "global", 3)
 
         # project settings
-        self.addSetting("Project", "bool", "project", True)
+        self.addSetting("Local", "bool", "project", True)
         self.addSetting("layerId", "string", "project", '')
         self.addSetting("fieldName", "string", "project", '')
         self.addSetting("layerlimit", "integer", "project", 10)
 
-        self.addSetting("projectlayers", "stringlist", "project", list())
-
-
+        self.addSetting("qftsfilepath", "string", "project", '')
 
         # OpenStreetMap settings
         self.addSetting("OpenStreetMap", "bool", "project", True)

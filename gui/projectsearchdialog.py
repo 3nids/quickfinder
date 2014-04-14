@@ -18,6 +18,8 @@ class ProjectSearchDialog(QDialog, Ui_ProjectSearch):
         self.fieldCombo.setLayer(self.layerCombo.currentLayer())
         self.expressionButton.setFieldCombo(self.fieldCombo)
 
+        self.searchName.setText('test')
+
 
     def editConfig(self, layer, field):
         self.layerCombo.setLayer(layer)
