@@ -47,6 +47,9 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
         self.settings = MySettings()
         SettingDialog.__init__(self, self.settings)
 
+        # FTS connection
+        self.fts = FtsConnection()
+
         # table model
         self.localSearchModel = LocalSearchModel()
         self.localSearchTable.setModel(self.localSearchModel)
@@ -62,17 +65,22 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
         # geomapfish
         self.geomapfish_crsButton.clicked.connect(self.geomapfish_crsButtonClicked)
 
+    def closeEvent(self, e):
+        self.fts.close()
+        QDialog.closeEvent(self, e)
+
     def readQFTSfile(self):
         filepath = self.qftsfilepath.text()
-        fts = FtsConnection(filepath)
-        print filepath, fts.isValid
-        self.localSearchTable.setEnabled(fts.isValid)
-        self.localSearchModel.setFtsConnection(fts)
+        self.fts.setFile(filepath)
+        self.localSearchTable.setEnabled(self.fts.isValid)
+        self.localSearchModel.setSearches(self.fts.searches())
 
     def createQFTSfile(self):
         prjPath = QgsProject.instance().homePath()
         filepath = QFileDialog.getSaveFileName(self, "Create Quickfinder index file", prjPath, "Quickfinder file (*.qfts)")
         if filepath:
+            if filepath[-5:] != ".qfts":
+                filepath += ".qfts"
             if path.isfile(filepath):
                 remove(filepath)
             createFTSfile(filepath)
@@ -94,8 +102,17 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
             expression = self.dlg.fieldCombo.currentField()[0]
             priority = self.dlg.priorityBox.value()
             evaluateDirectly = self.dlg.evaluateCheckBox.isChecked()
-            self.localSearchModel.addSearch(name, layer.id(), layer.name(), expression, priority, evaluateDirectly)
 
+            if evaluateDirectly:
+                ok, message = self.fts.evaluateSearch(searchName, layerid, expression, priority)
+                # TODO: progress bar
+                if not ok:
+                    QErrorMessage().showMessage(message)
+                else:
+                    dateEvaluated = message
+                    self.localSearchModel.addSearch(name, layer.id(), layer.name(), expression, priority, dateEvaluated)
+            else:
+                self.localSearchModel.addSearch(name, layer.id(), layer.name(), expression, priority)
 
     def geomapfish_crsButtonClicked(self):
         dlg = QgsGenericProjectionSelector(self)

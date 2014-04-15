@@ -6,6 +6,7 @@ from datetime import date
 from uuid import uuid1
 import sqlite3
 
+from quickfinder.core.localsearch import LocalSearch
 
 
 
@@ -14,6 +15,8 @@ import sqlite3
 """
 version of the sqlite file.
 """
+
+
 
 def createFTSfile(filepath):
     conn = sqlite3.connect(filepath)
@@ -32,21 +35,28 @@ class FtsConnection():
     isValid = False
     version = '1.0'
 
+    conn = None
+
     def __init__(self, filepath=None):
         if filepath is None:
             return
+        self.setFile(filepath)
+
+    def setFile(self, filepath):
+        self.close()
 
         self.conn = sqlite3.connect(filepath)
 
-
         if self.getInfo("scope") != "quickfinder":
+            self.isValid = False
             self.close()
             return
 
         self.isValid = True
 
     def close(self):
-        self.conn.close()
+        if self.conn is not None:
+            self.conn.close()
 
     def getInfo(self, key):
         try:
@@ -61,6 +71,16 @@ class FtsConnection():
         c = self.conn.cursor()
         c.execute(sql)
         self.conn.commit()
+
+    def searches(self):
+        if not self.isValid:
+            return
+
+        searches = list()
+        sql = "SELECT search_id, search_name, layer_id, layer_name, epxression, priority, date_evaluated, srid FROM quickfinder_toc;"
+        cur = self.conn.cursor()
+        for s in cur.execute(sql):
+            searches.append( LocalSearch())
 
     def evaluateExpression(self, layer, expression):
         featReq = QgsFeatureRequest()
@@ -82,26 +102,20 @@ class FtsConnection():
 
         today = unicode(date.today().isoformat())
         search_id = unicode(uuid1())
+        expression_esc = expression.replace("'", "\\'")  # escape simple quotes for SQL insert
 
         cur = self.conn.cursor()
         sql = "INSERT INTO quickfinder_fts (search_id, evaluated, x, y) VALUES ('{0}',?,?,?)".format(search_id)
         cur.executemany(sql, self.evaluateExpression(layer, expression))
         self.conn.commit()
 
-        print (search_id, searchName, layerid, layer.name(), expression, priority, today         , layer.crs().authid())
-
-        sql = """INSERT INTO quickfinder_toc (search_id, search_name, layer_id, layer_name  , expression, priority, date_evaluated, srid)
-                       VALUES                ('{0}'    , '{1}'      , '{2}'   , '{3}'       , '{4}'     , {5}     , '{6}'         , '{7}' ) """.format(
-                                             search_id, searchName , layerid , layer.name(), expression, priority, today         , layer.crs().authid() )
-        print sql
-
+        sql = """INSERT INTO quickfinder_toc (search_id, search_name, layer_id, layer_name  , expression   , priority, date_evaluated, srid)
+                       VALUES                ('{0}'    , '{1}'      , '{2}'   , '{3}'       , '{4}'        , {5}     , '{6}'         , '{7}' ) """.format(
+                                             search_id, searchName , layerid , layer.name(), expression_esc, priority, today         , layer.crs().authid() )
         cur = self.conn.cursor()
         cur.execute(sql)
         self.conn.commit()
 
-
-
-
-        return True, ""
+        return True, today
 
 

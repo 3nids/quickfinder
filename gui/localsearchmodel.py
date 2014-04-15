@@ -5,32 +5,15 @@ from PyQt4.QtGui import QErrorMessage
 from qgis.core import QgsProject, QgsMapLayerRegistry, QgsVectorLayer
 
 from quickfinder.core.ftsconnection import FtsConnection
-
+from quickfinder.core.localsearch import LocalSearch
 from quickfinder.core.mysettings import MySettings
 
 
-class Search():
-    def __init__(self, searchName, layerid, layerName, expression, priority, dateEvaluated=None):
-        self.searchName = searchName
-        self.layerid = layerid
-        self.layerName = layerName
-        self.expression = expression
-        self.priority = priority
-        self.dateEvaluated = dateEvaluated
 
-        self.status = 'evaluated'
-        self.layer = QgsMapLayerRegistry.instance().mapLayer(layerid)
-        if not self.layer:
-            self.status = "layer_deleted"
-        elif dateEvaluated:
-            self.status = "not_evaluated"
 
 
 
 class LocalSearchModel(QAbstractItemModel):
-
-    # default invalid connection
-    fts = FtsConnection()
 
     # list( list( layer / expression / priority / status / date_evaluated ) )
     searches = list()
@@ -38,28 +21,16 @@ class LocalSearchModel(QAbstractItemModel):
     def __init__(self):
         QAbstractItemModel.__init__(self)
 
-    def setFtsConnection(self, ftsConnection):
-        self.fts = ftsConnection
+    def setSearches(self, searches):
+        self.beginResetModel()
+        self.searches = searches
+        self.endResetModel()
 
-    # def readFromFile(self, filepath):
-    #     self.beginResetModel()
-    #     searches = list()
-    #     if not self.fts.isValid:
-    #         return
-    #     self.endResetModel()
-
-
-    def addSearch(self, searchName, layerid, layerName, expression, priority, evaluateDirectly):
-        if evaluateDirectly:
-            ok, message = self.fts.evaluateSearch(searchName, layerid, expression, priority)
-            if not ok:
-                QErrorMessage().showMessage(message)
-        else:
-            self.beginInsertRows(QModelIndex(), 0, 1)
-            search = Search(searchName, layerid, layerName, expression, priority)
-            self.searches.insert(0, search)
-            self.endInsertRows()
-
+    def addSearch(self, searchName, layerid, layerName, expression, priority, dateEvaluated):
+        self.beginInsertRows(QModelIndex(), 0, 1)
+        search = LocalSearch(searchName, layerid, layerName, expression, priority, dateEvaluated)
+        self.searches.insert(0, search)
+        self.endInsertRows()
 
     def index(self, row, column, parent=QModelIndex()):
         if row < 0 or row >= self.rowCount():
