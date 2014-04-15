@@ -31,6 +31,7 @@ from qgis.core import QgsProject
 from qgis.gui import QgsGenericProjectionSelector
 
 from os import remove, path
+from uuid import uuid1
 
 from quickfinder.qgissettingmanager import SettingDialog
 from quickfinder.core.mysettings import MySettings
@@ -77,7 +78,8 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
 
     def createQFTSfile(self):
         prjPath = QgsProject.instance().homePath()
-        filepath = QFileDialog.getSaveFileName(self, "Create Quickfinder index file", prjPath, "Quickfinder file (*.qfts)")
+        filepath = QFileDialog.getSaveFileName(self, "Create Quickfinder index file", prjPath,
+                                               "Quickfinder file (*.qfts)")
         if filepath:
             if filepath[-5:] != ".qfts":
                 filepath += ".qfts"
@@ -89,7 +91,8 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
 
     def openQFTSfile(self):
         prjPath = QgsProject.instance().homePath()
-        filepath = QFileDialog.getOpenFileName(self, "Create Quickfinder index file", prjPath, "Quickfinder file (*.qfts)")
+        filepath = QFileDialog.getOpenFileName(self, "Create Quickfinder index file",
+                                               prjPath, "Quickfinder file (*.qfts)")
         if filepath:
             self.qftsfilepath.setText(filepath)
             self.readQFTSfile()
@@ -97,22 +100,24 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
     def addProjectSearch(self):
         self.dlg = ProjectSearchDialog()
         if self.dlg.exec_():
-            name = self.dlg.searchName.text()
+            searchName = self.dlg.searchName.text()
             layer = self.dlg.layerCombo.currentLayer()
             expression = self.dlg.fieldCombo.currentField()[0]
             priority = self.dlg.priorityBox.value()
+            searchId = unicode(uuid1())
+            srid = layer.crs().authid()
             evaluateDirectly = self.dlg.evaluateCheckBox.isChecked()
 
             if evaluateDirectly:
-                ok, message = self.fts.evaluateSearch(searchName, layerid, expression, priority)
+                ok, message = self.fts.evaluateSearch(searchId, searchName, layer.id(), expression, priority)
                 # TODO: progress bar
                 if not ok:
                     QErrorMessage().showMessage(message)
                 else:
                     dateEvaluated = message
-                    self.localSearchModel.addSearch(name, layer.id(), layer.name(), expression, priority, dateEvaluated)
+                    self.localSearchModel.addSearch(searchId, searchName, layer.id(), layer.name(), expression, priority, srid, dateEvaluated)
             else:
-                self.localSearchModel.addSearch(name, layer.id(), layer.name(), expression, priority)
+                self.localSearchModel.addSearch(searchId, searchName, layer.id(), layer.name(), expression, priority, srid)
 
     def geomapfish_crsButtonClicked(self):
         dlg = QgsGenericProjectionSelector(self)

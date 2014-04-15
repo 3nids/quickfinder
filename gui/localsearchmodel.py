@@ -26,9 +26,9 @@ class LocalSearchModel(QAbstractItemModel):
         self.searches = searches
         self.endResetModel()
 
-    def addSearch(self, searchName, layerid, layerName, expression, priority, dateEvaluated):
+    def addSearch(self, searchId, searchName, layerid, layerName, expression, priority, srid, dateEvaluated):
         self.beginInsertRows(QModelIndex(), 0, 1)
-        search = LocalSearch(searchName, layerid, layerName, expression, priority, dateEvaluated)
+        search = LocalSearch(searchId, searchName, layerid, layerName, expression, priority, srid, dateEvaluated)
         self.searches.insert(0, search)
         self.endInsertRows()
 

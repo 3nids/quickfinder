@@ -4,12 +4,14 @@
 
 
 class LocalSearch():
-    def __init__(self, searchName, layerid, layerName, expression, priority, dateEvaluated=None):
+    def __init__(self, searchId, searchName, layerid, layerName, expression, priority, srid, dateEvaluated=None):
+        self.searchId = searchId
         self.searchName = searchName
         self.layerid = layerid
         self.layerName = layerName
         self.expression = expression
         self.priority = priority
+        self.srid = srid
         self.dateEvaluated = dateEvaluated
 
         self.status = 'evaluated'
