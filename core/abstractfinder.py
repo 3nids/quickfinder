@@ -28,6 +28,7 @@ class AbstractFinder(QObject):
 
     def __init__(self, parent):
         QObject.__init__(self, parent)
+        self.settings = MySettings()
 
     def start(self, toFind, crs=None, bbox=None):
         self.crs = crs

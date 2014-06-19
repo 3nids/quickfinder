@@ -14,14 +14,7 @@ class ProjectSearchDialog(QDialog, Ui_ProjectSearch):
         self.setupUi(self)
 
         self.layerCombo.setFilters(QgsMapLayerProxyModel.VectorLayer)
-        self.layerCombo.layerChanged.connect(self.fieldCombo.setLayer)
-        self.fieldCombo.setLayer(self.layerCombo.currentLayer())
-        self.expressionButton.setFieldCombo(self.fieldCombo)
+        self.layerCombo.layerChanged.connect(self.fieldExpressionWidget.setLayer)
+        self.fieldExpressionWidget.setLayer(self.layerCombo.currentLayer())
 
         self.searchName.setText('test')
-
-
-    def editConfig(self, layer, field):
-        self.layerCombo.setLayer(layer)
-        self.fieldCombo.setField(field)
-

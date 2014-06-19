@@ -1,15 +1,7 @@
 
 from PyQt4.QtCore import Qt, QAbstractItemModel, QModelIndex
-from PyQt4.QtGui import QErrorMessage
 
-from qgis.core import QgsProject, QgsMapLayerRegistry, QgsVectorLayer
-
-from quickfinder.core.ftsconnection import FtsConnection
 from quickfinder.core.localsearch import LocalSearch
-from quickfinder.core.mysettings import MySettings
-
-
-
 
 
 

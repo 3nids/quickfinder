@@ -38,11 +38,11 @@ class OsmFinder(AbstractFinder):
                                        bbox.yMinimum())
 
         if self.asynchonous:
-            url = QUrl(MySettings().value('osm_url'))
+            url = QUrl(self.settings.value('osm_url'))
             url.addQueryItem('q', toFind.encode('utf-8'))
             url.addQueryItem('format', 'json')
             url.addQueryItem('polygon_text', '1')
-            url.addQueryItem('limit', str(MySettings().value('osm_limit')))
+            url.addQueryItem('limit', str(self.settings.value('osm_limit')))
             url.addQueryItem('viewbox', viewbox)
             # url.addQueryItem('bounded', '1')
 
@@ -50,7 +50,7 @@ class OsmFinder(AbstractFinder):
             self.manager.get(request)
 
         else:
-            url = MySettings().value('osm_url')
+            url = self.settings.value('osm_url')
             params = urllib.urlencode({
                         'q'             : toFind.encode('utf-8'),
                         'format'        : 'json',

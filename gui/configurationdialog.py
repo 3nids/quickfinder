@@ -25,7 +25,7 @@
 #
 #---------------------------------------------------------------------
 
-from PyQt4.QtGui import QDialog, QFileDialog
+from PyQt4.QtGui import QDialog, QFileDialog, QErrorMessage
 
 from qgis.core import QgsProject
 from qgis.gui import QgsGenericProjectionSelector
@@ -102,7 +102,7 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
         if self.dlg.exec_():
             searchName = self.dlg.searchName.text()
             layer = self.dlg.layerCombo.currentLayer()
-            expression = self.dlg.fieldCombo.currentField()[0]
+            expression = self.dlg.fieldExpressionWidget.currentField()[0]
             priority = self.dlg.priorityBox.value()
             searchId = unicode(uuid1())
             srid = layer.crs().authid()

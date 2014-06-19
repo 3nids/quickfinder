@@ -1,6 +1,8 @@
 
 
 
+from qgis.core import QgsMapLayerRegistry
+
 
 
 class LocalSearch():

@@ -31,24 +31,20 @@ class GeomapfishFinder(AbstractFinder):
         super(GeomapfishFinder, self).start(toFind, crs, bbox)
 
         if self.asynchonous:
-            url = QUrl(MySettings().value('geomapfish_url'))
+            url = QUrl(self.settings.value('geomapfish_url'))
             url.addQueryItem('query', toFind)
-            url.addQueryItem('limit',
-                             str(MySettings().value('geomapfish_limit')))
-            url.addQueryItem('partitionlimit',
-                             str(MySettings().value('geomapfish_partitionlimit')))
+            url.addQueryItem('limit', str(self.settings.value('totalLimit')))
+            url.addQueryItem('partitionlimit', str(self.settings.value('categoryLimit')))
 
             request = QNetworkRequest(url)
             self.manager.get(request)
 
         else:
-            url = MySettings().value('geomapfish_url')
+            url = self.settings.value('geomapfish_url')
             params = urllib.urlencode({
                         'query'          : toFind,
-                        'limit'          :
-                            str(MySettings().value('geomapfish_limit')),
-                        'partitionlimit' :
-                            str(MySettings().value('geomapfish_partitionlimit'))})
+                        'limit'          : str(self.settings.value('totalLimit')),
+                        'partitionlimit' : str(self.settings.value('categoryLimit'))})
             response = json.load(urllib2.urlopen(url + '?' + params))
             self.loadData(response)
 
@@ -59,7 +55,7 @@ class GeomapfishFinder(AbstractFinder):
     def loadData(self, data):
 
         self.transform = None
-        srv_crs_authid = MySettings().value('geomapfish_crs')
+        srv_crs_authid = self.settings.value('geomapfish_crs')
         srv_crs_authid = int(srv_crs_authid.replace('EPSG:', ''))
         if self.crs.authid() != srv_crs_authid:
             srv_crs = QgsCoordinateReferenceSystem()

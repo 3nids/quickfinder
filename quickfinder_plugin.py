@@ -156,7 +156,8 @@ class quickFinder(QObject):
         self.finders['local'] = LocalFinder(self)
 
     def showSettings(self):
-        ConfigurationDialog().exec_()
+        if ConfigurationDialog().exec_():
+            self.finders['local'].reload()
 
     def enableSearch(self):
         self.searchAction.setVisible(True)
