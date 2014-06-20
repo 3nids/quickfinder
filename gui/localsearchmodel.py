@@ -25,13 +25,9 @@
 
 from PyQt4.QtCore import Qt, QAbstractItemModel, QModelIndex
 
-from quickfinder.core.localsearch import LocalSearch
-
-
 
 class LocalSearchModel(QAbstractItemModel):
 
-    # list( list( layer / expression / priority / status / date_evaluated ) )
     searches = list()
 
     def __init__(self):
@@ -43,7 +39,7 @@ class LocalSearchModel(QAbstractItemModel):
         self.endResetModel()
 
     def addSearch(self, localSearch):
-        self.beginInsertRows(QModelIndex(), 0, 1)
+        self.beginInsertRows(QModelIndex(), 0, 0)
         self.searches.insert(0, localSearch)
         self.endInsertRows()
 
