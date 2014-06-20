@@ -24,7 +24,7 @@
 #---------------------------------------------------------------------
 
 from PyQt4.QtCore import Qt, QCoreApplication, pyqtSignal, QEventLoop
-from PyQt4.QtGui import QComboBox, QSizePolicy, QTreeView, QIcon, QApplication
+from PyQt4.QtGui import QComboBox, QSizePolicy, QTreeView, QIcon, QApplication, QColor
 
 from qgis.core import QgsCoordinateReferenceSystem, QgsCoordinateTransform
 from qgis.gui import QgsRubberBand
@@ -45,6 +45,11 @@ class FinderBox(QComboBox):
         self.iface = iface
         self.mapCanvas = iface.mapCanvas()
         self.rubber = QgsRubberBand(self.mapCanvas)
+        self.rubber.setColor(QColor(255, 255, 50, 200))
+        self.rubber.setIcon(self.rubber.ICON_CIRCLE)
+        self.rubber.setIconSize(15)
+        self.rubber.setWidth(4)
+        self.rubber.setBrushStyle(Qt.NoBrush)
 
         QComboBox.__init__(self, parent)
         self.setEditable(True)
@@ -74,6 +79,11 @@ class FinderBox(QComboBox):
             finder.limitReached.connect(self.limitReached)
             finder.finished.connect(self.finished)
             finder.message.connect(self.message)
+
+    def __del__(self):
+        if self.rubber:
+            self.iface.mapCanvas().scene().removeItem(self.rubber)
+            del self.rubber
 
     def search(self):
         if self.running:

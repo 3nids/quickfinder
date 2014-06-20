@@ -1,31 +1,45 @@
-'''
-Created on 24 mars 2014
+#-----------------------------------------------------------
+#
+# QGIS Quick Finder Plugin
+# Copyright (C) 2014 Denis Rouzaud, Arnaud Morvan
+#
+#-----------------------------------------------------------
+#
+# licensed under the terms of GNU GPL 2
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+#---------------------------------------------------------------------
 
-@author: arnaud
-'''
-
-import urllib, urllib2, json
-
-from PyQt4.QtCore import QUrl
-from PyQt4.QtNetwork import QNetworkAccessManager, QNetworkRequest
+import json
 
 from qgis.core import QgsGeometry
 
-from quickfinder.core.abstractfinder import AbstractFinder
+from quickfinder.core.httpfinder import HttpFinder
 
-class OsmFinder(AbstractFinder):
+class OsmFinder(HttpFinder):
 
     name = 'osm'
-    asynchonous = True
 
     def __init__(self, parent):
-        super(OsmFinder, self).__init__(parent)
-
-        self.manager = QNetworkAccessManager(self)
-        self.manager.finished.connect(self.replyFinished)
+        HttpFinder.__init__(self, parent)
 
     def start(self, toFind, bbox=None):
         super(OsmFinder, self).start(toFind, bbox)
+
+        url = self.settings.value('osmUrl')
 
         # The preferred area to find search results
         viewbox = '{},{},{},{}'.format(bbox.xMinimum(),
@@ -33,27 +47,15 @@ class OsmFinder(AbstractFinder):
                                        bbox.xMaximum(),
                                        bbox.yMinimum())
 
-        if self.asynchonous:
-            url = QUrl(self.settings.value('osmUrl'))
-            url.addQueryItem('q', toFind.encode('utf-8'))
-            url.addQueryItem('format', 'json')
-            url.addQueryItem('polygon_text', '1')
-            url.addQueryItem('limit', str(self.settings.value('totalLimit')))
-            url.addQueryItem('viewbox', viewbox)
-            # url.addQueryItem('bounded', '1')
-
-            request = QNetworkRequest(url)
-            self.manager.get(request)
-
-        else:
-            url = self.settings.value('osmUrl')
-            params = urllib.urlencode({
-                        'q'             : toFind.encode('utf-8'),
-                        'format'        : 'json',
-                        'polygon_text'  : '1',
-                        'viewbox'       : viewbox})
-            response = json.load(urllib2.urlopen(url + '?' + params))
-            self.loadData(response)
+        params = {
+            'q'            : toFind.encode('utf-8'),
+            'format'       : 'json',
+            'polygon_text' : '1',
+            'viewbox'      : viewbox,
+            'limit'        : str(self.settings.value('totalLimit'))
+        }
+        # 'bounded' : '1'
+        self._sendRequest(url, params)
 
     def replyFinished(self, reply):
         data = json.loads(reply.readAll().data())

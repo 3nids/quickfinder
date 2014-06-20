@@ -13,6 +13,8 @@
 
 PLUGINNAME =$(shell basename $(CURDIR))
 
+QGISDIR=.qgis2
+
 PY_FILES = __init__.py $(PLUGINNAME).py
 EXTRAS = metadata.txt resources.qrc
 TOOL_DIR = gui core ui qgiscombomanager qgissettingmanager
@@ -36,10 +38,25 @@ $(RC_FILES): %_rc.py: %.qrc
 	pyrcc4 -o $@ $<
 
 clean:
-	rm -f $(GEN_FILES) *.pyc
+	rm -f $(GEN_FILES)
+	find $(CURDIR) -iname "*.pyc" -delete
 
-compile: $(UI_FILES) $(RESOURCE_FILES)
+compile: $(UI_FILES) $(RC_FILES)
 
 deploy:
-	mkdir -p $(HOME)/.qgis2/python/plugins/$(PLUGINNAME)
-	cp -rvf * $(HOME)/.qgis2/python/plugins/$(PLUGINNAME)/
+	mkdir -p $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
+	cp -rvf * $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)/
+	rm -f $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)/$(PLUGINNAME).zip
+
+# The dclean target removes compiled python files from plugin directory
+dclean:
+	find $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME) -iname "*.pyc" -delete
+	rm -f $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)/$(PLUGINNAME).zip
+
+# The derase deletes deployed plugin
+derase:
+	rm -Rf $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
+
+zip: deploy dclean
+	rm -f $(PLUGINNAME).zip
+	cd $(HOME)/$(QGISDIR)/python/plugins; zip -9r $(CURDIR)/$(PLUGINNAME).zip $(PLUGINNAME)
