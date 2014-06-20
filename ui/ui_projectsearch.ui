@@ -6,21 +6,17 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>324</width>
-    <height>268</height>
+    <width>282</width>
+    <height>262</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>QuickFinder :: add local search layer</string>
   </property>
   <layout class="QFormLayout" name="formLayout">
-   <item row="4" column="0">
-    <widget class="QLabel" name="FieldNameLabel">
-     <property name="text">
-      <string>Field</string>
-     </property>
-    </widget>
-   </item>
+   <property name="fieldGrowthPolicy">
+    <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+   </property>
    <item row="0" column="0">
     <widget class="QLabel" name="label">
      <property name="text">
@@ -57,6 +53,16 @@
      </property>
     </widget>
    </item>
+   <item row="4" column="0">
+    <widget class="QLabel" name="FieldNameLabel">
+     <property name="text">
+      <string>Field</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="1">
+    <widget class="QgsFieldExpressionWidget" name="fieldExpressionWidget"/>
+   </item>
    <item row="6" column="0">
     <widget class="QLabel" name="label_2">
      <property name="text">
@@ -77,55 +83,56 @@
      </property>
     </widget>
    </item>
-   <item row="8" column="0" colspan="2">
-    <layout class="QGridLayout" name="gridLayout">
-     <item row="0" column="1">
-      <widget class="QLabel" name="label_3">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="text">
-        <string>evaluate search directly (uncheck for multiple inserts)</string>
-       </property>
-       <property name="wordWrap">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="0">
-      <widget class="QCheckBox" name="evaluateCheckBox">
-       <property name="text">
-        <string/>
-       </property>
-       <property name="checked">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item row="10" column="1">
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="1">
-    <widget class="QgsFieldExpressionWidget" name="fieldExpressionWidget"/>
-   </item>
    <item row="9" column="0" colspan="2">
     <widget class="QProgressBar" name="progressBar">
      <property name="value">
       <number>24</number>
      </property>
     </widget>
+   </item>
+   <item row="8" column="0" colspan="2">
+    <widget class="QCheckBox" name="evaluateCheckBox">
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, the search entries will be recorded directly.&lt;/p&gt;&lt;p&gt;If you want to add several large layers, uncheck it and use the refresh button once all layers have been added.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="text">
+      <string>record entries</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="10" column="0" colspan="2">
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="cancelButton">
+       <property name="text">
+        <string>Cancel</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="okButton">
+       <property name="text">
+        <string>OK</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
   </layout>
  </widget>
@@ -145,38 +152,5 @@
  <resources>
   <include location="../resources.qrc"/>
  </resources>
- <connections>
-  <connection>
-   <sender>buttonBox</sender>
-   <signal>accepted()</signal>
-   <receiver>ProjectSearch</receiver>
-   <slot>accept()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>248</x>
-     <y>254</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>157</x>
-     <y>274</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>buttonBox</sender>
-   <signal>rejected()</signal>
-   <receiver>ProjectSearch</receiver>
-   <slot>reject()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>316</x>
-     <y>260</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>286</x>
-     <y>274</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>

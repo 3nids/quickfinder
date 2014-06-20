@@ -23,7 +23,7 @@
 #
 #---------------------------------------------------------------------
 
-from PyQt4.QtCore import pyqtSignal, QObject
+from PyQt4.QtCore import pyqtSignal, QObject, QCoreApplication
 
 from qgis.core import QgsMapLayerRegistry, QgsFeatureRequest, QgsExpression
 
@@ -55,6 +55,7 @@ class FtsConnection(QObject):
 
     isValid = False
     version = '1.0'
+    stopLoop = False
 
     conn = None
 
@@ -128,29 +129,29 @@ class FtsConnection(QObject):
         cur = self.conn.cursor()
         sql = "INSERT INTO quickfinder_fts (search_id, evaluated, x, y) VALUES ('{0}',?,?,?)".format(searchId)
         cur.executemany(sql, self.expressionIterator(layer, expression))
-        self.conn.commit()
 
-        cur = self.conn.cursor()
-        cur.execute( """INSERT INTO quickfinder_toc (search_id, search_name, layer_id, layer_name  , expression   , priority , date_evaluated, srid)
-                        VALUES                      (?        , ?          , ?       , ?           , ?            , ?        , ?             , ?    ) """,
-                                                    (searchId , searchName , layerid , layer.name(), expression_esc, priority, today         , layer.crs().authid()))
-        self.conn.commit()
+        if self.stopLoop:
+            self.conn.rollback()
+            return False, "Cancel by user"
+        else:
+            cur.execute( """INSERT INTO quickfinder_toc (search_id, search_name, layer_id, layer_name  , expression   , priority , date_evaluated, srid)
+                            VALUES                      (?        , ?          , ?       , ?           , ?            , ?        , ?             , ?    ) """,
+                                                        (searchId , searchName , layerid , layer.name(), expression_esc, priority, today         , layer.crs().authid()))
+            self.conn.commit()
 
         localSearch.dateEvaluated = today
         localSearch.status = "evaluated"
         return True, ""
 
-    def refresh(self):
-        #TODO: remove entries with unreferenced ID
-        #TODO remove entries + reference of delete layers
-        #TODO reprocess layers
-        pass
-
     def expressionIterator(self, layer, expression):
         featReq = QgsFeatureRequest()
         qgsExpression = QgsExpression(expression)
+        self.stopLoop = False
         i = 0
         for f in layer.getFeatures(featReq):
+            QCoreApplication.processEvents()
+            if self.stopLoop:
+                break
             self.recordingSearchProgress.emit(i)
             i += 1
             evaluated = unicode(qgsExpression.evaluate(f))
@@ -158,4 +159,7 @@ class FtsConnection(QObject):
                 continue
             centroid = f.geometry().centroid().asPoint()
             yield ( evaluated, centroid.x(), centroid.y() )
+
+    def stopRecord(self):
+        self.stopLoop = True
 

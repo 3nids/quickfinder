@@ -43,6 +43,12 @@ class LocalSearchModel(QAbstractItemModel):
         self.searches.insert(0, localSearch)
         self.endInsertRows()
 
+    def refreshSearches(self):
+        #TODO: remove entries with unreferenced ID
+        #TODO remove entries + reference of delete layers
+        #TODO reprocess layers
+        pass
+
     def index(self, row, column, parent=QModelIndex()):
         if row < 0 or row >= self.rowCount():
             return QModelIndex()

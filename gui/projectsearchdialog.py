@@ -49,9 +49,12 @@ class ProjectSearchDialog(QDialog, Ui_ProjectSearch):
         self.searchName.setText('test')
 
         self.progressBar.hide()
+        self.cancelButton.hide()
+        self.cancelButton.clicked.connect(self.fts.stopRecord)
+        self.okButton.clicked.connect(self.process)
 
 
-    def accept(self):
+    def process(self):
         searchName = self.searchName.text()
         layer = self.layerCombo.currentLayer()
         expression = self.fieldExpressionWidget.currentField()[0]
@@ -60,20 +63,25 @@ class ProjectSearchDialog(QDialog, Ui_ProjectSearch):
         srid = layer.crs().authid()
         evaluateDirectly = self.evaluateCheckBox.isChecked()
 
+        localSearch = LocalSearch(searchId, searchName, layer.id(), layer.name(), expression, priority, srid)
+
         if evaluateDirectly:
             self.progressBar.setMinimum(0)
             self.progressBar.setMaximum(layer.featureCount())
             self.progressBar.show()
+            self.cancelButton.show()
             self.fts.recordingSearchProgress.connect(self.progressBar.setValue)
 
-            localSearch = LocalSearch(searchId, searchName, layer.id(), layer.name(), expression, priority, srid)
             ok, message = self.fts.recordSearch(localSearch)
 
             self.progressBar.hide()
+            self.cancelButton.hide()
+            self.okButton.show()
 
             if not ok:
                 QErrorMessage().showMessage(message)
                 return
+
         self.localSearchModel.addSearch(localSearch)
 
-        QDialog.accept(self)
+        self.close()
