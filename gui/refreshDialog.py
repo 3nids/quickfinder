@@ -1,4 +1,3 @@
-
 #-----------------------------------------------------------
 #
 # QGIS Quick Finder Plugin
@@ -24,25 +23,22 @@
 #
 #---------------------------------------------------------------------
 
-from qgis.core import QgsMapLayerRegistry
+
+from PyQt4.QtGui import QDialog
+
+from quickfinder.ui.ui_refresh import Ui_Refresh
 
 
+class RefreshDialog(QDialog, Ui_Refresh):
+    def __init__(self, localSearchModel):
+        QDialog.__init__(self)
+        self.setupUi(self)
 
-class LocalSearch():
-    def __init__(self, searchId, searchName, layerid, layerName, expression, priority, srid, dateEvaluated=None):
-        self.searchId = searchId
-        self.searchName = searchName
-        self.layerid = layerid
-        self.layerName = layerName
-        self.expression = expression
-        self.priority = priority
-        self.srid = srid
-        self.dateEvaluated = dateEvaluated
+        self.progressBar.hide()
+        self.refreshButton.clicked.connect(self.refresh)
 
-        self.layer = QgsMapLayerRegistry.instance().mapLayer(layerid)
-        if not self.layer:
-            self.status = "layer_deleted"
-        elif dateEvaluated is None:
-            self.status = "not_evaluated"
-        else:
-            self.status = 'evaluated'
+    def refresh(self):
+
+
+        self.progressBar.show()
+

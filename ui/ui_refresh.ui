@@ -1,20 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Dialog</class>
- <widget class="QDialog" name="Dialog">
+ <class>Refresh</class>
+ <widget class="QDialog" name="Refresh">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
     <width>358</width>
-    <height>162</height>
+    <height>193</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="5" column="3">
+   <item row="0" column="0" colspan="3">
+    <widget class="QRadioButton" name="radioButton">
+     <property name="text">
+      <string>refresh all layers</string>
+     </property>
+     <attribute name="buttonGroup">
+      <string notr="true">buttonGroup</string>
+     </attribute>
+    </widget>
+   </item>
+   <item row="6" column="3">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -24,25 +34,22 @@
      </property>
     </widget>
    </item>
+   <item row="2" column="0" colspan="3">
+    <widget class="QRadioButton" name="radioButton_2">
+     <property name="text">
+      <string>create only new layers</string>
+     </property>
+     <attribute name="buttonGroup">
+      <string notr="true">buttonGroup</string>
+     </attribute>
+    </widget>
+   </item>
    <item row="4" column="1">
-    <widget class="QPushButton" name="pushButton">
+    <widget class="QPushButton" name="refreshButton">
      <property name="text">
       <string>refresh</string>
      </property>
     </widget>
-   </item>
-   <item row="4" column="2">
-    <spacer name="horizontalSpacer">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>40</width>
-       <height>20</height>
-      </size>
-     </property>
-    </spacer>
    </item>
    <item row="4" column="0">
     <spacer name="horizontalSpacer_2">
@@ -64,24 +71,24 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="0" colspan="3">
-    <widget class="QRadioButton" name="radioButton_2">
-     <property name="text">
-      <string>create only new layers</string>
+   <item row="4" column="2">
+    <spacer name="horizontalSpacer">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
      </property>
-     <attribute name="buttonGroup">
-      <string notr="true">buttonGroup</string>
-     </attribute>
-    </widget>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>40</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
    </item>
-   <item row="0" column="0" colspan="3">
-    <widget class="QRadioButton" name="radioButton">
-     <property name="text">
-      <string>refresh all layers</string>
+   <item row="5" column="0" colspan="4">
+    <widget class="QProgressBar" name="progressBar">
+     <property name="value">
+      <number>24</number>
      </property>
-     <attribute name="buttonGroup">
-      <string notr="true">buttonGroup</string>
-     </attribute>
     </widget>
    </item>
   </layout>
@@ -91,7 +98,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>Dialog</receiver>
+   <receiver>Refresh</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -107,7 +114,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>Dialog</receiver>
+   <receiver>Refresh</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

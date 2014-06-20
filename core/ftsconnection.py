@@ -1,4 +1,29 @@
+#-----------------------------------------------------------
+#
+# QGIS Quick Finder Plugin
+# Copyright (C) 2013 Denis Rouzaud
+#
+#-----------------------------------------------------------
+#
+# licensed under the terms of GNU GPL 2
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+#---------------------------------------------------------------------
 
+from PyQt4.QtCore import pyqtSignal, QObject
 
 from qgis.core import QgsMapLayerRegistry, QgsFeatureRequest, QgsExpression
 
@@ -10,21 +35,9 @@ from quickfinder.core.localsearch import LocalSearch
 
 
 
-
 """
 version of the sqlite file.
 """
-
-def expressionIterator(layer, expression):
-    featReq = QgsFeatureRequest()
-    qgsExpression = QgsExpression(expression)
-    for f in layer.getFeatures(featReq):
-        evaluated = unicode(qgsExpression.evaluate(f))
-        if qgsExpression.hasEvalError():
-            continue
-        centroid = f.geometry().centroid().asPoint()
-        yield ( evaluated, centroid.x(), centroid.y() )
-
 
 def createFTSfile(filepath):
     conn = sqlite3.connect(filepath)
@@ -38,14 +51,17 @@ def createFTSfile(filepath):
     cur.executescript(sql)
     conn.close()
 
-class FtsConnection():
+class FtsConnection(QObject):
 
     isValid = False
     version = '1.0'
 
     conn = None
 
+    recordingSearchProgress = pyqtSignal(int)
+
     def __init__(self, filepath=None):
+        QObject.__init__(self)
         if filepath is None:
             return
         self.setFile(filepath)
@@ -90,12 +106,20 @@ class FtsConnection():
             searches.append( LocalSearch( s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7]) )
         return searches
 
-    def evaluateSearch(self, searchId, searchName, layerid, expression, priority):
+    def recordSearch(self, localSearch):
         if not self.isValid:
             return False, "The index file is invalid. Use another one or create new one."
 
+        layerid = localSearch.layerid
+        searchName = localSearch.searchName
+        priority = localSearch.priority
+        searchId = localSearch.searchId
+        expression = localSearch.expression
+
+
         layer = QgsMapLayerRegistry.instance().mapLayer(layerid)
         if not layer:
+            localSearch.status = "layer_deleted"
             return False, "Layer does not exist"
 
         today = unicode(date.today().isoformat())
@@ -103,7 +127,7 @@ class FtsConnection():
 
         cur = self.conn.cursor()
         sql = "INSERT INTO quickfinder_fts (search_id, evaluated, x, y) VALUES ('{0}',?,?,?)".format(searchId)
-        cur.executemany(sql, expressionIterator(layer, expression))
+        cur.executemany(sql, self.expressionIterator(layer, expression))
         self.conn.commit()
 
         cur = self.conn.cursor()
@@ -112,6 +136,26 @@ class FtsConnection():
                                                     (searchId , searchName , layerid , layer.name(), expression_esc, priority, today         , layer.crs().authid()))
         self.conn.commit()
 
-        return True, today
+        localSearch.dateEvaluated = today
+        localSearch.status = "evaluated"
+        return True, ""
 
+    def refresh(self):
+        #TODO: remove entries with unreferenced ID
+        #TODO remove entries + reference of delete layers
+        #TODO reprocess layers
+        pass
+
+    def expressionIterator(self, layer, expression):
+        featReq = QgsFeatureRequest()
+        qgsExpression = QgsExpression(expression)
+        i = 0
+        for f in layer.getFeatures(featReq):
+            self.recordingSearchProgress.emit(i)
+            i += 1
+            evaluated = unicode(qgsExpression.evaluate(f))
+            if qgsExpression.hasEvalError():
+                continue
+            centroid = f.geometry().centroid().asPoint()
+            yield ( evaluated, centroid.x(), centroid.y() )
 

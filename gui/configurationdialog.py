@@ -1,9 +1,7 @@
 #-----------------------------------------------------------
 #
-# Item Browser is a QGIS plugin which allows you to browse a multiple selection.
-#
-# Copyright    : (C) 2013 Denis Rouzaud
-# Email        : denis.rouzaud@gmail.com
+# QGIS Quick Finder Plugin
+# Copyright (C) 2013 Denis Rouzaud
 #
 #-----------------------------------------------------------
 #
@@ -20,24 +18,24 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License along
-# with this progsram; if not, write to the Free Software Foundation, Inc.,
+# with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 #---------------------------------------------------------------------
 
-from PyQt4.QtGui import QDialog, QFileDialog, QErrorMessage
+from PyQt4.QtGui import QDialog, QFileDialog
 
 from qgis.core import QgsProject
 from qgis.gui import QgsGenericProjectionSelector
 
 from os import remove, path
-from uuid import uuid1
 
 from quickfinder.qgissettingmanager import SettingDialog
 from quickfinder.core.mysettings import MySettings
 from quickfinder.core.ftsconnection import FtsConnection, createFTSfile
 from quickfinder.gui.projectsearchdialog import ProjectSearchDialog
 from quickfinder.gui.localsearchmodel import LocalSearchModel
+from quickfinder.gui.refreshDialog import RefreshDialog
 from quickfinder.ui.ui_configuration import Ui_Configuration
 
 
@@ -60,8 +58,9 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
         self.openFileButton.clicked.connect(self.openQFTSfile)
         self.readQFTSfile()
 
-        # add local search
+        # local search
         self.addSearchButton.clicked.connect(self.addProjectSearch)
+        self.refreshButton.clicked.connect(self.refreshLocalSearch)
 
         # geomapfish
         self.geomapfish_crsButton.clicked.connect(self.geomapfish_crsButtonClicked)
@@ -98,26 +97,11 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
             self.readQFTSfile()
 
     def addProjectSearch(self):
-        self.dlg = ProjectSearchDialog()
-        if self.dlg.exec_():
-            searchName = self.dlg.searchName.text()
-            layer = self.dlg.layerCombo.currentLayer()
-            expression = self.dlg.fieldExpressionWidget.currentField()[0]
-            priority = self.dlg.priorityBox.value()
-            searchId = unicode(uuid1())
-            srid = layer.crs().authid()
-            evaluateDirectly = self.dlg.evaluateCheckBox.isChecked()
+        ProjectSearchDialog(self.fts, self.localSearchModel).exec_()
 
-            if evaluateDirectly:
-                ok, message = self.fts.evaluateSearch(searchId, searchName, layer.id(), expression, priority)
-                # TODO: progress bar
-                if not ok:
-                    QErrorMessage().showMessage(message)
-                else:
-                    dateEvaluated = message
-                    self.localSearchModel.addSearch(searchId, searchName, layer.id(), layer.name(), expression, priority, srid, dateEvaluated)
-            else:
-                self.localSearchModel.addSearch(searchId, searchName, layer.id(), layer.name(), expression, priority, srid)
+    def refreshLocalSearch(self):
+        RefreshDialog(self.localSearchModel).exec_()
+
 
     def geomapfish_crsButtonClicked(self):
         dlg = QgsGenericProjectionSelector(self)
