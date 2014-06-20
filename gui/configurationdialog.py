@@ -32,7 +32,7 @@ from os import remove, path
 
 from quickfinder.qgissettingmanager import SettingDialog
 from quickfinder.core.mysettings import MySettings
-from quickfinder.core.ftsconnection import FtsConnection, createFTSfile
+from quickfinder.core.localfinder import LocalFinder
 from quickfinder.gui.projectsearchdialog import ProjectSearchDialog
 from quickfinder.gui.localsearchmodel import LocalSearchModel
 from quickfinder.gui.refreshDialog import RefreshDialog
@@ -47,7 +47,7 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
         SettingDialog.__init__(self, self.settings)
 
         # FTS connection
-        self.fts = FtsConnection()
+        self.localFinder = LocalFinder(self)
 
         # table model
         self.localSearchModel = LocalSearchModel()
@@ -66,14 +66,14 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
         self.geomapfish_crsButton.clicked.connect(self.geomapfish_crsButtonClicked)
 
     def closeEvent(self, e):
-        self.fts.close()
+        self.localFinder.close()
         QDialog.closeEvent(self, e)
 
     def readQFTSfile(self):
         filepath = self.qftsfilepath.text()
-        self.fts.setFile(filepath)
-        self.localSearchTable.setEnabled(self.fts.isValid)
-        self.localSearchModel.setSearches(self.fts.searches())
+        self.localFinder.setFile(filepath)
+        self.localSearchTable.setEnabled(self.localFinder.isValid)
+        self.localSearchModel.setSearches(self.localFinder.searches())
 
     def createQFTSfile(self):
         prjPath = QgsProject.instance().homePath()
@@ -84,20 +84,20 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
                 filepath += ".qfts"
             if path.isfile(filepath):
                 remove(filepath)
-            createFTSfile(filepath)
+            LocalFinder.createFTSfile(filepath)
             self.qftsfilepath.setText(filepath)
             self.readQFTSfile()
 
     def openQFTSfile(self):
         prjPath = QgsProject.instance().homePath()
-        filepath = QFileDialog.getOpenFileName(self, "Create Quickfinder index file",
+        filepath = QFileDialog.getOpenFileName(self, "Open Quickfinder index file",
                                                prjPath, "Quickfinder file (*.qfts)")
         if filepath:
             self.qftsfilepath.setText(filepath)
             self.readQFTSfile()
 
     def addProjectSearch(self):
-        ProjectSearchDialog(self.fts, self.localSearchModel).exec_()
+        ProjectSearchDialog(self.localFinder, self.localSearchModel).exec_()
 
     def refreshLocalSearch(self):
         RefreshDialog(self.localSearchModel).exec_()

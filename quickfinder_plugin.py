@@ -24,7 +24,6 @@
 #---------------------------------------------------------------------
 
 import os.path
-from collections import OrderedDict
 
 from PyQt4.QtCore import Qt, QObject, QSettings, QCoreApplication, \
                          QTranslator, QUrl
@@ -150,10 +149,11 @@ class quickFinder(QObject):
 
     def _initFinders(self):
         """Create finders and connect signals"""
-        self.finders = OrderedDict()
-        self.finders['geomapfish'] = GeomapfishFinder(self)
-        self.finders['osm'] = OsmFinder(self)
-        self.finders['local'] = LocalFinder(self)
+        self.finders = {
+            'geomapfish': GeomapfishFinder(self),
+            'osm': OsmFinder(self),
+            'local': LocalFinder(self)
+        }
 
     def showSettings(self):
         if ConfigurationDialog().exec_():
