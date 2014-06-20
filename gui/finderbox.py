@@ -24,10 +24,12 @@
 #---------------------------------------------------------------------
 
 from PyQt4.QtCore import Qt, QCoreApplication, pyqtSignal, QEventLoop
-from PyQt4.QtGui import QComboBox, QSizePolicy, QTreeView, QIcon
+from PyQt4.QtGui import QComboBox, QSizePolicy, QTreeView, QIcon, QApplication
+
+from qgis.core import QgsCoordinateReferenceSystem, QgsCoordinateTransform
+from qgis.gui import QgsRubberBand
 
 from quickfinder.core.mysettings import MySettings
-
 from quickfinder.gui.resultmodel import ResultModel, GroupItem, ResultItem
 
 
@@ -41,6 +43,8 @@ class FinderBox(QComboBox):
 
     def __init__(self, finders, iface, parent=None):
         self.iface = iface
+        self.mapCanvas = iface.mapCanvas()
+        self.rubber = QgsRubberBand(self.mapCanvas)
 
         QComboBox.__init__(self, parent)
         self.setEditable(True)
@@ -90,26 +94,23 @@ class FinderBox(QComboBox):
         QCoreApplication.processEvents(QEventLoop.ExcludeUserInputEvents)
 
         # create categories in special order and count activated ones
-        for key in ['project', 'geomapfish', 'osm']:
-            finder = self.finders[key]
+        for finder in self.finders.itervalues():
             if finder.activated():
                 self.resultModel.addResult(finder.name)
                 self.toFinish += 1
 
-        canvas = self.iface.mapCanvas()
-        crs = canvas.mapRenderer().destinationCrs()
-        bbox = canvas.fullExtent()
+        bbox = self.mapCanvas.fullExtent()
         for finder in self.finders.itervalues():
             if finder.activated():
-                finder.start(toFind, crs=crs, bbox=bbox)
+                finder.start(toFind, bbox=bbox)
 
     def stop(self):
         for finder in self.finders.itervalues():
             if finder.isRunning():
                 finder.stop()
 
-    def resultFound(self, finder, layername, value, geometry):
-        self.resultModel.addResult(finder.name, layername, value, geometry)
+    def resultFound(self, finder, layername, value, geometry, epsg):
+        self.resultModel.addResult(finder.name, layername, value, geometry, epsg)
         self.resultView.expandAll()
 
     def limitReached(self, finder, layername):
@@ -148,7 +149,7 @@ class FinderBox(QComboBox):
     def showItem(self, item):
         if isinstance(item, ResultItem):
             self.resultModel.setSelected(item, self.resultView.palette())
-            geometry = item.geometry
+            geometry = self.transformGeom(item)
             self.rubber.reset(geometry.type())
             self.rubber.setToGeometry(geometry, None)
             self.zoomToRubberBand()
@@ -160,8 +161,8 @@ class FinderBox(QComboBox):
                 self.resultModel.setSelected(item, self.resultView.palette())
                 self.rubber.reset(child.geometry.type())
                 for i in xrange(0, item.rowCount()):
-                    child = item.child(i)
-                    self.rubber.addGeometry(item.child(i).geometry, None)
+                    geometry = self.transformGeom(item.child(i))
+                    self.rubber.addGeometry(geometry, None)
                 self.zoomToRubberBand()
             return
 
@@ -170,8 +171,17 @@ class FinderBox(QComboBox):
             self.rubber.reset()
             return
 
+    def transformGeom(self, item):
+        geometry = item.geometry
+        src_crs = QgsCoordinateReferenceSystem()
+        src_crs.createFromSrid(item.epsg)
+        dest_crs = self.mapCanvas.mapRenderer().destinationCrs()
+        geom = item.geometry
+        geom.transform( QgsCoordinateTransform(src_crs, dest_crs) )
+        return geom
+
     def zoomToRubberBand(self):
         rect = self.rubber.asGeometry().boundingBox()
         rect.scale(1.5)
-        self.iface.mapCanvas().setExtent(rect)
-        self.iface.mapCanvas().refresh()
+        self.mapCanvas.setExtent(rect)
+        self.mapCanvas.refresh()

@@ -1,8 +1,28 @@
-'''
-Created on 25 mars 2014
+#-----------------------------------------------------------
+#
+# QGIS Quick Finder Plugin
+# Copyright (C) 2014 Denis Rouzaud, Arnaud Morvan
+#
+#-----------------------------------------------------------
+#
+# licensed under the terms of GNU GPL 2
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+#---------------------------------------------------------------------
 
-@author: arnaud
-'''
 
 from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QStandardItemModel, QStandardItem, QFont, QIcon
@@ -56,10 +76,12 @@ class ResultItem(QStandardItem):
     name = ''
     geometry = None
 
-    def __init__(self, name):
+    def __init__(self, name, geometry, epsg):
         super(ResultItem, self).__init__(name)
         self.name = name
         self.setSelectable(False)
+        self.geometry = geometry
+        self.epsg = epsg
 
 
 class ResultModel(QStandardItemModel):
@@ -101,8 +123,7 @@ class ResultModel(QStandardItemModel):
             parent.appendRow(child)
             return child
 
-    def addResult(self, category, layer='', value='', geometry=None):
-        # print self.__class__.__name__, 'addResult', category, layer, value
+    def addResult(self, category, layer='', value='', geometry=None, epsg=None):
         root_item = self.invisibleRootItem()
 
         category_item = self._childItem(root_item, category, GroupItem)
@@ -122,8 +143,7 @@ class ResultModel(QStandardItemModel):
         category_item.increment()
         layer_item.increment()
 
-        item = ResultItem(value)
-        item.geometry = geometry
+        item = ResultItem(value, geometry, epsg)
         layer_item.appendRow(item)
 
     def addEllipsys(self, category, layer):

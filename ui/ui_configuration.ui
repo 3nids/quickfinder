@@ -17,7 +17,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="optionsTab">
       <attribute name="title">
@@ -341,14 +341,14 @@
           <item row="1" column="1">
            <layout class="QHBoxLayout" name="horizontalLayout_7">
             <item>
-             <widget class="QLabel" name="osm_limitLabel">
+             <widget class="QLabel" name="osmLimitLabel">
               <property name="text">
                <string>Gloabl limit</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QSpinBox" name="osm_limit">
+             <widget class="QSpinBox" name="osmLimit">
               <property name="minimum">
                <number>1</number>
               </property>
@@ -378,14 +378,14 @@
           <item row="0" column="1">
            <layout class="QHBoxLayout" name="horizontalLayout_8">
             <item>
-             <widget class="QLabel" name="osm_urlLabel">
+             <widget class="QLabel" name="osmUrlLabel">
               <property name="text">
                <string>Url</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QLineEdit" name="osm_url"/>
+             <widget class="QLineEdit" name="osmUrl"/>
             </item>
            </layout>
           </item>
@@ -420,21 +420,21 @@
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_4">
             <item>
-             <widget class="QLabel" name="geomapfish_urlLabel">
+             <widget class="QLabel" name="geomapfishUrlLabel">
               <property name="text">
                <string>Url</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QLineEdit" name="geomapfish_url"/>
+             <widget class="QLineEdit" name="geomapfishUrl"/>
             </item>
            </layout>
           </item>
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_3">
             <item>
-             <widget class="QLabel" name="geomapfish_crsLabel">
+             <widget class="QLabel" name="geomapfishCrsLabel">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                 <horstretch>0</horstretch>
@@ -447,7 +447,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QLineEdit" name="geomapfish_crs">
+             <widget class="QLineEdit" name="geomapfishCrs">
               <property name="enabled">
                <bool>true</bool>
               </property>
@@ -460,7 +460,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QPushButton" name="geomapfish_crsButton">
+             <widget class="QPushButton" name="geomapfishCrsButton">
               <property name="text">
                <string>Select</string>
               </property>

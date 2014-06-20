@@ -1,24 +1,39 @@
-'''
-Created on 24 mars 2014
-
-@author: arnaud
-'''
+#-----------------------------------------------------------
+#
+# QGIS Quick Finder Plugin
+# Copyright (C) 2014 Denis Rouzaud, Arnaud Morvan
+#
+#-----------------------------------------------------------
+#
+# licensed under the terms of GNU GPL 2
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+#---------------------------------------------------------------------
 
 import urllib, urllib2, json, ogr
 
 from PyQt4.QtCore import QUrl
 from PyQt4.QtNetwork import QNetworkAccessManager, QNetworkRequest
 
-from qgis.core import QgsGeometry, QgsCoordinateReferenceSystem, \
-                      QgsCoordinateTransform
-from qgis.gui import QgsMessageBar
 
-from .abstractfinder import AbstractFinder
-from .mysettings import MySettings
+from quickfinder.core.abstractfinder import AbstractFinder
 
 class GeomapfishFinder(AbstractFinder):
 
-    name = 'GeoMapFish'
+    name = 'geomapfish'
     asynchonous = True
 
     def __init__(self, parent):
@@ -27,11 +42,11 @@ class GeomapfishFinder(AbstractFinder):
         self.manager = QNetworkAccessManager(self)
         self.manager.finished.connect(self.replyFinished)
 
-    def start(self, toFind, crs=None, bbox=None):
-        super(GeomapfishFinder, self).start(toFind, crs, bbox)
+    def start(self, toFind, bbox=None):
+        super(GeomapfishFinder, self).start(toFind, bbox)
 
         if self.asynchonous:
-            url = QUrl(self.settings.value('geomapfish_url'))
+            url = QUrl(self.settings.value('geomapfishUrl'))
             url.addQueryItem('query', toFind)
             url.addQueryItem('limit', str(self.settings.value('totalLimit')))
             url.addQueryItem('partitionlimit', str(self.settings.value('categoryLimit')))
@@ -40,7 +55,7 @@ class GeomapfishFinder(AbstractFinder):
             self.manager.get(request)
 
         else:
-            url = self.settings.value('geomapfish_url')
+            url = self.settings.value('geomapfishUrl')
             params = urllib.urlencode({
                         'query'          : toFind,
                         'limit'          : str(self.settings.value('totalLimit')),
@@ -53,28 +68,18 @@ class GeomapfishFinder(AbstractFinder):
         self.loadData(data)
 
     def loadData(self, data):
-
-        self.transform = None
-        srv_crs_authid = self.settings.value('geomapfish_crs')
+        srv_crs_authid = self.settings.value('geomapfishCrs')
         srv_crs_authid = int(srv_crs_authid.replace('EPSG:', ''))
-        if self.crs.authid() != srv_crs_authid:
-            srv_crs = QgsCoordinateReferenceSystem()
-            srv_crs.createFromSrid(srv_crs_authid)
-            self.transform = QgsCoordinateTransform(srv_crs, self.crs)
-
         features = data['features']
         for f in features:
-
             json_geom = json.dumps(f['geometry'])
             ogr_geom = ogr.CreateGeometryFromJson(json_geom)
             wkt = ogr_geom.ExportToWkt()
             geometry = QgsGeometry.fromWkt(wkt)
-
             properties = f['properties']
-
-            if not self._resultFound(properties['layer_name'],
-                                     properties['label'],
-                                     geometry):
-                return
-
+            self.resultFound.emit(self,
+                                  properties['layer_name'],
+                                  properties['label'],
+                                  geometry,
+                                  srv_crs_authid)
         self._finish()

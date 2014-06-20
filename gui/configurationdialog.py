@@ -35,7 +35,7 @@ from quickfinder.core.mysettings import MySettings
 from quickfinder.core.localfinder import LocalFinder
 from quickfinder.gui.projectsearchdialog import ProjectSearchDialog
 from quickfinder.gui.localsearchmodel import LocalSearchModel
-from quickfinder.gui.refreshDialog import RefreshDialog
+from quickfinder.gui.refreshdialog import RefreshDialog
 from quickfinder.ui.ui_configuration import Ui_Configuration
 
 
@@ -63,7 +63,7 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
         self.refreshButton.clicked.connect(self.refreshLocalSearch)
 
         # geomapfish
-        self.geomapfish_crsButton.clicked.connect(self.geomapfish_crsButtonClicked)
+        self.geomapfishCrsButton.clicked.connect(self.geomapfishCrsButtonClicked)
 
     def closeEvent(self, e):
         self.localFinder.close()
@@ -103,12 +103,12 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
         RefreshDialog(self.localSearchModel).exec_()
 
 
-    def geomapfish_crsButtonClicked(self):
+    def geomapfishCrsButtonClicked(self):
         dlg = QgsGenericProjectionSelector(self)
-        dlg.setMessage('Select GeoMapFish serveur CRS')
-        dlg.setSelectedAuthId(self.geomapfish_crs.text())
+        dlg.setMessage('Select GeoMapFish CRS')
+        dlg.setSelectedAuthId(self.geomapfishCrs.text())
         if dlg.exec_():
-            self.geomapfish_crs.setText(dlg.selectedAuthId())
+            self.geomapfishCrs.setText(dlg.selectedAuthId())
 
 
 

@@ -1,11 +1,7 @@
 #-----------------------------------------------------------
 #
-# Intersect It is a QGIS plugin to place observations (distance or orientation)
-# with their corresponding precision, intersect them using a least-squares solution
-# and save dimensions in a dedicated layer to produce maps.
-#
-# Copyright    : (C) 2013 Denis Rouzaud
-# Email        : denis.rouzaud@gmail.com
+# QGIS Quick Finder Plugin
+# Copyright (C) 2014 Denis Rouzaud, Arnaud Morvan
 #
 #-----------------------------------------------------------
 #
@@ -22,7 +18,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License along
-# with this progsram; if not, write to the Free Software Foundation, Inc.,
+# with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 #---------------------------------------------------------------------
@@ -43,7 +39,7 @@ class MySettings(SettingManager):
         self.addSetting("totalLimit", "integer", "global", 80)
 
         # project settings
-        self.addSetting("Local", "bool", "project", True)
+        self.addSetting("local", "bool", "project", True)
         self.addSetting("layerId", "string", "project", '')
         self.addSetting("fieldName", "string", "project", '')
 
@@ -51,13 +47,13 @@ class MySettings(SettingManager):
         self.addSetting("qftsfilepath", "string", "project", '')
 
         # OpenStreetMap settings
-        self.addSetting("OpenStreetMap", "bool", "project", True)
-        self.addSetting("osm_url", "string", "global",
+        self.addSetting("osm", "bool", "project", True)
+        self.addSetting("osmUrl", "string", "global",
                         'http://nominatim.openstreetmap.org/search')
 
         # GeoMapFish settings
-        self.addSetting("GeoMapFish", "bool", "project", True)
-        self.addSetting("geomapfish_url", "string", "global",
+        self.addSetting("geomapfish", "bool", "project", True)
+        self.addSetting("geomapfishUrl", "string", "global",
                         'http://mapfish-geoportal.demo-camptocamp.com/demo/wsgi/fulltextsearch')
-        self.addSetting("geomapfish_crs", "string", "global", 'EPSG:21781')
+        self.addSetting("geomapfishCrs", "string", "global", 'EPSG:21781')
 
