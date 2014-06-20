@@ -114,3 +114,4 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
 
 
 
+    # TODO: on exit control that not search are pending
