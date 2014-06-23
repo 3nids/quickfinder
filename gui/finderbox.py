@@ -119,8 +119,8 @@ class FinderBox(QComboBox):
             if finder.isRunning():
                 finder.stop()
 
-    def resultFound(self, finder, layername, value, geometry, epsg):
-        self.resultModel.addResult(finder.name, layername, value, geometry, epsg)
+    def resultFound(self, finder, layername, value, geometry, srid):
+        self.resultModel.addResult(finder.name, layername, value, geometry, srid)
         self.resultView.expandAll()
 
     def limitReached(self, finder, layername):
@@ -184,7 +184,7 @@ class FinderBox(QComboBox):
     def transformGeom(self, item):
         geometry = item.geometry
         src_crs = QgsCoordinateReferenceSystem()
-        src_crs.createFromSrid(item.epsg)
+        src_crs.createFromSrid(item.srid)
         dest_crs = self.mapCanvas.mapRenderer().destinationCrs()
         geom = item.geometry
         geom.transform( QgsCoordinateTransform(src_crs, dest_crs) )

@@ -118,7 +118,7 @@ class ResultModel(QStandardItemModel):
             parent.appendRow(child)
             return child
 
-    def addResult(self, category, layer='', value='', geometry=None, epsg=None):
+    def addResult(self, category, layer='', value='', geometry=None, srid=None):
         root_item = self.invisibleRootItem()
 
         category_item = self._childItem(root_item, category, CategoryItem)
@@ -134,7 +134,7 @@ class ResultModel(QStandardItemModel):
 
         item = ResultItem(value)
         item.geometry = geometry
-        item.epsg = epsg
+        item.srid = srid
         layer_item.appendRow(item)
 
     def setSelected(self, item, palette):

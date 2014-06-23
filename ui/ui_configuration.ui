@@ -17,7 +17,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>2</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="optionsTab">
       <attribute name="title">
@@ -69,7 +69,7 @@
          <item row="2" column="0">
           <widget class="QLabel" name="geomapfish_partitionlimitLabel">
            <property name="text">
-            <string>Total limit</string>
+            <string>Total limit per service</string>
            </property>
           </widget>
          </item>
@@ -341,7 +341,7 @@
           <item row="1" column="1">
            <layout class="QHBoxLayout" name="horizontalLayout_7">
             <item>
-             <widget class="QLabel" name="osmLimitLabel">
+             <widget class="QLabel" name="osm_limitLabel">
               <property name="text">
                <string>Gloabl limit</string>
               </property>
@@ -420,14 +420,14 @@
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_4">
             <item>
-             <widget class="QLabel" name="geomapfishUrlLabel">
+             <widget class="QLabel" name="geomapfish_urlLabel">
               <property name="text">
                <string>Url</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QLineEdit" name="geomapfishUrl"/>
+             <widget class="QLineEdit" name="geomapfish_url"/>
             </item>
            </layout>
           </item>

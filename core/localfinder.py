@@ -25,11 +25,12 @@
 
 import unicodedata
 import sqlite3
+import binascii
 from datetime import date
 
 from PyQt4.QtCore import pyqtSignal, QObject, QCoreApplication
 
-from qgis.core import QgsMapLayerRegistry, QgsFeatureRequest, QgsExpression
+from qgis.core import QgsMapLayerRegistry, QgsFeatureRequest, QgsExpression, QgsGeometry
 
 from quickfinder.core.localsearch import LocalSearch
 from quickfinder.core.abstractfinder import AbstractFinder
@@ -56,7 +57,7 @@ class LocalFinder(AbstractFinder):
     name = 'local'
 
     isValid = False
-    version = '1.0'
+    version = '1.0'  # version of the SQLite file. Will be used if any changes to the format are made.
     stopLoop = False
 
     conn = None
@@ -101,28 +102,57 @@ class LocalFinder(AbstractFinder):
         except sqlite3.OperationalError:
             return None
 
-    def searches(self):
-        searches = list()
+    def searches(self, returnDict = False):
+        searches = {}
         if not self.isValid:
             return searches
         sql = "SELECT search_id, search_name, layer_id, layer_name, expression, priority, srid, date_evaluated FROM quickfinder_toc;"
         cur = self.conn.cursor()
         for s in cur.execute(sql):
-            searches.append( LocalSearch( s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7]) )
-        return searches
+            searches[s[0]] = LocalSearch( s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7] )
+        if returnDict:
+            return searches
+        else:
+            return  searches.values()
 
     def find(self, toFind):
         if not self.isValid:
             return
-        sql = "SELECT content FROM quickfinder_data WHERE content MATCH :%s" % toFind
+        sql = "SELECT search_id,content,x,y,wkb_geom FROM quickfinder_data WHERE content MATCH ?"
         cur = self.conn.cursor()
-        cur.execute(sql)
-        list = cur.fetchall()
-        print "results:"
-        for row in list:
-            print row
+        cur.execute(sql, [toFind])
+        searches = self.searches(True)
+        catLimit = self.settings.value("categoryLimit")
+        totalLimit = self.settings.value("totalLimit")
+        nFound = 0
+        catFound = {}
+        while True:
+            s = cur.fetchone()
+            if s is None:
+                return
+            search_id, content, x, y, wkb_geom = s
+            if catFound.has_key(search_id):
+                if catFound[search_id] >= catLimit:
+                    continue
+                catFound[search_id] += 1
+            else:
+                catFound[search_id] = 1
 
+            if not searches.has_key(search_id):
+                continue
 
+            geometry = QgsGeometry()
+            geometry.fromWkb(binascii.a2b_hex(wkb_geom))
+
+            self.resultFound.emit(self,
+                                  searches[search_id].searchName,
+                                  content,
+                                  geometry,
+                                  searches[search_id].srid)
+
+            nFound += 1
+            if nFound >= totalLimit:
+                break
 
 
     def recordSearch(self, localSearch):
@@ -175,7 +205,8 @@ class LocalFinder(AbstractFinder):
             if qgsExpression.hasEvalError():
                 continue
             centroid = f.geometry().centroid().asPoint()
-            yield ( evaluated, centroid.x(), centroid.y(), f.geometry().asWkb() )
+            wkb = binascii.b2a_hex(f.geometry().asWkb())
+            yield ( evaluated, centroid.x(), centroid.y(), wkb )
 
     def stopRecord(self):
         self.stopLoop = True
