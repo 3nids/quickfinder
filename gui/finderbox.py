@@ -71,10 +71,8 @@ class FinderBox(QComboBox):
         self.resultModel = ResultModel(self)
         self.setModel(self.resultModel)
 
-        self.loadingIcon = QIcon(":/plugins/quickfinder/icons/loading.gif")
-
         self.finders = finders
-        for finder in self.finders.itervalues():
+        for finder in self.finders.values():
             finder.resultFound.connect(self.resultFound)
             finder.limitReached.connect(self.limitReached)
             finder.finished.connect(self.finished)
@@ -90,7 +88,7 @@ class FinderBox(QComboBox):
             return
 
         toFind = self.lineEdit().text()
-        if not toFind:
+        if not toFind or toFind == '':
             return
 
         self.running = True
@@ -98,24 +96,23 @@ class FinderBox(QComboBox):
 
         self.resultModel.clearResults()
         self.resultModel.truncateHistory(MySettings().value("historyLength"))
-        self.resultModel.setLoading(self.loadingIcon)
+        self.resultModel.setLoading(True)
         self.showPopup()
 
         QCoreApplication.processEvents(QEventLoop.ExcludeUserInputEvents)
 
         # create categories in special order and count activated ones
-        for finder in self.finders.itervalues():
+        for finder in self.finders.values():
             if finder.activated():
                 self.resultModel.addResult(finder.name)
-                self.toFinish += 1
 
         bbox = self.mapCanvas.fullExtent()
-        for finder in self.finders.itervalues():
+        for finder in self.finders.values():
             if finder.activated():
                 finder.start(toFind, bbox=bbox)
 
     def stop(self):
-        for finder in self.finders.itervalues():
+        for finder in self.finders.values():
             if finder.isRunning():
                 finder.stop()
 
@@ -127,20 +124,14 @@ class FinderBox(QComboBox):
         self.resultModel.addEllipsys(finder.name, layername)
 
     def finished(self, finder):
-        # wait for all running finders
-        '''
-        for finder in self.finders.itervalues():
+        for finder in self.finders.values():
             if finder.isRunning():
                 return
-        '''
-        self.toFinish -= 1
-        if self.toFinish > 0:
-            return
 
         self.running = False
         self.searchFinished.emit()
 
-        self.resultModel.setLoading(None)
+        self.resultModel.setLoading(False)
 
         QCoreApplication.processEvents(QEventLoop.ExcludeUserInputEvents)
 
@@ -191,7 +182,9 @@ class FinderBox(QComboBox):
         return geom
 
     def zoomToRubberBand(self):
-        rect = self.rubber.asGeometry().boundingBox()
-        rect.scale(1.5)
-        self.mapCanvas.setExtent(rect)
-        self.mapCanvas.refresh()
+        geom = self.rubber.asGeometry()
+        if geom:
+            rect = geom.boundingBox()
+            rect.scale(1.5)
+            self.mapCanvas.setExtent(rect)
+            self.mapCanvas.refresh()

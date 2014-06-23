@@ -84,10 +84,12 @@ class ResultModel(QStandardItemModel):
         self.items = []
         self.selected = None
 
-    def setLoading(self, icon=None):
+    def setLoading(self, isLoading):
         root = self.invisibleRootItem()
         item = root.child(0)
-        if not icon:
+        if isLoading:
+            icon = QIcon(":/plugins/quickfinder/icons/loading.gif")
+        else:
             icon = QIcon()
         item.setIcon(icon)
 
