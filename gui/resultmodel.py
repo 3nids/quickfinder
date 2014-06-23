@@ -132,7 +132,9 @@ class ResultModel(QStandardItemModel):
         category_item.increment()
         layer_item.increment()
 
-        item = ResultItem(value, geometry, epsg)
+        item = ResultItem(value)
+        item.geometry = geometry
+        item.epsg = epsg
         layer_item.appendRow(item)
 
     def setSelected(self, item, palette):
