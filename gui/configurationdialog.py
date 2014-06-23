@@ -32,7 +32,7 @@ from os import remove, path
 
 from quickfinder.qgissettingmanager import SettingDialog
 from quickfinder.core.mysettings import MySettings
-from quickfinder.core.localfinder import LocalFinder
+from quickfinder.core.localfinder import LocalFinder, createFTSfile
 from quickfinder.gui.projectsearchdialog import ProjectSearchDialog
 from quickfinder.gui.localsearchmodel import LocalSearchModel
 from quickfinder.gui.refreshdialog import RefreshDialog
@@ -84,7 +84,7 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
                 filepath += ".qfts"
             if path.isfile(filepath):
                 remove(filepath)
-            LocalFinder.createFTSfile(filepath)
+            createFTSfile(filepath)
             self.qftsfilepath.setText(filepath)
             self.readQFTSfile()
 
