@@ -46,7 +46,7 @@ def createFTSfile(filepath):
     sql += "INSERT INTO quickfinder_info (key,value) VALUES ('scope','quickfinder');"
     sql += "INSERT INTO quickfinder_info (key,value) VALUES ('db_version','1.0');"
     sql += "CREATE TABLE quickfinder_toc (search_id text, search_name text, layer_id text, layer_name text, expression text, priority integer, srid text, date_evaluated text);"
-    sql += "CREATE VIRTUAL TABLE quickfinder_fts USING fts4 (search_id, evaluated, x real, y real);"
+    sql += "CREATE VIRTUAL TABLE quickfinder_fts USING fts4 (search_id, evaluated, x real, y real, wkb_geom text);"
     cur = conn.cursor()
     cur.executescript(sql)
     conn.close()
@@ -130,7 +130,7 @@ class LocalFinder(AbstractFinder):
         expression_esc = expression.replace("'", "\\'")  # escape simple quotes for SQL insert
 
         cur = self.conn.cursor()
-        sql = "INSERT INTO quickfinder_fts (search_id, evaluated, x, y) VALUES ('{0}',?,?,?)".format(searchId)
+        sql = "INSERT INTO quickfinder_fts (search_id, evaluated, x, y, wkb_geom) VALUES ('{0}',?,?,?,?)".format(searchId)
         cur.executemany(sql, self.expressionIterator(layer, expression))
 
         if self.stopLoop:
@@ -161,7 +161,7 @@ class LocalFinder(AbstractFinder):
             if qgsExpression.hasEvalError():
                 continue
             centroid = f.geometry().centroid().asPoint()
-            yield ( evaluated, centroid.x(), centroid.y() )
+            yield ( evaluated, centroid.x(), centroid.y(), f.geometry().asWkb() )
 
     def stopRecord(self):
         self.stopLoop = True
