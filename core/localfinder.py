@@ -46,7 +46,7 @@ def createFTSfile(filepath):
     sql += "INSERT INTO quickfinder_info (key,value) VALUES ('scope','quickfinder');"
     sql += "INSERT INTO quickfinder_info (key,value) VALUES ('db_version','1.0');"
     sql += "CREATE TABLE quickfinder_toc (search_id text, search_name text, layer_id text, layer_name text, expression text, priority integer, srid text, date_evaluated text);"
-    sql += "CREATE VIRTUAL TABLE quickfinder_fts USING fts4 (search_id, evaluated, x real, y real, wkb_geom text);"
+    sql += "CREATE VIRTUAL TABLE quickfinder_data USING fts4 (search_id, content, x real, y real, wkb_geom text);"
     cur = conn.cursor()
     cur.executescript(sql)
     conn.close()
@@ -74,7 +74,7 @@ class LocalFinder(AbstractFinder):
 
     def start(self, toFind, bbox=None):
         super(LocalFinder, self).start(toFind, bbox)
-        self.toFind = toFind
+        self.find(toFind)
         self._finish()
 
     def setFile(self, filepath):
@@ -111,6 +111,20 @@ class LocalFinder(AbstractFinder):
             searches.append( LocalSearch( s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7]) )
         return searches
 
+    def find(self, toFind):
+        if not self.isValid:
+            return
+        sql = "SELECT content FROM quickfinder_data WHERE content MATCH :%s" % toFind
+        cur = self.conn.cursor()
+        cur.execute(sql)
+        list = cur.fetchall()
+        print "results:"
+        for row in list:
+            print row
+
+
+
+
     def recordSearch(self, localSearch):
         if not self.isValid:
             return False, "The index file is invalid. Use another one or create new one."
@@ -130,7 +144,7 @@ class LocalFinder(AbstractFinder):
         expression_esc = expression.replace("'", "\\'")  # escape simple quotes for SQL insert
 
         cur = self.conn.cursor()
-        sql = "INSERT INTO quickfinder_fts (search_id, evaluated, x, y, wkb_geom) VALUES ('{0}',?,?,?,?)".format(searchId)
+        sql = "INSERT INTO quickfinder_data (search_id, content, x, y, wkb_geom) VALUES ('{0}',?,?,?,?)".format(searchId)
         cur.executemany(sql, self.expressionIterator(layer, expression))
 
         if self.stopLoop:
