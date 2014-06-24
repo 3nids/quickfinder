@@ -23,12 +23,13 @@
 #
 #---------------------------------------------------------------------
 
-from PyQt4.QtGui import QDialog, QFileDialog
+from os import remove, path
+
+from PyQt4.QtCore import QCoreApplication
+from PyQt4.QtGui import QDialog, QFileDialog, QMessageBox
 
 from qgis.core import QgsProject
 from qgis.gui import QgsGenericProjectionSelector
-
-from os import remove, path
 
 from quickfinder.qgissettingmanager import SettingDialog
 from quickfinder.core.mysettings import MySettings
@@ -65,9 +66,31 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
         # geomapfish
         self.geomapfishCrsButton.clicked.connect(self.geomapfishCrsButtonClicked)
 
-    def closeEvent(self, e):
+    def reject(self):
+        if self.closeAndControl():
+            QDialog.reject(self)
+
+    def accept(self):
+        if self.closeAndControl():
+            QDialog.accept(self)
+
+    def closeAndControl(self):
         self.projectFinder.close()
-        QDialog.closeEvent(self, e)
+        for search in self.projectSearchModel.searches:
+            if search.dateEvaluated is None:
+                box = QMessageBox(QMessageBox.Warning,
+                                  "Quick Finder",
+                                  QCoreApplication.translate("Configuration dialog", "Some searches are still not recorded to the file. Do you want to record them now ? "),
+                                  QMessageBox.Cancel | QMessageBox.Yes | QMessageBox.Close,
+                                  self)
+                ret = box.exec_()
+                if ret == QMessageBox.Cancel:
+                    return False
+                elif ret == QMessageBox.Yes:
+                    self.refreshProjectSearch()
+                    return False
+        return True
+
 
     def readQFTSfile(self):
         filepath = self.qftsfilepath.text()
@@ -112,9 +135,3 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
         dlg.setSelectedAuthId(self.geomapfishCrs.text())
         if dlg.exec_():
             self.geomapfishCrs.setText(dlg.selectedAuthId())
-
-
-
-
-
-    # TODO: on exit control that not search are pending
