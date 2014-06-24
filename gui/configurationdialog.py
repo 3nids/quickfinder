@@ -100,7 +100,7 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
         ProjectSearchDialog(self.localFinder, self.localSearchModel).exec_()
 
     def refreshLocalSearch(self):
-        RefreshDialog(self.localSearchModel).exec_()
+        RefreshDialog(self.localFinder, self.localSearchModel).exec_()
 
 
     def geomapfishCrsButtonClicked(self):

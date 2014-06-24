@@ -155,7 +155,7 @@ class LocalFinder(AbstractFinder):
                 break
 
 
-    def recordSearch(self, localSearch):
+    def recordSearch(self, localSearch, update=False):
         if not self.isValid:
             return False, "The index file is invalid. Use another one or create new one."
 
@@ -174,6 +174,13 @@ class LocalFinder(AbstractFinder):
         expression_esc = expression.replace("'", "\\'")  # escape simple quotes for SQL insert
 
         cur = self.conn.cursor()
+
+        if update:
+            sql = "DELETE FROM quickfinder_data WHERE search_id = '{0}'".format(searchId)
+            cur.execute(sql)
+            sql = "DELETE FROM quickfinder_toc WHERE search_id = '{0}'".format(searchId)
+            cur.execute(sql)
+
         sql = "INSERT INTO quickfinder_data (search_id, content, x, y, wkb_geom) VALUES ('{0}',?,?,?,?)".format(searchId)
         cur.executemany(sql, self.expressionIterator(layer, expression))
 

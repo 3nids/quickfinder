@@ -24,21 +24,86 @@
 #---------------------------------------------------------------------
 
 
+from PyQt4.QtCore import QCoreApplication
 from PyQt4.QtGui import QDialog
 
 from quickfinder.ui.ui_refresh import Ui_Refresh
 
 
 class RefreshDialog(QDialog, Ui_Refresh):
-    def __init__(self, localSearchModel):
+
+    stop = False
+    searchProgress = 0
+    currentLayerLength = 0
+
+    def __init__(self, localFinder, localSearchModel):
         QDialog.__init__(self)
         self.setupUi(self)
 
+        self.localFinder = localFinder
+        self.localSearchModel = localSearchModel
+
         self.progressBar.hide()
+        self.cancelButton.hide()
+
+        self.cancelButton.clicked.connect(self.cancel)
         self.refreshButton.clicked.connect(self.refresh)
 
+        self.localFinder.recordingSearchProgress.connect(self.setProgress)
+
     def refresh(self):
+        searches = self.localSearchModel.searches
 
-
+        self.stop = False
+        self.cancelButton.show()
+        self.refreshButton.hide()
+        self.progressBar.setMinimum(0)
+        self.progressBar.setMaximum(len(searches))
         self.progressBar.show()
+
+        unrec = self.unrecordedRadio.isChecked()
+        selec = self.selectedRadio.isChecked()
+        delet = self.deletedLayersCheckBox.isChecked()
+
+        self.searchProgress = -1
+        for search in searches:
+            QCoreApplication.processEvents()
+
+            self.searchProgress += 1
+            self.currentLayerLength = 0
+            self.setProgress()
+
+            if self.stop:
+                break
+
+            if search.layer is None:
+                # todo delete search entry
+                continue
+
+            self.currentLayerLength = search.layer.featureCount()
+            print search.layer.name(),search.layer.featureCount()
+
+            if unrec and search.dateEvaluated is not None:
+                continue
+
+            #todo skip non selected
+
+            ok, message = self.localFinder.recordSearch(search, True)
+
+        self.progressBar.hide()
+        self.cancelButton.hide()
+        self.refreshButton.show()
+
+    def cancel(self):
+        self.localFinder.stopRecord()
+        self.stop = True
+
+    def setProgress(self, value=0):
+        p = self.searchProgress
+        if self.currentLayerLength!=0:
+            p += float(value) / self.currentLayerLength
+        if value % 1000 == 0:
+            print value, p
+        self.progressBar.setValue(p)
+
 

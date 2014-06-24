@@ -35,11 +35,11 @@ from quickfinder.ui.ui_projectsearch import Ui_ProjectSearch
 
 
 class ProjectSearchDialog(QDialog, Ui_ProjectSearch):
-    def __init__(self, fts, localSearchModel):
+    def __init__(self, localFinder, localSearchModel):
         QDialog.__init__(self)
         self.setupUi(self)
 
-        self.fts = fts
+        self.localFinder = localFinder
         self.localSearchModel = localSearchModel
 
         self.layerCombo.setFilters(QgsMapLayerProxyModel.VectorLayer)
@@ -50,8 +50,10 @@ class ProjectSearchDialog(QDialog, Ui_ProjectSearch):
 
         self.progressBar.hide()
         self.cancelButton.hide()
-        self.cancelButton.clicked.connect(self.fts.stopRecord)
+        self.cancelButton.clicked.connect(self.localFinder.stopRecord)
         self.okButton.clicked.connect(self.process)
+
+        self.localFinder.recordingSearchProgress.connect(self.progressBar.setValue)
 
 
     def process(self):
@@ -70,9 +72,8 @@ class ProjectSearchDialog(QDialog, Ui_ProjectSearch):
             self.progressBar.setMaximum(layer.featureCount())
             self.progressBar.show()
             self.cancelButton.show()
-            self.fts.recordingSearchProgress.connect(self.progressBar.setValue)
 
-            ok, message = self.fts.recordSearch(localSearch)
+            ok, message = self.localFinder.recordSearch(localSearch)
 
             self.progressBar.hide()
             self.cancelButton.hide()
