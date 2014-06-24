@@ -34,7 +34,7 @@ from quickfinder.qgissettingmanager import SettingDialog
 from quickfinder.core.mysettings import MySettings
 from quickfinder.core.localfinder import LocalFinder, createFTSfile
 from quickfinder.gui.projectsearchdialog import ProjectSearchDialog
-from quickfinder.gui.localsearchmodel import LocalSearchModel
+from quickfinder.gui.localsearchmodel import LocalSearchModel, SearchIdRole
 from quickfinder.gui.refreshdialog import RefreshDialog
 from quickfinder.ui.ui_configuration import Ui_Configuration
 
@@ -100,7 +100,10 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
         ProjectSearchDialog(self.localFinder, self.localSearchModel).exec_()
 
     def refreshLocalSearch(self):
-        RefreshDialog(self.localFinder, self.localSearchModel).exec_()
+        selectedSearchId = []
+        for idx in self.localSearchTable.selectionModel().selectedRows():
+            selectedSearchId.append(self.localSearchModel.data(idx, SearchIdRole))
+        RefreshDialog(self.localFinder, self.localSearchModel, selectedSearchId).exec_()
 
 
     def geomapfishCrsButtonClicked(self):

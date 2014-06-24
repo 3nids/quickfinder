@@ -36,12 +36,13 @@ class RefreshDialog(QDialog, Ui_Refresh):
     searchProgress = 0
     currentLayerLength = 0
 
-    def __init__(self, localFinder, localSearchModel):
+    def __init__(self, localFinder, localSearchModel, selectedRows):
         QDialog.__init__(self)
         self.setupUi(self)
 
         self.localFinder = localFinder
         self.localSearchModel = localSearchModel
+        self.selectedRows = selectedRows
 
         self.progressBar.hide()
         self.cancelButton.hide()
@@ -73,20 +74,25 @@ class RefreshDialog(QDialog, Ui_Refresh):
             self.currentLayerLength = 0
             self.setProgress()
 
+            # user stop
             if self.stop:
                 break
 
-            if search.layer is None:
-                # todo delete search entry
+            # delete search if layer has been deleted
+            if search.layer is None and delet:
+                if self.localFinder.deleteSearch(search.searchId):
+                    del self.localSearchModel.searches[search.searchId]
                 continue
 
-            self.currentLayerLength = search.layer.featureCount()
-
+            # if specified only process non evaluated searches
             if unrec and search.dateEvaluated is not None:
                 continue
 
-            #todo skip non selected
+            # if specified only do selected rows
+            if selec and search.searchId not in self.selectedRows:
+                continue
 
+            self.currentLayerLength = search.layer.featureCount()
             ok, message = self.localFinder.recordSearch(search, True)
 
         self.progressBar.hide()

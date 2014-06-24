@@ -25,6 +25,8 @@
 
 from PyQt4.QtCore import Qt, QAbstractItemModel, QModelIndex
 
+LayerIdRole = Qt.UserRole + 1
+SearchIdRole = Qt.UserRole + 2
 
 class LocalSearchModel(QAbstractItemModel):
 
@@ -42,12 +44,6 @@ class LocalSearchModel(QAbstractItemModel):
         self.beginInsertRows(QModelIndex(), 0, 0)
         self.searches.insert(0, localSearch)
         self.endInsertRows()
-
-    def refreshSearches(self):
-        #TODO: remove entries with unreferenced ID
-        #TODO remove entries + reference of delete layers
-        #TODO reprocess layers
-        pass
 
     def index(self, row, column, parent=QModelIndex()):
         if row < 0 or row >= self.rowCount():
@@ -96,8 +92,11 @@ class LocalSearchModel(QAbstractItemModel):
             elif col == 3:
                 return search.dateEvaluated
             
-        if role == Qt.UserRole and col == 0:
+        if role == LayerIdRole:
             return search.layerid
+
+        if role == SearchIdRole:
+            return search.searchId
 
         return None
 

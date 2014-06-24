@@ -154,6 +154,17 @@ class LocalFinder(AbstractFinder):
             if nFound >= totalLimit:
                 break
 
+    def deleteSearch(self, searchId, commit=True):
+        if not self.isValid:
+            return False
+        cur = self.conn.cursor()
+        sql = "DELETE FROM quickfinder_data WHERE search_id = '{0}'".format(searchId)
+        cur.execute(sql)
+        sql = "DELETE FROM quickfinder_toc WHERE search_id = '{0}'".format(searchId)
+        cur.execute(sql)
+        if commit:
+            self.conn.commit()
+        return True
 
     def recordSearch(self, localSearch, update=False):
         if not self.isValid:
@@ -176,10 +187,7 @@ class LocalFinder(AbstractFinder):
         cur = self.conn.cursor()
 
         if update:
-            sql = "DELETE FROM quickfinder_data WHERE search_id = '{0}'".format(searchId)
-            cur.execute(sql)
-            sql = "DELETE FROM quickfinder_toc WHERE search_id = '{0}'".format(searchId)
-            cur.execute(sql)
+            self.deleteSearch(searchId, False)
 
         sql = "INSERT INTO quickfinder_data (search_id, content, x, y, wkb_geom) VALUES ('{0}',?,?,?,?)".format(searchId)
         cur.executemany(sql, self.expressionIterator(layer, expression))
