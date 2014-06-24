@@ -58,7 +58,7 @@ class RefreshDialog(QDialog, Ui_Refresh):
         self.cancelButton.show()
         self.refreshButton.hide()
         self.progressBar.setMinimum(0)
-        self.progressBar.setMaximum(len(searches))
+        self.progressBar.setMaximum(len(searches)*100)  # progressBar only accepts int, so scaling
         self.progressBar.show()
 
         unrec = self.unrecordedRadio.isChecked()
@@ -81,7 +81,6 @@ class RefreshDialog(QDialog, Ui_Refresh):
                 continue
 
             self.currentLayerLength = search.layer.featureCount()
-            print search.layer.name(),search.layer.featureCount()
 
             if unrec and search.dateEvaluated is not None:
                 continue
@@ -102,8 +101,7 @@ class RefreshDialog(QDialog, Ui_Refresh):
         p = self.searchProgress
         if self.currentLayerLength!=0:
             p += float(value) / self.currentLayerLength
-        if value % 1000 == 0:
-            print value, p
+        p *= 100
         self.progressBar.setValue(p)
 
 
