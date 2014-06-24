@@ -29,18 +29,18 @@ from uuid import uuid1
 
 from qgis.gui import QgsMapLayerProxyModel
 
-from quickfinder.core.localsearch import LocalSearch
+from quickfinder.core.projectsearch import ProjectSearch
 from quickfinder.ui.ui_projectsearch import Ui_ProjectSearch
 
 
 
 class ProjectSearchDialog(QDialog, Ui_ProjectSearch):
-    def __init__(self, localFinder, localSearchModel):
+    def __init__(self, projectFinder, projectSearchModel):
         QDialog.__init__(self)
         self.setupUi(self)
 
-        self.localFinder = localFinder
-        self.localSearchModel = localSearchModel
+        self.projectFinder = projectFinder
+        self.projectSearchModel = projectSearchModel
 
         self.layerCombo.setFilters(QgsMapLayerProxyModel.VectorLayer)
         self.layerCombo.layerChanged.connect(self.fieldExpressionWidget.setLayer)
@@ -50,10 +50,10 @@ class ProjectSearchDialog(QDialog, Ui_ProjectSearch):
 
         self.progressBar.hide()
         self.cancelButton.hide()
-        self.cancelButton.clicked.connect(self.localFinder.stopRecord)
+        self.cancelButton.clicked.connect(self.projectFinder.stopRecord)
         self.okButton.clicked.connect(self.process)
 
-        self.localFinder.recordingSearchProgress.connect(self.progressBar.setValue)
+        self.projectFinder.recordingSearchProgress.connect(self.progressBar.setValue)
 
 
     def process(self):
@@ -65,7 +65,7 @@ class ProjectSearchDialog(QDialog, Ui_ProjectSearch):
         srid = layer.crs().authid()
         evaluateDirectly = self.evaluateCheckBox.isChecked()
 
-        localSearch = LocalSearch(searchId, searchName, layer.id(), layer.name(), expression, priority, srid)
+        projectSearch = ProjectSearch(searchId, searchName, layer.id(), layer.name(), expression, priority, srid)
 
         if evaluateDirectly:
             self.progressBar.setMinimum(0)
@@ -73,7 +73,7 @@ class ProjectSearchDialog(QDialog, Ui_ProjectSearch):
             self.progressBar.show()
             self.cancelButton.show()
 
-            ok, message = self.localFinder.recordSearch(localSearch)
+            ok, message = self.projectFinder.recordSearch(projectSearch)
 
             self.progressBar.hide()
             self.cancelButton.hide()
@@ -83,6 +83,6 @@ class ProjectSearchDialog(QDialog, Ui_ProjectSearch):
                 QErrorMessage().showMessage(message)
                 return
 
-        self.localSearchModel.addSearch(localSearch)
+        self.projectSearchModel.addSearch(projectSearch)
 
         self.close()

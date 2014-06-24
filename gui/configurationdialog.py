@@ -32,9 +32,9 @@ from os import remove, path
 
 from quickfinder.qgissettingmanager import SettingDialog
 from quickfinder.core.mysettings import MySettings
-from quickfinder.core.localfinder import LocalFinder, createFTSfile
+from quickfinder.core.projectfinder import ProjectFinder, createFTSfile
 from quickfinder.gui.projectsearchdialog import ProjectSearchDialog
-from quickfinder.gui.localsearchmodel import LocalSearchModel, SearchIdRole
+from quickfinder.gui.projectsearchmodel import ProjectSearchModel, SearchIdRole
 from quickfinder.gui.refreshdialog import RefreshDialog
 from quickfinder.ui.ui_configuration import Ui_Configuration
 
@@ -47,33 +47,33 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
         SettingDialog.__init__(self, self.settings)
 
         # FTS connection
-        self.localFinder = LocalFinder(self)
+        self.projectFinder = ProjectFinder(self)
 
         # table model
-        self.localSearchModel = LocalSearchModel()
-        self.localSearchTable.setModel(self.localSearchModel)
+        self.projectSearchModel = ProjectSearchModel()
+        self.projectSearchTable.setModel(self.projectSearchModel)
 
         # open/create QuickFinder file
         self.createFileButton.clicked.connect(self.createQFTSfile)
         self.openFileButton.clicked.connect(self.openQFTSfile)
         self.readQFTSfile()
 
-        # local search
+        # project search
         self.addSearchButton.clicked.connect(self.addProjectSearch)
-        self.refreshButton.clicked.connect(self.refreshLocalSearch)
+        self.refreshButton.clicked.connect(self.refreshProjectSearch)
 
         # geomapfish
         self.geomapfishCrsButton.clicked.connect(self.geomapfishCrsButtonClicked)
 
     def closeEvent(self, e):
-        self.localFinder.close()
+        self.projectFinder.close()
         QDialog.closeEvent(self, e)
 
     def readQFTSfile(self):
         filepath = self.qftsfilepath.text()
-        self.localFinder.setFile(filepath)
-        self.localSearchTable.setEnabled(self.localFinder.isValid)
-        self.localSearchModel.setSearches(self.localFinder.searches())
+        self.projectFinder.setFile(filepath)
+        self.projectSearchTable.setEnabled(self.projectFinder.isValid)
+        self.projectSearchModel.setSearches(self.projectFinder.searches())
 
     def createQFTSfile(self):
         prjPath = QgsProject.instance().homePath()
@@ -97,13 +97,13 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
             self.readQFTSfile()
 
     def addProjectSearch(self):
-        ProjectSearchDialog(self.localFinder, self.localSearchModel).exec_()
+        ProjectSearchDialog(self.projectFinder, self.projectSearchModel).exec_()
 
-    def refreshLocalSearch(self):
+    def refreshProjectSearch(self):
         selectedSearchId = []
-        for idx in self.localSearchTable.selectionModel().selectedRows():
-            selectedSearchId.append(self.localSearchModel.data(idx, SearchIdRole))
-        RefreshDialog(self.localFinder, self.localSearchModel, selectedSearchId).exec_()
+        for idx in self.projectSearchTable.selectionModel().selectedRows():
+            selectedSearchId.append(self.projectSearchModel.data(idx, SearchIdRole))
+        RefreshDialog(self.projectFinder, self.projectSearchModel, selectedSearchId).exec_()
 
 
     def geomapfishCrsButtonClicked(self):

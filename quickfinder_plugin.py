@@ -33,7 +33,7 @@ from PyQt4.QtGui import QAction, QIcon, QColor, \
 from qgis.gui import QgsRubberBand
 
 
-from quickfinder.core.localfinder import LocalFinder
+from quickfinder.core.projectfinder import ProjectFinder
 from quickfinder.core.osmfinder import OsmFinder
 from quickfinder.core.geomapfishfinder import GeomapfishFinder
 from quickfinder.gui.configurationdialog import ConfigurationDialog
@@ -152,12 +152,12 @@ class quickFinder(QObject):
         self.finders = {
             'geomapfish': GeomapfishFinder(self),
             'osm': OsmFinder(self),
-            'local': LocalFinder(self)
+            'project': ProjectFinder(self)
         }
 
     def showSettings(self):
         if ConfigurationDialog().exec_():
-            self.finders['local'].reload()
+            self.finders['project'].reload()
 
     def enableSearch(self):
         self.searchAction.setVisible(True)

@@ -28,7 +28,7 @@ from qgis.core import QgsMapLayerRegistry
 
 
 
-class LocalSearch():
+class ProjectSearch():
     def __init__(self, searchId, searchName, layerid, layerName, expression, priority, srid, dateEvaluated=None):
         self.searchId = searchId
         self.searchName = searchName

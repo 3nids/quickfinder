@@ -28,7 +28,7 @@ from PyQt4.QtCore import Qt, QAbstractItemModel, QModelIndex
 LayerIdRole = Qt.UserRole + 1
 SearchIdRole = Qt.UserRole + 2
 
-class LocalSearchModel(QAbstractItemModel):
+class ProjectSearchModel(QAbstractItemModel):
 
     searches = list()
 
@@ -40,9 +40,9 @@ class LocalSearchModel(QAbstractItemModel):
         self.searches = searches
         self.endResetModel()
 
-    def addSearch(self, localSearch):
+    def addSearch(self, projectSearch):
         self.beginInsertRows(QModelIndex(), 0, 0)
-        self.searches.insert(0, localSearch)
+        self.searches.insert(0, projectSearch)
         self.endInsertRows()
 
     def index(self, row, column, parent=QModelIndex()):
@@ -99,17 +99,3 @@ class LocalSearchModel(QAbstractItemModel):
             return search.searchId
 
         return None
-
-
-
-
-
-
-
-
-
-
-
-
-
-

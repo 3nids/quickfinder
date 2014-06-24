@@ -32,7 +32,7 @@ from PyQt4.QtCore import pyqtSignal, QObject, QCoreApplication
 
 from qgis.core import QgsMapLayerRegistry, QgsFeatureRequest, QgsExpression, QgsGeometry
 
-from quickfinder.core.localsearch import LocalSearch
+from quickfinder.core.projectsearch import ProjectSearch
 from quickfinder.core.abstractfinder import AbstractFinder
 
 
@@ -52,9 +52,9 @@ def createFTSfile(filepath):
     cur.executescript(sql)
     conn.close()
 
-class LocalFinder(AbstractFinder):
+class ProjectFinder(AbstractFinder):
 
-    name = 'local'
+    name = 'project'
 
     isValid = False
     version = '1.0'  # version of the SQLite file. Will be used if any changes to the format are made.
@@ -66,7 +66,7 @@ class LocalFinder(AbstractFinder):
 
 
     def __init__(self, parent):
-        super(LocalFinder, self).__init__(parent)
+        super(ProjectFinder, self).__init__(parent)
         self.reload()
 
     def reload(self):
@@ -74,7 +74,7 @@ class LocalFinder(AbstractFinder):
         self.setFile(filepath)
 
     def start(self, toFind, bbox=None):
-        super(LocalFinder, self).start(toFind, bbox)
+        super(ProjectFinder, self).start(toFind, bbox)
         self.find(toFind)
         self._finish()
 
@@ -109,7 +109,7 @@ class LocalFinder(AbstractFinder):
         sql = "SELECT search_id, search_name, layer_id, layer_name, expression, priority, srid, date_evaluated FROM quickfinder_toc;"
         cur = self.conn.cursor()
         for s in cur.execute(sql):
-            searches[s[0]] = LocalSearch( s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7] )
+            searches[s[0]] = ProjectSearch( s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7] )
         if returnDict:
             return searches
         else:
@@ -166,19 +166,19 @@ class LocalFinder(AbstractFinder):
             self.conn.commit()
         return True
 
-    def recordSearch(self, localSearch, update=False):
+    def recordSearch(self, projectSearch, update=False):
         if not self.isValid:
             return False, "The index file is invalid. Use another one or create new one."
 
-        layerid = localSearch.layerid
-        searchName = localSearch.searchName
-        priority = localSearch.priority
-        searchId = localSearch.searchId
-        expression = localSearch.expression
+        layerid = projectSearch.layerid
+        searchName = projectSearch.searchName
+        priority = projectSearch.priority
+        searchId = projectSearch.searchId
+        expression = projectSearch.expression
 
         layer = QgsMapLayerRegistry.instance().mapLayer(layerid)
         if not layer:
-            localSearch.status = "layer_deleted"
+            projectSearch.status = "layer_deleted"
             return False, "Layer does not exist"
 
         today = unicode(date.today().isoformat())
@@ -201,8 +201,8 @@ class LocalFinder(AbstractFinder):
                                                         (searchId , searchName , layerid , layer.name(), expression_esc, priority, today         , layer.crs().authid()))
             self.conn.commit()
 
-        localSearch.dateEvaluated = today
-        localSearch.status = "evaluated"
+        projectSearch.dateEvaluated = today
+        projectSearch.status = "evaluated"
         return True, ""
 
     def expressionIterator(self, layer, expression):

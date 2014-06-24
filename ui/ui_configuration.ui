@@ -153,11 +153,11 @@
      </widget>
      <widget class="QWidget" name="projectTab">
       <attribute name="title">
-       <string>Local search</string>
+       <string>Project search</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_4">
        <item>
-        <widget class="QGroupBox" name="Local">
+        <widget class="QGroupBox" name="Project">
          <property name="title">
           <string>Search in project layers</string>
          </property>
@@ -264,7 +264,7 @@
            </layout>
           </item>
           <item row="2" column="0">
-           <widget class="QTableView" name="localSearchTable">
+           <widget class="QTableView" name="projectSearchTable">
             <property name="enabled">
              <bool>false</bool>
             </property>
@@ -289,7 +289,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QSpinBox" name="local_search_limit">
+             <widget class="QSpinBox" name="project_search_limit">
               <property name="minimum">
                <number>1</number>
               </property>

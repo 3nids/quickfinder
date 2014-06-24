@@ -36,12 +36,12 @@ class RefreshDialog(QDialog, Ui_Refresh):
     searchProgress = 0
     currentLayerLength = 0
 
-    def __init__(self, localFinder, localSearchModel, selectedRows):
+    def __init__(self, projectFinder, projectSearchModel, selectedRows):
         QDialog.__init__(self)
         self.setupUi(self)
 
-        self.localFinder = localFinder
-        self.localSearchModel = localSearchModel
+        self.projectFinder = projectFinder
+        self.projectSearchModel = projectSearchModel
         self.selectedRows = selectedRows
 
         self.progressBar.hide()
@@ -50,10 +50,10 @@ class RefreshDialog(QDialog, Ui_Refresh):
         self.cancelButton.clicked.connect(self.cancel)
         self.refreshButton.clicked.connect(self.refresh)
 
-        self.localFinder.recordingSearchProgress.connect(self.setProgress)
+        self.projectFinder.recordingSearchProgress.connect(self.setProgress)
 
     def refresh(self):
-        searches = self.localSearchModel.searches
+        searches = self.projectSearchModel.searches
 
         self.stop = False
         self.cancelButton.show()
@@ -80,8 +80,8 @@ class RefreshDialog(QDialog, Ui_Refresh):
 
             # delete search if layer has been deleted
             if search.layer is None and delet:
-                if self.localFinder.deleteSearch(search.searchId):
-                    del self.localSearchModel.searches[search.searchId]
+                if self.projectFinder.deleteSearch(search.searchId):
+                    del self.projectSearchModel.searches[search.searchId]
                 continue
 
             # if specified only process non evaluated searches
@@ -93,14 +93,14 @@ class RefreshDialog(QDialog, Ui_Refresh):
                 continue
 
             self.currentLayerLength = search.layer.featureCount()
-            ok, message = self.localFinder.recordSearch(search, True)
+            ok, message = self.projectFinder.recordSearch(search, True)
 
         self.progressBar.hide()
         self.cancelButton.hide()
         self.refreshButton.show()
 
     def cancel(self):
-        self.localFinder.stopRecord()
+        self.projectFinder.stopRecord()
         self.stop = True
 
     def setProgress(self, value=0):
