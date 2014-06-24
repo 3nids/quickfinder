@@ -99,6 +99,10 @@ class RefreshDialog(QDialog, Ui_Refresh):
         self.cancelButton.hide()
         self.refreshButton.show()
 
+    def closeEvent(self, e):
+        self.cancel()
+        e.accept()
+
     def cancel(self):
         self.projectFinder.stopRecord()
         self.stop = True
