@@ -109,7 +109,7 @@ class ProjectFinder(AbstractFinder):
         sql = "SELECT search_id, search_name, layer_id, layer_name, expression, priority, srid, date_evaluated FROM quickfinder_toc;"
         cur = self.conn.cursor()
         for s in cur.execute(sql):
-            searches[s[0]] = ProjectSearch( s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7] )
+            searches[s[0]] = ProjectSearch( s[0], s[1], s[2], s[3], s[4].replace("\\'","'"), s[5], s[6], s[7] )
         if returnDict:
             return searches
         else:
