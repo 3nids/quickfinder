@@ -63,6 +63,8 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
         self.addSearchButton.clicked.connect(self.addProjectSearch)
         self.removeSearchButton.clicked.connect(self.removeProjectSearch)
         self.refreshButton.clicked.connect(self.refreshProjectSearch)
+        self.projectSearchTable.selectionModel().selectionChanged.connect(self.enableButtons)
+        self.enableButtons()
 
         # geomapfish
         self.geomapfishCrsButton.clicked.connect(self.geomapfishCrsButtonClicked)
@@ -92,10 +94,10 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
                     return False
         return True
 
-
     def readQFTSfile(self):
         filepath = self.qftsfilepath.text()
         self.projectFinder.setFile(filepath)
+        self.projectSearchButtonsLayout.setEnabled(self.projectFinder.isValid)
         self.projectSearchTable.setEnabled(self.projectFinder.isValid)
         self.projectSearchModel.setSearches(self.projectFinder.searches())
 
@@ -150,6 +152,11 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
         for idx in self.projectSearchTable.selectionModel().selectedRows():
             selectedSearchId.append(self.projectSearchModel.data(idx, SearchIdRole))
         return selectedSearchId
+
+    def enableButtons(self):
+        n = len(self.selectedSearchIds())
+        self.removeSearchButton.setEnabled(n>0)
+        self.editSearchButton.setEnabled(n==1)
 
     def geomapfishCrsButtonClicked(self):
         dlg = QgsGenericProjectionSelector(self)

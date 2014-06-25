@@ -17,7 +17,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="optionsTab">
       <attribute name="title">
@@ -206,7 +206,7 @@
            </layout>
           </item>
           <item row="1" column="0">
-           <layout class="QHBoxLayout" name="horizontalLayout_10">
+           <layout class="QHBoxLayout" name="projectSearchButtonsLayout">
             <item>
              <widget class="QToolButton" name="addSearchButton">
               <property name="icon">
