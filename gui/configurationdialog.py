@@ -62,6 +62,7 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
         # project search
         self.addSearchButton.clicked.connect(self.addProjectSearch)
         self.removeSearchButton.clicked.connect(self.removeProjectSearch)
+        self.editSearchButton.clicked.connect(self.editProjectSearch)
         self.refreshButton.clicked.connect(self.refreshProjectSearch)
         self.projectSearchTable.selectionModel().selectionChanged.connect(self.enableButtons)
         self.enableButtons()
@@ -143,6 +144,14 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
             if not self.projectFinder.deleteSearch(sel[i], commit):
                 return
         self.projectSearchModel.removeSearches(sel)
+
+    def editProjectSearch(self):
+        sel = self.selectedSearchIds()
+        if len(sel) != 1:
+            return
+        search = self.projectSearchModel.searchAtId(sel[0])
+        if search:
+            ProjectSearchDialog(self.projectFinder, self.projectSearchModel, search).exec_()
 
     def refreshProjectSearch(self):
         RefreshDialog(self.projectFinder, self.projectSearchModel, self.selectedSearchIds()).exec_()

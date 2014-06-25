@@ -35,12 +35,13 @@ from quickfinder.ui.ui_projectsearch import Ui_ProjectSearch
 
 
 class ProjectSearchDialog(QDialog, Ui_ProjectSearch):
-    def __init__(self, projectFinder, projectSearchModel):
+    def __init__(self, projectFinder, projectSearchModel, projectSearch=None):
         QDialog.__init__(self)
         self.setupUi(self)
 
         self.projectFinder = projectFinder
         self.projectSearchModel = projectSearchModel
+        self.projectSearch = projectSearch
 
         self.layerCombo.setFilters(QgsMapLayerProxyModel.VectorLayer)
         self.layerCombo.layerChanged.connect(self.fieldExpressionWidget.setLayer)
@@ -55,17 +56,32 @@ class ProjectSearchDialog(QDialog, Ui_ProjectSearch):
 
         self.projectFinder.recordingSearchProgress.connect(self.progressBar.setValue)
 
+        if projectSearch is not None:
+            self.searchName.setText(projectSearch.searchName)
+            self.layerCombo.setLayer(projectSearch.layer())
+            self.fieldExpressionWidget.setField(projectSearch.expression)
+            self.priorityBox.setValue(projectSearch.priority)
 
     def process(self):
         searchName = self.searchName.text()
         layer = self.layerCombo.currentLayer()
         expression = self.fieldExpressionWidget.currentField()[0]
         priority = self.priorityBox.value()
-        searchId = unicode(uuid1())
         srid = layer.crs().authid()
         evaluateDirectly = self.evaluateCheckBox.isChecked()
 
-        projectSearch = ProjectSearch(searchId, searchName, layer.id(), layer.name(), expression, priority, srid)
+        if self.projectSearch is None:
+            insert = True
+            searchId = unicode(uuid1())
+            self.projectSearch = ProjectSearch(searchId, searchName, layer.id(), layer.name(), expression, priority, srid)
+        else:
+            insert = False
+            self.projectSearch.searchName = searchName
+            self.projectSearch.layer = layer
+            self.projectSearch.expression = expression
+            self.projectSearch.priority = priority
+            self.projectSearch.srid = srid
+            self.projectSearch.reset()
 
         if evaluateDirectly:
             self.progressBar.setMinimum(0)
@@ -73,7 +89,7 @@ class ProjectSearchDialog(QDialog, Ui_ProjectSearch):
             self.progressBar.show()
             self.cancelButton.show()
 
-            ok, message = self.projectFinder.recordSearch(projectSearch)
+            ok, message = self.projectFinder.recordSearch(self.projectSearch)
 
             self.progressBar.hide()
             self.cancelButton.hide()
@@ -83,6 +99,7 @@ class ProjectSearchDialog(QDialog, Ui_ProjectSearch):
                 QErrorMessage().showMessage(message)
                 return
 
-        self.projectSearchModel.addSearch(projectSearch)
+        if insert:
+            self.projectSearchModel.addSearch(self.projectSearch)
 
         self.close()

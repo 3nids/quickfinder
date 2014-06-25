@@ -39,10 +39,14 @@ class ProjectSearch():
         self.srid = srid
         self.dateEvaluated = dateEvaluated
 
-        self.layer = QgsMapLayerRegistry.instance().mapLayer(layerid)
-        if not self.layer:
-            self.status = "layer_deleted"
-        elif dateEvaluated is None:
+        if dateEvaluated is None:
             self.status = "not_evaluated"
         else:
             self.status = 'evaluated'
+
+    def layer(self):
+        return QgsMapLayerRegistry.instance().mapLayer(self.layerid)
+
+    def reset(self):
+        self.dateEvaluated = None
+        self.status = "not_evaluated"

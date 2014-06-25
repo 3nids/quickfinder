@@ -79,7 +79,8 @@ class RefreshDialog(QDialog, Ui_Refresh):
                 break
 
             # delete search if layer has been deleted
-            if search.layer is None and delet:
+            layer = search.layer()
+            if layer is None and delet:
                 if self.projectFinder.deleteSearch(search.searchId):
                     del self.projectSearchModel.searches[search.searchId]
                 continue
@@ -92,7 +93,7 @@ class RefreshDialog(QDialog, Ui_Refresh):
             if selec and search.searchId not in self.selectedRows:
                 continue
 
-            self.currentLayerLength = search.layer.featureCount()
+            self.currentLayerLength = layer.featureCount()
             ok, message = self.projectFinder.recordSearch(search, True)
 
         self.progressBar.hide()
