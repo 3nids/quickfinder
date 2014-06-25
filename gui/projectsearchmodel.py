@@ -45,6 +45,11 @@ class ProjectSearchModel(QAbstractItemModel):
         self.searches.insert(0, projectSearch)
         self.endInsertRows()
 
+    def removeSearches(self, searchIds):
+        self.beginResetModel()
+        self.searches = [search for search in self.searches if search.searchId not in searchIds]
+        self.endResetModel()
+
     def index(self, row, column, parent=QModelIndex()):
         if row < 0 or row >= self.rowCount():
             return QModelIndex()

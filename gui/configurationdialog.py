@@ -61,6 +61,7 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
 
         # project search
         self.addSearchButton.clicked.connect(self.addProjectSearch)
+        self.removeSearchButton.clicked.connect(self.removeProjectSearch)
         self.refreshButton.clicked.connect(self.refreshProjectSearch)
 
         # geomapfish
@@ -122,12 +123,33 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
     def addProjectSearch(self):
         ProjectSearchDialog(self.projectFinder, self.projectSearchModel).exec_()
 
+    def removeProjectSearch(self):
+        sel = self.selectedSearchIds()
+        if len(sel) == 0:
+            return
+        box = QMessageBox(QMessageBox.Warning,
+                                  "Quick Finder",
+                                  QCoreApplication.translate("Configuration dialog", "Are you sure to remove {0} search(es) ? ").format(len(sel)),
+                                  QMessageBox.Yes | QMessageBox.Cancel,
+                                  self)
+        ret = box.exec_()
+        if ret == QMessageBox.Cancel:
+            return
+
+        for i in range(len(sel)):
+            commit = i==len(sel)-1
+            if not self.projectFinder.deleteSearch(sel[i], commit):
+                return
+        self.projectSearchModel.removeSearches(sel)
+
     def refreshProjectSearch(self):
+        RefreshDialog(self.projectFinder, self.projectSearchModel, self.selectedSearchIds()).exec_()
+
+    def selectedSearchIds(self):
         selectedSearchId = []
         for idx in self.projectSearchTable.selectionModel().selectedRows():
             selectedSearchId.append(self.projectSearchModel.data(idx, SearchIdRole))
-        RefreshDialog(self.projectFinder, self.projectSearchModel, selectedSearchId).exec_()
-
+        return selectedSearchId
 
     def geomapfishCrsButtonClicked(self):
         dlg = QgsGenericProjectionSelector(self)

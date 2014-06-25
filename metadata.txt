@@ -6,7 +6,7 @@ description=Quickly find features base on their ID or other fields.
 
 version=3.0
 
-qgisMinimumVersion=2.0
+qgisMinimumVersion=2.3
 
 author=Denis Rouzaud, Arnaud Morvan
 email=denis.rouzaud@gmail.com

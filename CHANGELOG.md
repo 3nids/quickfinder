@@ -1,6 +1,8 @@
 ##  Changelog
 
-* TODO: put current mode, sign and field of layer in project settings
+** Version 3.0 ** 25.06.2014
+
+* central
 
 ** Version 2.6.2** 11.09.2013
 
