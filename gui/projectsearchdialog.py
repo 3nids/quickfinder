@@ -70,6 +70,8 @@ class ProjectSearchDialog(QDialog, Ui_ProjectSearch):
         srid = layer.crs().authid()
         evaluateDirectly = self.evaluateCheckBox.isChecked()
 
+        self.projectSearchModel.beginResetModel()
+
         if self.projectSearch is None:
             insert = True
             searchId = unicode(uuid1())
@@ -101,5 +103,7 @@ class ProjectSearchDialog(QDialog, Ui_ProjectSearch):
 
         if insert:
             self.projectSearchModel.addSearch(self.projectSearch)
+
+        self.projectSearchModel.endResetModel()
 
         self.close()
