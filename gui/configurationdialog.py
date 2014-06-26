@@ -51,7 +51,7 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
         self.projectFinder = ProjectFinder(self)
 
         # table model
-        self.projectSearchModel = ProjectSearchModel()
+        self.projectSearchModel = ProjectSearchModel(self.projectFinder)
         self.projectSearchTable.setModel(self.projectSearchModel)
 
         # open/create QuickFinder file
@@ -100,7 +100,6 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
         self.projectFinder.setFile(filepath)
         self.projectSearchButtonsLayout.setEnabled(self.projectFinder.isValid)
         self.projectSearchTable.setEnabled(self.projectFinder.isValid)
-        self.projectSearchModel.setSearches(self.projectFinder.searches())
 
     def createQFTSfile(self):
         prjPath = QgsProject.instance().homePath()

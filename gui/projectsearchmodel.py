@@ -23,7 +23,9 @@
 #
 #---------------------------------------------------------------------
 
+from uuid import uuid1
 from PyQt4.QtCore import Qt, QAbstractItemModel, QModelIndex
+from quickfinder.core.projectsearch import ProjectSearch
 
 LayerIdRole = Qt.UserRole + 1
 SearchIdRole = Qt.UserRole + 2
@@ -32,18 +34,26 @@ class ProjectSearchModel(QAbstractItemModel):
 
     searches = list()
 
-    def __init__(self):
+    def __init__(self, projectFinder):
         QAbstractItemModel.__init__(self)
+        self.projectFinder = projectFinder
+        self.projectFinder.fileChanged.connect(self.readSearches)
 
-    def setSearches(self, searches):
+    def readSearches(self):
         self.beginResetModel()
-        self.searches = searches
+        self.searches = self.projectFinder.searches()
+        for search in self.searches:
+            search.changed.connect(self.searchChanged)
         self.endResetModel()
 
-    def addSearch(self, projectSearch):
+    def addSearch(self, searchName, layer, expression, priority):
+        searchId = unicode(uuid1())
+        srid = layer.crs().authid()
+        projectSearch = ProjectSearch(searchId, searchName, layer.id(), layer.name(), expression, priority, srid)
         self.beginInsertRows(QModelIndex(), 0, 0)
         self.searches.insert(0, projectSearch)
         self.endInsertRows()
+        return self.searches[0]
 
     def removeSearches(self, searchIds):
         self.beginResetModel()
@@ -55,6 +65,9 @@ class ProjectSearchModel(QAbstractItemModel):
             if search.searchId == searchId:
                 return search
         return None
+
+    def searchChanged(self):
+        self.modelReset.emit()
 
     def index(self, row, column, parent=QModelIndex()):
         if row < 0 or row >= self.rowCount():

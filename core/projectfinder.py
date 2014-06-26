@@ -28,7 +28,7 @@ import sqlite3
 import binascii
 from datetime import date
 
-from PyQt4.QtCore import pyqtSignal, QObject, QCoreApplication
+from PyQt4.QtCore import pyqtSignal, QCoreApplication
 
 from qgis.core import QgsMapLayerRegistry, QgsFeatureRequest, QgsExpression, QgsGeometry
 
@@ -63,6 +63,7 @@ class ProjectFinder(AbstractFinder):
     conn = None
 
     recordingSearchProgress = pyqtSignal(int)
+    fileChanged = pyqtSignal()
 
 
     def __init__(self, parent):
@@ -89,6 +90,7 @@ class ProjectFinder(AbstractFinder):
             return
 
         self.isValid = True
+        self.fileChanged.emit()
 
     def close(self):
         if self.conn is not None:
@@ -202,7 +204,6 @@ class ProjectFinder(AbstractFinder):
             self.conn.commit()
 
         projectSearch.dateEvaluated = today
-        projectSearch.status = "evaluated"
         return True, ""
 
     def expressionIterator(self, layer, expression):

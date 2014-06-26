@@ -25,11 +25,8 @@
 
 from PyQt4.QtGui import QDialog, QErrorMessage
 
-from uuid import uuid1
-
 from qgis.gui import QgsMapLayerProxyModel
 
-from quickfinder.core.projectsearch import ProjectSearch
 from quickfinder.ui.ui_projectsearch import Ui_ProjectSearch
 
 
@@ -70,20 +67,10 @@ class ProjectSearchDialog(QDialog, Ui_ProjectSearch):
         srid = layer.crs().authid()
         evaluateDirectly = self.evaluateCheckBox.isChecked()
 
-        self.projectSearchModel.beginResetModel()
-
         if self.projectSearch is None:
-            insert = True
-            searchId = unicode(uuid1())
-            self.projectSearch = ProjectSearch(searchId, searchName, layer.id(), layer.name(), expression, priority, srid)
+            self.projectSearch = self.projectSearchModel.addSearch(searchName, layer, expression, priority)
         else:
-            insert = False
-            self.projectSearch.searchName = searchName
-            self.projectSearch.layer = layer
-            self.projectSearch.expression = expression
-            self.projectSearch.priority = priority
-            self.projectSearch.srid = srid
-            self.projectSearch.reset()
+            self.projectSearch.edit(searchName, layer.id(), layer.name(), expression, priority, srid)
 
         if evaluateDirectly:
             self.progressBar.setMinimum(0)
@@ -100,10 +87,5 @@ class ProjectSearchDialog(QDialog, Ui_ProjectSearch):
             if not ok:
                 QErrorMessage().showMessage(message)
                 return
-
-        if insert:
-            self.projectSearchModel.addSearch(self.projectSearch)
-
-        self.projectSearchModel.endResetModel()
 
         self.close()

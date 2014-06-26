@@ -141,7 +141,6 @@ class ResultModel(QStandardItemModel):
         layer_item.appendRow(item)
 
     def setSelected(self, item, palette):
-        print self.selected
         if self.selected:
             self.selected.setData(self.selected.initialBackgroundColor, Qt.BackgroundColorRole)
             self.selected.setData(self.selected.initialForegroundColor, Qt.ForegroundRole)

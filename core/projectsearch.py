@@ -24,29 +24,66 @@
 #
 #---------------------------------------------------------------------
 
+from PyQt4.QtCore import pyqtSignal, QObject
 from qgis.core import QgsMapLayerRegistry
 
 
+class ProjectSearch(QObject):
 
-class ProjectSearch():
+    changed = pyqtSignal()
+
+    @property
+    def searchId(self): return self._searchId
+    @property
+    def searchName(self): return self._searchName
+    @property
+    def layerid(self): return self._layerid
+    @property
+    def layerName(self): return self._layerName
+    @property
+    def expression(self): return self._expression
+    @property
+    def priority(self): return self._priority
+    @property
+    def srid(self): return self._srid
+    @property
+    def dateEvaluated(self): return self._dateEvaluated
+    @dateEvaluated.setter
+    def dateEvaluated(self, value):
+        self._dateEvaluated = value
+        self._status = "evaluated"
+        self.changed.emit()
+
     def __init__(self, searchId, searchName, layerid, layerName, expression, priority, srid, dateEvaluated=None):
-        self.searchId = searchId
-        self.searchName = searchName
-        self.layerid = layerid
-        self.layerName = layerName
-        self.expression = expression
-        self.priority = priority
-        self.srid = srid
-        self.dateEvaluated = dateEvaluated
+        QObject.__init__(self)
+
+        self._searchId = searchId
+        self._searchName = searchName
+        self._layerid = layerid
+        self._layerName = layerName
+        self._expression = expression
+        self._priority = priority
+        self._srid = srid
+        self._dateEvaluated = dateEvaluated
 
         if dateEvaluated is None:
-            self.status = "not_evaluated"
+            self._status = "not_evaluated"
         else:
-            self.status = 'evaluated'
+            self._status = 'evaluated'
 
     def layer(self):
-        return QgsMapLayerRegistry.instance().mapLayer(self.layerid)
+        return QgsMapLayerRegistry.instance().mapLayer(self._layerid)
 
-    def reset(self):
-        self.dateEvaluated = None
-        self.status = "not_evaluated"
+
+    def edit(self, searchName, layerid, layerName, expression, priority, srid):
+        self._searchName = searchName
+        self._layerid = layerid
+        self._layerName = layerName
+        self._expression = expression
+        self._priority = priority
+        self._srid = srid
+        self._dateEvaluated = None
+        self._status = "not_evaluated"
+        self.changed.emit()
+
+
