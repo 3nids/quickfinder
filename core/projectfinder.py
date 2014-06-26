@@ -47,6 +47,7 @@ def createFTSfile(filepath):
     sql = "CREATE TABLE quickfinder_info (key text,value text);"
     sql += "INSERT INTO quickfinder_info (key,value) VALUES ('scope','quickfinder');"
     sql += "INSERT INTO quickfinder_info (key,value) VALUES ('db_version','1.0');"
+    sql += "INSERT INTO quickfinder_info (key,value) VALUES ('last_refresh','{0}');" % unicode( date.today().isoformat() )
     sql += "CREATE TABLE quickfinder_toc (search_id text, search_name text, layer_id text, layer_name text, expression text, priority integer, srid text, date_evaluated text);"
     sql += "CREATE VIRTUAL TABLE quickfinder_data USING fts4 (search_id, content, x real, y real, wkb_geom text);"
     cur = conn.cursor()
@@ -104,10 +105,17 @@ class ProjectFinder(AbstractFinder):
     def getInfo(self, key):
         try:
             cur = self.conn.cursor()
-            cur.execute("SELECT value FROM quickfinder_info WHERE key='%s'" % key)
+            cur.execute("SELECT value FROM quickfinder_info WHERE key=?", [key])
             return cur.fetchone()[0]
         except sqlite3.OperationalError:
             return None
+
+    def setInfo(self, key, value):
+        if not self.isValid:
+            return
+        cur = self.conn.cursor()
+        cur.execute("UPDATE quickfinder_info SET value = ? WHERE key = ?", [value, key])
+        self.conn.commit()
 
     def readSearches(self):
         searches = OrderedDict()
@@ -157,7 +165,7 @@ class ProjectFinder(AbstractFinder):
             if nFound >= totalLimit:
                 break
 
-    def deleteSearch(self, searchId):
+    def deleteSearch(self, searchId, commit=True):
         if not self.isValid:
             return False
         cur = self.conn.cursor()

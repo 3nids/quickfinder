@@ -23,10 +23,9 @@
 #
 #---------------------------------------------------------------------
 
-
+from datetime import date, datetime, timedelta
 from PyQt4.QtCore import QCoreApplication
 from PyQt4.QtGui import QDialog
-
 from quickfinder.ui.ui_refresh import Ui_Refresh
 
 
@@ -43,6 +42,9 @@ class RefreshDialog(QDialog, Ui_Refresh):
         self.projectFinder = projectFinder
         self.projectSearchModel = projectSearchModel
         self.selectedRows = selectedRows
+
+        if projectSearchModel is None:
+            self.selectionLayout.hide()
 
         self.progressBar.hide()
         self.cancelButton.hide()
@@ -62,12 +64,17 @@ class RefreshDialog(QDialog, Ui_Refresh):
         self.progressBar.setMaximum(len(searches)*100)  # progressBar only accepts int, so scaling
         self.progressBar.show()
 
-        unrec = self.unrecordedRadio.isChecked()
-        selec = self.selectedRadio.isChecked()
-        delet = self.deletedLayersCheckBox.isChecked()
+        unRecorded = self.unrecordedCheckBox.isChecked()
+        onlySelected = self.selectionComboBox.currentIndex() == 1
+        unEvaluated = self.unevaluatedCheckBox.isChecked()
+        unEvaluatedDelay = self.unevalutedDaysSpinBox.value()
+        removeDeleted = self.deletedLayersCheckBox.isChecked()
+
+        limit_date = unicode( ( datetime.now() - timedelta(days=unEvaluatedDelay) ).date().isoformat() )
 
         self.searchProgress = -1
-        for search in searches:
+
+        for search in searches.values():
             QCoreApplication.processEvents()
 
             self.searchProgress += 1
@@ -80,23 +87,30 @@ class RefreshDialog(QDialog, Ui_Refresh):
 
             # delete search if layer has been deleted
             layer = search.layer()
-            if layer is None and delet:
+            if layer is None and removeDeleted:
                 if self.projectSearchModel is not None:
                     self.projectSearchModel.removeSearches([search.searchId])
                 else:
                     self.projectFinder.deleteSearch(search.searchId)
                 continue
 
+            # if specified do not process recently evaluated search
+            if unEvaluated and search.dateEvaluated >= limit_date:
+                continue
+
             # if specified only process non evaluated searches
-            if unrec and search.dateEvaluated is not None:
+            if unRecorded and search.dateEvaluated is not None:
                 continue
 
             # if specified only do selected rows
-            if selec and search.searchId not in self.selectedRows:
-                continue
+            if onlySelected and self.selectedRows is not None:
+                if search.searchId not in self.selectedRows:
+                    continue
 
             self.currentLayerLength = layer.featureCount()
             ok, message = self.projectFinder.recordSearch(search, True)
+
+            self.projectFinder.setInfo("last_refresh", unicode(date.today().isoformat()))
 
         self.progressBar.hide()
         self.cancelButton.hide()

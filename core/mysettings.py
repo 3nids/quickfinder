@@ -34,26 +34,26 @@ class MySettings(SettingManager):
         SettingManager.__init__(self, pluginName)
 
         # general settings
-        self.addSetting("historyLength", "integer", "global", 3)
-        self.addSetting("categoryLimit", "integer", "global", 10)
-        self.addSetting("totalLimit", "integer", "global", 80)
+        self.addSetting("historyLength", "integer", "project", 3)
+        self.addSetting("categoryLimit", "integer", "project", 10)
+        self.addSetting("totalLimit", "integer", "project", 80)
 
         # project settings
         self.addSetting("project", "bool", "project", True)
         self.addSetting("layerId", "string", "project", '')
         self.addSetting("fieldName", "string", "project", '')
-
-
         self.addSetting("qftsfilepath", "string", "project", '')
+        self.addSetting("refreshAuto", "bool", "project", True)
+        self.addSetting("refreshDelay", "integer", "project", 15)
 
         # OpenStreetMap settings
         self.addSetting("osm", "bool", "project", True)
-        self.addSetting("osmUrl", "string", "global",
+        self.addSetting("osmUrl", "string", "project",
                         'http://nominatim.openstreetmap.org/search')
 
         # GeoMapFish settings
         self.addSetting("geomapfish", "bool", "project", True)
-        self.addSetting("geomapfishUrl", "string", "global",
+        self.addSetting("geomapfishUrl", "string", "project",
                         'http://mapfish-geoportal.demo-camptocamp.com/demo/wsgi/fulltextsearch')
-        self.addSetting("geomapfishCrs", "string", "global", 'EPSG:21781')
+        self.addSetting("geomapfishCrs", "string", "project", 'EPSG:21781')
 
