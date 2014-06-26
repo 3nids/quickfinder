@@ -36,7 +36,7 @@ class RefreshDialog(QDialog, Ui_Refresh):
     searchProgress = 0
     currentLayerLength = 0
 
-    def __init__(self, projectFinder, projectSearchModel, selectedRows):
+    def __init__(self, projectFinder, projectSearchModel=None, selectedRows=None):
         QDialog.__init__(self)
         self.setupUi(self)
 
@@ -53,7 +53,7 @@ class RefreshDialog(QDialog, Ui_Refresh):
         self.projectFinder.recordingSearchProgress.connect(self.setProgress)
 
     def refresh(self):
-        searches = self.projectSearchModel.searches
+        searches = self.projectFinder.searches
 
         self.stop = False
         self.cancelButton.show()
@@ -81,8 +81,10 @@ class RefreshDialog(QDialog, Ui_Refresh):
             # delete search if layer has been deleted
             layer = search.layer()
             if layer is None and delet:
-                if self.projectFinder.deleteSearch(search.searchId):
-                    del self.projectSearchModel.searches[search.searchId]
+                if self.projectSearchModel is not None:
+                    self.projectSearchModel.removeSearches([search.searchId])
+                else:
+                    self.projectFinder.deleteSearch(search.searchId)
                 continue
 
             # if specified only process non evaluated searches

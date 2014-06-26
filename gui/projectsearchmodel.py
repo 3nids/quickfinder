@@ -37,12 +37,12 @@ class ProjectSearchModel(QAbstractItemModel):
     def __init__(self, projectFinder):
         QAbstractItemModel.__init__(self)
         self.projectFinder = projectFinder
-        self.projectFinder.fileChanged.connect(self.readSearches)
+        self.projectFinder.fileChanged.connect(self.fileChanged)
 
-    def readSearches(self):
+    def fileChanged(self):
         self.beginResetModel()
-        self.searches = self.projectFinder.searches()
-        for search in self.searches:
+        self.searches = self.projectFinder.searches
+        for search in self.searches.values():
             search.changed.connect(self.searchChanged)
         self.endResetModel()
 
@@ -51,20 +51,17 @@ class ProjectSearchModel(QAbstractItemModel):
         srid = layer.crs().authid()
         projectSearch = ProjectSearch(searchId, searchName, layer.id(), layer.name(), expression, priority, srid)
         self.beginInsertRows(QModelIndex(), 0, 0)
-        self.searches.insert(0, projectSearch)
+        self.searches[searchId] = projectSearch
+        self.searches[searchId].changed.connect(self.searchChanged)
         self.endInsertRows()
-        return self.searches[0]
+        return self.searches[searchId]
 
     def removeSearches(self, searchIds):
         self.beginResetModel()
-        self.searches = [search for search in self.searches if search.searchId not in searchIds]
+        for searchId in searchIds:
+            self.projectFinder.deleteSearch(searchId)
+            del self.searches[searchId]
         self.endResetModel()
-
-    def searchAtId(self, searchId):
-        for search in self.searches:
-            if search.searchId == searchId:
-                return search
-        return None
 
     def searchChanged(self):
         self.modelReset.emit()
@@ -103,7 +100,7 @@ class ProjectSearchModel(QAbstractItemModel):
         if index.row() >= len(self.searches):
             return None
 
-        search = self.searches[index.row()]
+        search = self.searches.values()[index.row()]
         col = index.column()
 
         if role == Qt.DisplayRole:

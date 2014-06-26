@@ -47,7 +47,7 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
         self.settings = MySettings()
         SettingDialog.__init__(self, self.settings)
 
-        # FTS connection
+        # new declaration of ProjectFinder since changes can be cancelled
         self.projectFinder = ProjectFinder(self)
 
         # table model
@@ -80,7 +80,7 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
 
     def closeAndControl(self):
         self.projectFinder.close()
-        for search in self.projectSearchModel.searches:
+        for search in self.projectFinder.searches.values():
             if search.dateEvaluated is None:
                 box = QMessageBox(QMessageBox.Warning,
                                   "Quick Finder",
@@ -137,18 +137,15 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
         ret = box.exec_()
         if ret == QMessageBox.Cancel:
             return
-
-        for i in range(len(sel)):
-            commit = i==len(sel)-1
-            if not self.projectFinder.deleteSearch(sel[i], commit):
-                return
         self.projectSearchModel.removeSearches(sel)
 
     def editProjectSearch(self):
         sel = self.selectedSearchIds()
         if len(sel) != 1:
             return
-        search = self.projectSearchModel.searchAtId(sel[0])
+        if not self.projectSearchModel.searches.has_key(sel[0]):
+            return
+        search = self.projectSearchModel.searches[sel[0]]
         if search:
             ProjectSearchDialog(self.projectFinder, self.projectSearchModel, search).exec_()
 

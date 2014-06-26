@@ -27,6 +27,7 @@ import unicodedata
 import sqlite3
 import binascii
 from datetime import date
+from collections import OrderedDict
 
 from PyQt4.QtCore import pyqtSignal, QCoreApplication
 
@@ -61,10 +62,13 @@ class ProjectFinder(AbstractFinder):
     stopLoop = False
 
     conn = None
+    _searches = OrderedDict()
 
     recordingSearchProgress = pyqtSignal(int)
     fileChanged = pyqtSignal()
 
+    @property
+    def searches(self): return self._searches
 
     def __init__(self, parent):
         super(ProjectFinder, self).__init__(parent)
@@ -90,6 +94,7 @@ class ProjectFinder(AbstractFinder):
             return
 
         self.isValid = True
+        self._searches = self.readSearches()
         self.fileChanged.emit()
 
     def close(self):
@@ -104,18 +109,15 @@ class ProjectFinder(AbstractFinder):
         except sqlite3.OperationalError:
             return None
 
-    def searches(self, returnDict = False):
-        searches = {}
+    def readSearches(self):
+        searches = OrderedDict()
         if not self.isValid:
             return searches
-        sql = "SELECT search_id, search_name, layer_id, layer_name, expression, priority, srid, date_evaluated FROM quickfinder_toc;"
+        sql = "SELECT search_id, search_name, layer_id, layer_name, expression, priority, srid, date_evaluated FROM quickfinder_toc ORDER BY date_evaluated ASC;"
         cur = self.conn.cursor()
         for s in cur.execute(sql):
             searches[s[0]] = ProjectSearch( s[0], s[1], s[2], s[3], s[4].replace("\\'","'"), s[5], s[6], s[7] )
-        if returnDict:
-            return searches
-        else:
-            return  searches.values()
+        return searches
 
     def find(self, toFind):
         if not self.isValid:
@@ -123,7 +125,6 @@ class ProjectFinder(AbstractFinder):
         sql = "SELECT search_id,content,x,y,wkb_geom FROM quickfinder_data WHERE content MATCH ?"
         cur = self.conn.cursor()
         cur.execute(sql, [toFind])
-        searches = self.searches(True)
         catLimit = self.settings.value("categoryLimit")
         totalLimit = self.settings.value("totalLimit")
         nFound = 0
@@ -140,23 +141,23 @@ class ProjectFinder(AbstractFinder):
             else:
                 catFound[search_id] = 1
 
-            if not searches.has_key(search_id):
+            if not self._searches.has_key(search_id):
                 continue
 
             geometry = QgsGeometry()
             geometry.fromWkb(binascii.a2b_hex(wkb_geom))
 
             self.resultFound.emit(self,
-                                  searches[search_id].searchName,
+                                  self._searches[search_id].searchName,
                                   content,
                                   geometry,
-                                  searches[search_id].srid)
+                                  self._searches[search_id].srid)
 
             nFound += 1
             if nFound >= totalLimit:
                 break
 
-    def deleteSearch(self, searchId, commit=True):
+    def deleteSearch(self, searchId):
         if not self.isValid:
             return False
         cur = self.conn.cursor()
@@ -164,8 +165,7 @@ class ProjectFinder(AbstractFinder):
         cur.execute(sql)
         sql = "DELETE FROM quickfinder_toc WHERE search_id = '{0}'".format(searchId)
         cur.execute(sql)
-        if commit:
-            self.conn.commit()
+        self.conn.commit()
         return True
 
     def recordSearch(self, projectSearch, update=False):

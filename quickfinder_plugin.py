@@ -148,7 +148,6 @@ class quickFinder(QObject):
         self.toolbar.setVisible(True)
 
     def _initFinders(self):
-        """Create finders and connect signals"""
         self.finders = {
             'geomapfish': GeomapfishFinder(self),
             'osm': OsmFinder(self),
