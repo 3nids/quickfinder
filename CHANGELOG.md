@@ -2,7 +2,12 @@
 
 ** Version 3.0 ** 25.06.2014
 
-* central
+* Complete redesign to centralize all searches in QGIS
+* Project search allows to search features in every layer using a full-text search.
+  The layers are defined by the user and the search entries are saved in a SQLite file.
+* Web-services: searches can be performed on online services: OpenStreetMap and GeoMapFish are available as of today.
+* Search is performed through a line edit in the toolbars
+* All results are displayed in a single tree
 
 ** Version 2.6.2** 11.09.2013
 
