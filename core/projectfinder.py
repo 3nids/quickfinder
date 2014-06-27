@@ -86,11 +86,15 @@ class ProjectFinder(AbstractFinder):
 
     def setFile(self, filepath):
         self.close()
+        self.isValid = False
+
+        try:
+            f = open(filepath)
+        except IOError:
+            return
 
         self.conn = sqlite3.connect(filepath)
-
         if self.getInfo("scope") != "quickfinder":
-            self.isValid = False
             self.close()
             return
 
@@ -101,6 +105,7 @@ class ProjectFinder(AbstractFinder):
     def close(self):
         if self.conn is not None:
             self.conn.close()
+            self.conn = None
 
     def getInfo(self, key):
         try:
