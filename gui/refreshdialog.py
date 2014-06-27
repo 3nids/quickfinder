@@ -23,9 +23,10 @@
 #
 #---------------------------------------------------------------------
 
-from datetime import date, datetime, timedelta
 from PyQt4.QtCore import QCoreApplication
 from PyQt4.QtGui import QDialog
+from quickfinder.core.projectfinder import nDaysAgoIsoDate
+from quickfinder.core.mysettings import MySettings
 from quickfinder.ui.ui_refresh import Ui_Refresh
 
 
@@ -38,13 +39,18 @@ class RefreshDialog(QDialog, Ui_Refresh):
     def __init__(self, projectFinder, projectSearchModel=None, selectedRows=None):
         QDialog.__init__(self)
         self.setupUi(self)
+        self.progressBar.setValue(0)
 
+        self.settings = MySettings()
         self.projectFinder = projectFinder
         self.projectSearchModel = projectSearchModel
         self.selectedRows = selectedRows
 
         if projectSearchModel is None:
-            self.selectionLayout.hide()
+            self.selectionWidget.hide()
+            self.unrecordedCheckBox.hide()
+            self.unevaluatedCheckBox.setChecked(True)
+            self.unevalutedDaysSpinBox.setValue(max(1,self.settings.value("refreshDelay")/3))
 
         self.progressBar.hide()
         self.cancelButton.hide()
@@ -70,7 +76,7 @@ class RefreshDialog(QDialog, Ui_Refresh):
         unEvaluatedDelay = self.unevalutedDaysSpinBox.value()
         removeDeleted = self.deletedLayersCheckBox.isChecked()
 
-        limit_date = unicode( ( datetime.now() - timedelta(days=unEvaluatedDelay) ).date().isoformat() )
+        limit_date = nDaysAgoIsoDate(unEvaluatedDelay)
 
         self.searchProgress = -1
 
@@ -109,8 +115,6 @@ class RefreshDialog(QDialog, Ui_Refresh):
 
             self.currentLayerLength = layer.featureCount()
             ok, message = self.projectFinder.recordSearch(search, True)
-
-            self.projectFinder.setInfo("last_refresh", unicode(date.today().isoformat()))
 
         self.progressBar.hide()
         self.cancelButton.hide()

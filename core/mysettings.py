@@ -45,6 +45,7 @@ class MySettings(SettingManager):
         self.addSetting("qftsfilepath", "string", "project", '')
         self.addSetting("refreshAuto", "bool", "project", True)
         self.addSetting("refreshDelay", "integer", "project", 15)
+        self.addSetting("refreshLastAsked", "string", "project", "")
 
         # OpenStreetMap settings
         self.addSetting("osm", "bool", "project", True)

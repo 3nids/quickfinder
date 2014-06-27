@@ -25,7 +25,7 @@
 
 import sqlite3
 import binascii
-from datetime import date
+from datetime import date, datetime, timedelta
 from collections import OrderedDict
 
 from PyQt4.QtCore import pyqtSignal, QCoreApplication
@@ -42,12 +42,14 @@ def createFTSfile(filepath):
     sql = "CREATE TABLE quickfinder_info (key text,value text);"
     sql += "INSERT INTO quickfinder_info (key,value) VALUES ('scope','quickfinder');"
     sql += "INSERT INTO quickfinder_info (key,value) VALUES ('db_version','1.0');"
-    sql += "INSERT INTO quickfinder_info (key,value) VALUES ('last_refresh','{0}');" % unicode( date.today().isoformat() )
     sql += "CREATE TABLE quickfinder_toc (search_id text, search_name text, layer_id text, layer_name text, expression text, priority integer, srid text, date_evaluated text);"
     sql += "CREATE VIRTUAL TABLE quickfinder_data USING fts4 (search_id, content, x real, y real, wkb_geom text);"
     cur = conn.cursor()
     cur.executescript(sql)
     conn.close()
+
+def nDaysAgoIsoDate(nDays):
+    return unicode( ( datetime.now() - timedelta(days=nDays) ).date().isoformat() )
 
 class ProjectFinder(AbstractFinder):
 

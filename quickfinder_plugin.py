@@ -24,20 +24,16 @@
 #---------------------------------------------------------------------
 
 import os.path
-
-from PyQt4.QtCore import Qt, QObject, QSettings, QCoreApplication, \
-                         QTranslator, QUrl
-from PyQt4.QtGui import QAction, QIcon, QColor, \
-                        QDesktopServices
-
+from PyQt4.QtCore import Qt, QObject, QSettings, QCoreApplication, QTranslator, QUrl
+from PyQt4.QtGui import QAction, QIcon, QColor, QDesktopServices, QMessageBox
 from qgis.gui import QgsRubberBand
 
-
-from quickfinder.core.projectfinder import ProjectFinder
+from quickfinder.core.projectfinder import ProjectFinder, nDaysAgoIsoDate
 from quickfinder.core.osmfinder import OsmFinder
 from quickfinder.core.geomapfishfinder import GeomapfishFinder
+from quickfinder.core.mysettings import MySettings
 from quickfinder.gui.configurationdialog import ConfigurationDialog
-
+from quickfinder.gui.refreshdialog import RefreshDialog
 from quickfinder.gui.finderbox import FinderBox
 
 import resources_rc
@@ -53,18 +49,11 @@ class quickFinder(QObject):
     loadingIcon = None
 
     def __init__(self, iface):
-        """Constructor for the plugin.
-
-        :param iface: A QGisAppInterface instance we use to access QGIS via.
-        :type iface: QgsAppInterface
-        """
-        super(quickFinder, self).__init__()
-
-        # Save reference to the QGIS interface
+        QObject.__init__(self)
         self.iface = iface
-
         self.actions = {}
         self.finders = {}
+        self.settings = MySettings()
 
         self._initFinders()
 
@@ -140,7 +129,6 @@ class quickFinder(QObject):
         self.searchAction.triggered.connect(self.finderBox.search)
         self.toolbar.addAction(self.searchAction)
 
-
         self.stopAction.setVisible(False)
         self.stopAction.triggered.connect(self.finderBox.stop)
         self.toolbar.addAction(self.stopAction)
@@ -153,10 +141,12 @@ class quickFinder(QObject):
             'osm': OsmFinder(self),
             'project': ProjectFinder(self)
         }
+        self.refreshProject()
 
     def showSettings(self):
         if ConfigurationDialog().exec_():
             self.finders['project'].reload()
+            self.refreshProject()
 
     def enableSearch(self):
         self.searchAction.setVisible(True)
@@ -165,5 +155,33 @@ class quickFinder(QObject):
     def disableSearch(self):
         self.searchAction.setVisible(False)
         self.stopAction.setVisible(True)
+
+    def refreshProject(self):
+        if not self.finders['project'].activated:
+            return
+        if not self.settings.value("refreshAuto"):
+            return
+        nDays = self.settings.value("refreshDelay")
+        # do not ask more ofen than 3 days
+        askLimit = min(3,nDays)
+        recentlyAsked = self.settings.value("refreshLastAsked") > nDaysAgoIsoDate(askLimit)
+        if recentlyAsked:
+            return
+        threshDate = nDaysAgoIsoDate(nDays)
+        uptodate = True
+        for search in self.finders['project'].searches.values():
+            if search.dateEvaluated <= threshDate:
+                uptodate = False
+                break
+        if uptodate:
+            return
+        self.settings.setValue( "refreshLastAsked", nDaysAgoIsoDate(0) )
+        ret = QMessageBox(QMessageBox.Warning,
+                          "Quick Finder",
+                          QCoreApplication.translate("Auto Refresh", "Some searches are outdated. Do you want to refresh them ?"),
+                          QMessageBox.Cancel | QMessageBox.Yes).exec_()
+        if ret == QMessageBox.Yes:
+            RefreshDialog(self.finders['project']).exec_()
+
 
 
