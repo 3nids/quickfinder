@@ -23,7 +23,6 @@
 #
 #---------------------------------------------------------------------
 
-import unicodedata
 import sqlite3
 import binascii
 from datetime import date
@@ -36,10 +35,6 @@ from qgis.core import QgsMapLayerRegistry, QgsFeatureRequest, QgsExpression, Qgs
 from quickfinder.core.projectsearch import ProjectSearch
 from quickfinder.core.abstractfinder import AbstractFinder
 
-
-def remove_accents(data):
-    # http://www.unicode.org/reports/tr44/#GC_Values_Table
-    return ''.join(x for x in unicodedata.normalize('NFKD', data) if unicodedata.category(x)[0] in ('L', 'N', 'P', 'Zs')).lower()
 
 def createFTSfile(filepath):
     conn = sqlite3.connect(filepath)
