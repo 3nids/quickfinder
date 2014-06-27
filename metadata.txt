@@ -2,7 +2,7 @@
 
 name=Quick Finder
 
-description=Quickly find features base on their ID or other fields.
+description=Quickly find features over all layers and online services, from a single place.
 
 version=3.0
 
@@ -13,7 +13,7 @@ email=denis.rouzaud@gmail.com
 
 icon=icons/quickfinder.svg
 
-tags=search,find,feature,id
+tags=search,find,feature,full-text search,openstreetmap,geomapfish
 
 homepage=https://github.com/3nids/quickfinder/wiki
 tracker=https://github.com/3nids/quickfinder/issues
