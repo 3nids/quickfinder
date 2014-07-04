@@ -69,7 +69,7 @@ class ProjectSearchModel(QAbstractItemModel):
     def index(self, row, column, parent=QModelIndex()):
         if row < 0 or row >= self.rowCount():
             return QModelIndex()
-        return self.createIndex( row, column, row )
+        return self.createIndex(row, column, row)
 
     def parent(self, index):
         return QModelIndex()
@@ -78,7 +78,7 @@ class ProjectSearchModel(QAbstractItemModel):
         return len(self.searches)
 
     def columnCount(self, parent=QModelIndex()):
-        return 4
+        return 5
 
     def headerData(self, section, Orientation, role=Qt.DisplayRole):
         if role == Qt.DisplayRole:
@@ -89,8 +89,9 @@ class ProjectSearchModel(QAbstractItemModel):
             elif section == 2:
                 return 'Expression'
             elif section == 3:
+                return 'Priority'
+            elif section == 4:
                 return 'Evaluated on'
-
         return None
 
     def data(self, index, role=Qt.DisplayRole):
@@ -111,12 +112,18 @@ class ProjectSearchModel(QAbstractItemModel):
             elif col == 2:
                 return search.expression
             elif col == 3:
+                return search.priority
+            elif col == 4:
                 return search.dateEvaluated
-            
+
         if role == LayerIdRole:
             return search.layerid
 
         if role == SearchIdRole:
             return search.searchId
+
+        if role == Qt.TextAlignmentRole:
+            if col == 3:
+                return Qt.AlignVCenter + Qt.AlignRight
 
         return None

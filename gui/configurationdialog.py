@@ -26,7 +26,8 @@
 from os import remove, path
 
 from PyQt4.QtCore import QCoreApplication
-from PyQt4.QtGui import QDialog, QFileDialog, QMessageBox
+from PyQt4.QtGui import (QDialog, QFileDialog, QMessageBox,
+                        QSortFilterProxyModel, QHeaderView)
 
 from qgis.core import QgsProject
 from qgis.gui import QgsGenericProjectionSelector
@@ -52,7 +53,13 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
 
         # table model
         self.projectSearchModel = ProjectSearchModel(self.projectFinder)
-        self.projectSearchTable.setModel(self.projectSearchModel)
+
+        self.proxyModel = QSortFilterProxyModel(self)
+        self.proxyModel.setSourceModel(self.projectSearchModel)
+        self.projectSearchTable.setModel(self.proxyModel)
+
+        header = self.projectSearchTable.horizontalHeader()
+        header.setResizeMode(QHeaderView.ResizeToContents)
 
         # open/create QuickFinder file
         self.createFileButton.clicked.connect(self.createQFTSfile)
@@ -155,13 +162,13 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
     def selectedSearchIds(self):
         selectedSearchId = []
         for idx in self.projectSearchTable.selectionModel().selectedRows():
-            selectedSearchId.append(self.projectSearchModel.data(idx, SearchIdRole))
+            selectedSearchId.append(self.proxyModel.data(idx, SearchIdRole))
         return selectedSearchId
 
     def enableButtons(self):
         n = len(self.selectedSearchIds())
-        self.removeSearchButton.setEnabled(n>0)
-        self.editSearchButton.setEnabled(n==1)
+        self.removeSearchButton.setEnabled(n > 0)
+        self.editSearchButton.setEnabled(n == 1)
 
     def geomapfishCrsButtonClicked(self):
         dlg = QgsGenericProjectionSelector(self)
