@@ -474,7 +474,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QLineEdit" name="geomapfish_url"/>
+             <widget class="QLineEdit" name="geomapfishUrl"/>
             </item>
            </layout>
           </item>
