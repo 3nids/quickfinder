@@ -110,7 +110,7 @@ class quickFinder(QObject):
         self.toolbar = self.iface.addToolBar(self.name)
         self.toolbar.setObjectName('mQuickFinderToolBar')
 
-        self.searchAction = QAction( QIcon(":/plugins/quickfinder/icons/magnifier13.svg"),
+        self.searchAction = QAction(QIcon(":/plugins/quickfinder/icons/magnifier13.svg"),
                                      self.tr("Search"),
                                      self.toolbar)
         self.stopAction = QAction(
@@ -119,8 +119,8 @@ class quickFinder(QObject):
             self.toolbar)
 
         self.finderBox = FinderBox(self.finders, self.iface, self.toolbar)
-        self.finderBox.searchStarted.connect(self.enableSearch)
-        self.finderBox.searchFinished.connect(self.disableSearch)
+        self.finderBox.searchStarted.connect(self.searchStarted)
+        self.finderBox.searchFinished.connect(self.searchFinished)
 
         self.finderBoxAction = self.toolbar.addWidget(self.finderBox)
         self.finderBoxAction.setVisible(True)
@@ -148,13 +148,13 @@ class quickFinder(QObject):
             self.finders['project'].reload()
             self.refreshProject()
 
-    def enableSearch(self):
-        self.searchAction.setVisible(True)
-        self.stopAction.setVisible(False)
-
-    def disableSearch(self):
+    def searchStarted(self):
         self.searchAction.setVisible(False)
         self.stopAction.setVisible(True)
+
+    def searchFinished(self):
+        self.searchAction.setVisible(True)
+        self.stopAction.setVisible(False)
 
     def refreshProject(self):
         if not self.finders['project'].activated:
@@ -163,7 +163,7 @@ class quickFinder(QObject):
             return
         nDays = self.settings.value("refreshDelay")
         # do not ask more ofen than 3 days
-        askLimit = min(3,nDays)
+        askLimit = min(3, nDays)
         recentlyAsked = self.settings.value("refreshLastAsked") > nDaysAgoIsoDate(askLimit)
         if recentlyAsked:
             return
@@ -175,7 +175,7 @@ class quickFinder(QObject):
                 break
         if uptodate:
             return
-        self.settings.setValue( "refreshLastAsked", nDaysAgoIsoDate(0) )
+        self.settings.setValue("refreshLastAsked", nDaysAgoIsoDate(0))
         ret = QMessageBox(QMessageBox.Warning,
                           "Quick Finder",
                           QCoreApplication.translate("Auto Refresh", "Some searches are outdated. Do you want to refresh them ?"),
