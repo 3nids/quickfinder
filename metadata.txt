@@ -4,9 +4,9 @@ name=Quick Finder
 
 description=Quickly find features over all layers and online services, from a single place.
 
-version=3.0
+version=3.0.1
 
-qgisMinimumVersion=2.3
+qgisMinimumVersion=2.4
 
 author=Denis Rouzaud, Arnaud Morvan
 email=denis.rouzaud@gmail.com

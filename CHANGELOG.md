@@ -1,5 +1,11 @@
 ##  Changelog
 
+** Version 3.0.1 ** 16.07.2014
+
+* Fix search and stop buttons visibility
+* Improve search table with priority and sorting
+* Fix geomapfish settings names and defaults
+
 ** Version 3.0 ** 25.06.2014
 
 * Complete redesign to centralize all searches in QGIS
