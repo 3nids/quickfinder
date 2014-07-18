@@ -1,5 +1,9 @@
 ##  Changelog
 
+** Version 3.0.1 ** 18.07.2014
+
+* Fix creation of first local search
+
 ** Version 3.0.1 ** 16.07.2014
 
 * Fix search and stop buttons visibility

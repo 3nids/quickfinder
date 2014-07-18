@@ -4,7 +4,7 @@ name=Quick Finder
 
 description=Quickly find features over all layers and online services, from a single place.
 
-version=3.0.1
+version=3.0.2
 
 qgisMinimumVersion=2.4
 
