@@ -32,7 +32,7 @@ SearchIdRole = Qt.UserRole + 2
 
 class ProjectSearchModel(QAbstractItemModel):
 
-    searches = list()
+    searches = {}
 
     def __init__(self, projectFinder):
         QAbstractItemModel.__init__(self)
