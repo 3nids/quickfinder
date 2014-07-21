@@ -105,8 +105,8 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
     def readQFTSfile(self):
         filepath = self.qftsfilepath.text()
         self.projectFinder.setFile(filepath)
-        self.projectSearchButtonsLayout.setEnabled(self.projectFinder.isValid)
         self.projectSearchTable.setEnabled(self.projectFinder.isValid)
+        self.projectSearchButtonsWidget.setEnabled(self.projectFinder.isValid)
 
     def createQFTSfile(self):
         prjPath = QgsProject.instance().homePath()
@@ -169,6 +169,7 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
         n = len(self.selectedSearchIds())
         self.removeSearchButton.setEnabled(n > 0)
         self.editSearchButton.setEnabled(n == 1)
+        self.projectSearchButtonsWidget.setEnabled(self.projectFinder.isValid)
 
     def geomapfishCrsButtonClicked(self):
         dlg = QgsGenericProjectionSelector(self)

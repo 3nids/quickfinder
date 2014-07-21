@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>569</width>
-    <height>398</height>
+    <width>601</width>
+    <height>453</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -205,64 +205,6 @@
             </item>
            </layout>
           </item>
-          <item row="1" column="0">
-           <layout class="QHBoxLayout" name="projectSearchButtonsLayout">
-            <item>
-             <widget class="QToolButton" name="addSearchButton">
-              <property name="icon">
-               <iconset resource="../resources.qrc">
-                <normaloff>:/plugins/quickfinder/icons/add.png</normaloff>:/plugins/quickfinder/icons/add.png</iconset>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QToolButton" name="removeSearchButton">
-              <property name="text">
-               <string>...</string>
-              </property>
-              <property name="icon">
-               <iconset resource="../resources.qrc">
-                <normaloff>:/plugins/quickfinder/icons/remove.png</normaloff>:/plugins/quickfinder/icons/remove.png</iconset>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QToolButton" name="editSearchButton">
-              <property name="text">
-               <string>...</string>
-              </property>
-              <property name="icon">
-               <iconset resource="../resources.qrc">
-                <normaloff>:/plugins/quickfinder/icons/edit.svg</normaloff>:/plugins/quickfinder/icons/edit.svg</iconset>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <spacer name="horizontalSpacer_6">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>40</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-            <item>
-             <widget class="QToolButton" name="refreshButton">
-              <property name="text">
-               <string/>
-              </property>
-              <property name="icon">
-               <iconset resource="../resources.qrc">
-                <normaloff>:/plugins/quickfinder/icons/refresh.svg</normaloff>:/plugins/quickfinder/icons/refresh.svg</iconset>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
           <item row="2" column="0">
            <widget class="QTableView" name="projectSearchTable">
             <property name="enabled">
@@ -328,6 +270,66 @@
              </spacer>
             </item>
            </layout>
+          </item>
+          <item row="1" column="0">
+           <widget class="QWidget" name="projectSearchButtonsWidget" native="true">
+            <layout class="QHBoxLayout" name="projectSearchButtonsLayout">
+             <item>
+              <widget class="QToolButton" name="addSearchButton">
+               <property name="icon">
+                <iconset resource="../resources.qrc">
+                 <normaloff>:/plugins/quickfinder/icons/add.png</normaloff>:/plugins/quickfinder/icons/add.png</iconset>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QToolButton" name="removeSearchButton">
+               <property name="text">
+                <string>...</string>
+               </property>
+               <property name="icon">
+                <iconset resource="../resources.qrc">
+                 <normaloff>:/plugins/quickfinder/icons/remove.png</normaloff>:/plugins/quickfinder/icons/remove.png</iconset>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QToolButton" name="editSearchButton">
+               <property name="text">
+                <string>...</string>
+               </property>
+               <property name="icon">
+                <iconset resource="../resources.qrc">
+                 <normaloff>:/plugins/quickfinder/icons/edit.svg</normaloff>:/plugins/quickfinder/icons/edit.svg</iconset>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_6">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <widget class="QToolButton" name="refreshButton">
+               <property name="text">
+                <string/>
+               </property>
+               <property name="icon">
+                <iconset resource="../resources.qrc">
+                 <normaloff>:/plugins/quickfinder/icons/refresh.svg</normaloff>:/plugins/quickfinder/icons/refresh.svg</iconset>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
           </item>
          </layout>
         </widget>

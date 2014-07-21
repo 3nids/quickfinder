@@ -30,7 +30,6 @@ from qgis.gui import QgsMapLayerProxyModel
 from quickfinder.ui.ui_projectsearch import Ui_ProjectSearch
 
 
-
 class ProjectSearchDialog(QDialog, Ui_ProjectSearch):
     def __init__(self, projectFinder, projectSearchModel, projectSearch=None):
         QDialog.__init__(self)
