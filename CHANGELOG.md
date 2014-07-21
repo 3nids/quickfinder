@@ -1,6 +1,11 @@
 ##  Changelog
 
-** Version 3.0.1 ** 18.07.2014
+** Version 3.0.3 ** 21.07.2014
+
+* Prevent adding local search if no FTS file has been created first
+* Do no list geometryless layers
+
+** Version 3.0.2 ** 18.07.2014
 
 * Fix creation of first local search
 
