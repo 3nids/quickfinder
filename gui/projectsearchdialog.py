@@ -39,7 +39,7 @@ class ProjectSearchDialog(QDialog, Ui_ProjectSearch):
         self.projectSearchModel = projectSearchModel
         self.projectSearch = projectSearch
 
-        self.layerCombo.setFilters(QgsMapLayerProxyModel.VectorLayer)
+        self.layerCombo.setFilters(QgsMapLayerProxyModel.HasGeometry)
         self.layerCombo.layerChanged.connect(self.fieldExpressionWidget.setLayer)
         self.fieldExpressionWidget.setLayer(self.layerCombo.currentLayer())
 
