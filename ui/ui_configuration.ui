@@ -157,7 +157,7 @@
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_4">
        <item>
-        <widget class="QGroupBox" name="Project">
+        <widget class="QGroupBox" name="project">
          <property name="title">
           <string>Search in project layers</string>
          </property>
@@ -342,7 +342,7 @@
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
-        <widget class="QGroupBox" name="OpenStreetMap">
+        <widget class="QGroupBox" name="osm">
          <property name="title">
           <string>OpenStreetMap</string>
          </property>
@@ -384,7 +384,7 @@
         </spacer>
        </item>
        <item>
-        <widget class="QGroupBox" name="GeoMapFish">
+        <widget class="QGroupBox" name="geomapfish">
          <property name="title">
           <string>GeoMapFish</string>
          </property>
