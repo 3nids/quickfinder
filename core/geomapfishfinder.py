@@ -23,7 +23,8 @@
 #
 #---------------------------------------------------------------------
 
-import json, ogr
+import json
+from osgeo import ogr
 
 from qgis.core import QgsGeometry
 
