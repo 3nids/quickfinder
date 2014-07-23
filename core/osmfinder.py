@@ -57,10 +57,6 @@ class OsmFinder(HttpFinder):
         # 'bounded' : '1'
         self._sendRequest(url, params)
 
-    def replyFinished(self, reply):
-        data = json.loads(reply.readAll().data())
-        self.loadData(data)
-
     def loadData(self, data):
         for d in data:
             try:
