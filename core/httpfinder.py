@@ -25,9 +25,8 @@
 import urllib, urllib2, json
 
 from PyQt4.QtCore import QUrl
-from PyQt4.QtNetwork import QNetworkAccessManager, QNetworkRequest, \
-                            QNetworkReply
-
+from PyQt4.QtNetwork import QNetworkRequest, QNetworkReply
+from qgis.core import QgsNetworkAccessManager
 from qgis.gui import QgsMessageBar
 
 from .abstractfinder import AbstractFinder
@@ -39,16 +38,21 @@ class HttpFinder(AbstractFinder):
         super(HttpFinder, self).__init__(parent)
         self.asynchonous = True
         self.reply = None
-        self.manager = QNetworkAccessManager(self)
-        self.manager.finished.connect(self.replyFinished)
 
     def _sendRequest(self, url, params):
         if self.asynchonous:
+
+            if self.reply is not None:
+                self.reply.finished.disconnect(self.replyFinished)
+                self.reply.abort()
+                self.reply = None
+
             url = QUrl(url)
             for key, value in params.iteritems():
                 url.addQueryItem(key, value)
             request = QNetworkRequest(url)
-            self.reply = self.manager.get(request)
+            self.reply = QgsNetworkAccessManager.instance().get(request)
+            self.reply.finished.connect(self.replyFinished)
 
         else:
             response = urllib2.urlopen(self.url + '?' + urllib.urlencode(params))
@@ -61,14 +65,15 @@ class HttpFinder(AbstractFinder):
             self.reply = None
         self._finish()
 
-    def replyFinished(self, reply):
-        self.reply = None
-        error = reply.error()
+    def replyFinished(self):
+        error = self.reply.error()
         if error == QNetworkReply.NoError:
-            data = json.loads(reply.readAll().data())
+            response = self.reply.readAll().data()
+            data = json.loads(response)
             self.loadData(data)
         else:
-            self.message.emit(self, self.getErrorMessage(error), QgsMessageBar.CRITICAL)
+            errorMessage = self.getErrorMessage(error)
+            self.message.emit(self, errorMessage, QgsMessageBar.WARNING)
             self._finish()
 
     def getErrorMessage(self, error):
