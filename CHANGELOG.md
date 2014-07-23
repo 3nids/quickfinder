@@ -1,5 +1,11 @@
 ##  Changelog
 
+** Version 3.0.4 ** 23.07.2014
+
+* Fix setIcon
+* Fix proxy (use QgsNetworkAccessManager for QGIS proxy settings)
+* Fix configuration
+
 ** Version 3.0.3 ** 21.07.2014
 
 * Prevent adding local search if no FTS file has been created first
