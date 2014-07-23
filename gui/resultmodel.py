@@ -87,6 +87,8 @@ class ResultModel(QStandardItemModel):
     def setLoading(self, isLoading):
         root = self.invisibleRootItem()
         item = root.child(0)
+        if item is None:
+            return
         if isLoading:
             icon = QIcon(":/plugins/quickfinder/icons/loading.gif")
         else:
