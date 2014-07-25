@@ -1,5 +1,9 @@
 ##  Changelog
 
+** Version 3.0.5 ** 25.07.2014
+
+* Fix configuration correctly
+
 ** Version 3.0.4 ** 23.07.2014
 
 * Fix setIcon
