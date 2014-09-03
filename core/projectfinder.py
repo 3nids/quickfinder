@@ -132,6 +132,15 @@ class ProjectFinder(AbstractFinder):
     def find(self, toFind):
         if not self.isValid:
             return
+        # add star after each word except numbers
+        toFind = toFind.split(' ')
+        for i,word in enumerate(toFind):
+            try:
+                int(word)
+            except ValueError:
+                toFind[i] = '%s*' % word
+        toFind = ' '.join(toFind)
+        # FTS request
         sql = "SELECT search_id,content,x,y,wkb_geom FROM quickfinder_data WHERE content MATCH ?"
         cur = self.conn.cursor()
         cur.execute(sql, [toFind])
