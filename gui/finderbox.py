@@ -76,7 +76,6 @@ class FinderBox(QComboBox):
             finder.resultFound.connect(self.resultFound)
             finder.limitReached.connect(self.limitReached)
             finder.finished.connect(self.finished)
-            finder.message.connect(self.message)
 
     def __del__(self):
         if self.rubber:
@@ -134,9 +133,6 @@ class FinderBox(QComboBox):
         self.resultModel.setLoading(False)
 
         QCoreApplication.processEvents(QEventLoop.ExcludeUserInputEvents)
-
-    def message(self, finder, message, level):
-        self.iface.messageBar().pushMessage("Quick Finder", message, level, 3)
 
     def itemActivated(self, index):
         item = self.resultModel.itemFromIndex(index)

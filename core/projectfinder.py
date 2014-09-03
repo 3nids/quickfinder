@@ -31,6 +31,7 @@ from collections import OrderedDict
 from PyQt4.QtCore import pyqtSignal, QCoreApplication
 
 from qgis.core import QgsMapLayerRegistry, QgsFeatureRequest, QgsExpression, QgsGeometry
+from qgis.gui import QgsMessageBar
 
 from quickfinder.core.projectsearch import ProjectSearch
 from quickfinder.core.abstractfinder import AbstractFinder
@@ -131,7 +132,7 @@ class ProjectFinder(AbstractFinder):
 
     def find(self, toFind):
         if not self.isValid:
-            self.message.emit("Cannot search in project. QuickFinder file is probably currently in used.",QgsMessageBar.Warning)
+            self.message.emit("Cannot search in project. QuickFinder file is probably currently in used.",QgsMessageBar.WARNING)
             return
         # add star after each word except numbers
         toFind = toFind.split(' ')
