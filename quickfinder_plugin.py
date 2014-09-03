@@ -164,7 +164,7 @@ class quickFinder(QObject):
         nDays = self.settings.value("refreshDelay")
         # do not ask more ofen than 3 days
         askLimit = min(3, nDays)
-        recentlyAsked = self.settings.value("refreshLastAsked") > nDaysAgoIsoDate(askLimit)
+        recentlyAsked = self.settings.value("refreshLastAsked") >= nDaysAgoIsoDate(askLimit)
         if recentlyAsked:
             return
         threshDate = nDaysAgoIsoDate(nDays)

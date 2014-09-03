@@ -43,8 +43,6 @@ class ProjectSearchDialog(QDialog, Ui_ProjectSearch):
         self.layerCombo.layerChanged.connect(self.fieldExpressionWidget.setLayer)
         self.fieldExpressionWidget.setLayer(self.layerCombo.currentLayer())
 
-        self.searchName.setText('test')
-
         self.progressBar.hide()
         self.cancelButton.hide()
         self.cancelButton.clicked.connect(self.projectFinder.stopRecord)
