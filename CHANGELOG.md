@@ -1,5 +1,10 @@
 ##  Changelog
 
+** Version 3.1.1 ** 03.09.2014
+
+* Reload finders when loading new project (also fix initialization)
+* Fix message display
+
 ** Version 3.1 ** 03.09.2014
 
 * Find words if partially written (project search)
