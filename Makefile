@@ -43,7 +43,7 @@ clean:
 
 compile: $(UI_FILES) $(RC_FILES)
 
-deploy:
+deploy: compile
 	mkdir -p $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
 	cp -rvf * $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)/
 	rm -f $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)/$(PLUGINNAME).zip
@@ -57,6 +57,6 @@ dclean:
 derase:
 	rm -Rf $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
 
-zip: deploy dclean
+zip: clean deploy dclean
 	rm -f $(PLUGINNAME).zip
 	cd $(HOME)/$(QGISDIR)/python/plugins; zip -9r $(CURDIR)/$(PLUGINNAME).zip $(PLUGINNAME)
