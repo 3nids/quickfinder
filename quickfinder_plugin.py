@@ -57,6 +57,9 @@ class quickFinder(QObject):
 
         self._initFinders()
 
+        self.iface.projectRead.connect(self._reloadFinders)
+        self.iface.newProjectCreated.connect(self._reloadFinders)
+
         # translation environment
         self.plugin_dir = os.path.dirname(__file__)
         locale = QSettings().value("locale/userLocale")[0:2]
@@ -74,7 +77,6 @@ class quickFinder(QObject):
             self.iface.mainWindow())
         self.actions['showSettings'].triggered.connect(self.showSettings)
         self.iface.addPluginToMenu(self.name, self.actions['showSettings'])
-
         self.actions['help'] = QAction(
             QIcon(":/plugins/quickfinder/icons/help.svg"),
             self.tr("Help"),
@@ -83,9 +85,7 @@ class quickFinder(QObject):
             lambda: QDesktopServices().openUrl(
                 QUrl("https://github.com/3nids/quickfinder/wiki")))
         self.iface.addPluginToMenu(self.name, self.actions['help'])
-
         self._initToolbar()
-
         self.rubber = QgsRubberBand(self.iface.mapCanvas())
         self.rubber.setColor(QColor(255, 255, 50, 200))
         self.rubber.setIcon(self.rubber.ICON_CIRCLE)
@@ -97,10 +97,8 @@ class quickFinder(QObject):
         """Remove the plugin menu item and icon """
         for action in self.actions.itervalues():
             self.iface.removePluginMenu(self.name, action)
-
         if self.toolbar:
             del self.toolbar
-
         if self.rubber:
             self.iface.mapCanvas().scene().removeItem(self.rubber)
             del self.rubber
@@ -109,7 +107,6 @@ class quickFinder(QObject):
         """setup the plugin toolbar."""
         self.toolbar = self.iface.addToolBar(self.name)
         self.toolbar.setObjectName('mQuickFinderToolBar')
-
         self.searchAction = QAction(QIcon(":/plugins/quickfinder/icons/magnifier13.svg"),
                                      self.tr("Search"),
                                      self.toolbar)
@@ -117,23 +114,16 @@ class quickFinder(QObject):
             QIcon(":/plugins/quickfinder/icons/wrong2.svg"),
             self.tr("Cancel"),
             self.toolbar)
-
         self.finderBox = FinderBox(self.finders, self.iface, self.toolbar)
         self.finderBox.searchStarted.connect(self.searchStarted)
         self.finderBox.searchFinished.connect(self.searchFinished)
-
         self.finderBoxAction = self.toolbar.addWidget(self.finderBox)
         self.finderBoxAction.setVisible(True)
-
-
         self.searchAction.triggered.connect(self.finderBox.search)
         self.toolbar.addAction(self.searchAction)
-
-
         self.stopAction.setVisible(False)
         self.stopAction.triggered.connect(self.finderBox.stop)
         self.toolbar.addAction(self.stopAction)
-
         self.toolbar.setVisible(True)
 
     def _initFinders(self):
@@ -142,10 +132,13 @@ class quickFinder(QObject):
             'osm': OsmFinder(self),
             'project': ProjectFinder(self)
         }
+        for key in self.finders.keys():
+            self.finders[key].message.connect(self.displayMessage)
+        self.refreshProject()
 
-        for finder in self.finders.values():
-            finder.message.connect(self.displayMessage)
-
+    def _reloadFinders(self):
+        for key in self.finders.keys():
+            self.finders[key].reload()
         self.refreshProject()
 
     @pyqtSlot(str, QgsMessageBar.MessageLevel)
@@ -154,8 +147,7 @@ class quickFinder(QObject):
 
     def showSettings(self):
         if ConfigurationDialog().exec_():
-            self.finders['project'].reload()
-            self.refreshProject()
+            self._initFinders()
 
     def searchStarted(self):
         self.searchAction.setVisible(False)

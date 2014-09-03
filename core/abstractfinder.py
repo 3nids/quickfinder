@@ -64,3 +64,6 @@ class AbstractFinder(QObject):
 
     def isRunning(self):
         return self.continueSearch
+
+    def reload(self):
+        pass
