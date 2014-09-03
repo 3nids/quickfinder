@@ -73,7 +73,7 @@ class HttpFinder(AbstractFinder):
             self.loadData(data)
         else:
             errorMessage = self.getErrorMessage(error)
-            self.message.emit(self, errorMessage, QgsMessageBar.WARNING)
+            self.message.emit(errorMessage, QgsMessageBar.WARNING)
             self._finish()
 
     def getErrorMessage(self, error):

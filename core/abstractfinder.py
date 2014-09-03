@@ -43,7 +43,7 @@ class AbstractFinder(QObject):
     resultFound = pyqtSignal(QObject, str, str, QgsGeometry, int)
     limitReached = pyqtSignal(QObject, str)
     finished = pyqtSignal(QObject)
-    message = pyqtSignal(QObject, str, QgsMessageBar.MessageLevel)
+    message = pyqtSignal(str, QgsMessageBar.MessageLevel)
 
     def __init__(self, parent):
         QObject.__init__(self, parent)

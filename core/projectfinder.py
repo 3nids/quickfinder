@@ -131,6 +131,7 @@ class ProjectFinder(AbstractFinder):
 
     def find(self, toFind):
         if not self.isValid:
+            self.message.emit("Cannot search in project. QuickFinder file is probably currently in used.",QgsMessageBar.Warning)
             return
         # add star after each word except numbers
         toFind = toFind.split(' ')

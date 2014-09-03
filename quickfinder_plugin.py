@@ -24,9 +24,9 @@
 #---------------------------------------------------------------------
 
 import os.path
-from PyQt4.QtCore import Qt, QObject, QSettings, QCoreApplication, QTranslator, QUrl
+from PyQt4.QtCore import Qt, QObject, QSettings, QCoreApplication, QTranslator, QUrl, pyqtSlot
 from PyQt4.QtGui import QAction, QIcon, QColor, QDesktopServices, QMessageBox
-from qgis.gui import QgsRubberBand
+from qgis.gui import QgsRubberBand, QgsMessageBar
 
 from quickfinder.core.projectfinder import ProjectFinder, nDaysAgoIsoDate
 from quickfinder.core.osmfinder import OsmFinder
@@ -129,6 +129,7 @@ class quickFinder(QObject):
         self.searchAction.triggered.connect(self.finderBox.search)
         self.toolbar.addAction(self.searchAction)
 
+
         self.stopAction.setVisible(False)
         self.stopAction.triggered.connect(self.finderBox.stop)
         self.toolbar.addAction(self.stopAction)
@@ -141,7 +142,15 @@ class quickFinder(QObject):
             'osm': OsmFinder(self),
             'project': ProjectFinder(self)
         }
+
+        for finder in self.finders.values():
+            finder.message.connect(self.displayMessage)
+
         self.refreshProject()
+
+    @pyqtSlot(str, QgsMessageBar.MessageLevel)
+    def displayMessage(self, message, level):
+        self.iface.messageBar().pushMessage("QuickFinder", message, level)
 
     def showSettings(self):
         if ConfigurationDialog().exec_():
