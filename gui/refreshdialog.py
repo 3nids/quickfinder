@@ -114,7 +114,7 @@ class RefreshDialog(QDialog, Ui_Refresh):
                     continue
 
             self.currentLayerLength = layer.featureCount()
-            ok, message = self.projectFinder.recordSearch(search, True)
+            ok, message = self.projectFinder.recordSearch(search)
 
         self.progressBar.hide()
         self.cancelButton.hide()

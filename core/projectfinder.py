@@ -178,7 +178,7 @@ class ProjectFinder(AbstractFinder):
         self.conn.commit()
         return True
 
-    def recordSearch(self, projectSearch, update=False):
+    def recordSearch(self, projectSearch):
         if not self.isValid:
             return False, "The index file is invalid. Use another one or create new one."
 
@@ -198,8 +198,8 @@ class ProjectFinder(AbstractFinder):
 
         cur = self.conn.cursor()
 
-        if update:
-            self.deleteSearch(searchId, False)
+        # always remove existing search with same id
+        self.deleteSearch(searchId, False)
 
         sql = "INSERT INTO quickfinder_data (search_id, content, x, y, wkb_geom) VALUES ('{0}',?,?,?,?)".format(searchId)
         cur.executemany(sql, self.expressionIterator(layer, expression))
