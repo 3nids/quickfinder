@@ -1,5 +1,12 @@
 ##  Changelog
 
+** Version 3.1 ** 03.09.2014
+
+* Find words if partially written (project search)
+* Display error messages
+* Fix refresh of project search when editing
+* Fix refresh delay
+
 ** Version 3.0.5 ** 25.07.2014
 
 * Fix configuration correctly
