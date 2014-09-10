@@ -75,6 +75,8 @@ class HttpFinder(AbstractFinder):
             errorMessage = self.getErrorMessage(error)
             self.message.emit(errorMessage, QgsMessageBar.WARNING)
             self._finish()
+        self.reply.deleteLater()
+        self.reply = None
 
     def getErrorMessage(self, error):
         if error == QNetworkReply.NoError:
