@@ -26,7 +26,7 @@
 from PyQt4.QtCore import Qt, QCoreApplication, pyqtSignal, QEventLoop
 from PyQt4.QtGui import QComboBox, QSizePolicy, QTreeView, QIcon, QApplication, QColor
 
-from qgis.core import QgsCoordinateReferenceSystem, QgsCoordinateTransform
+from qgis.core import QgsGeometry, QgsCoordinateReferenceSystem, QgsCoordinateTransform
 from qgis.gui import QgsRubberBand
 
 from quickfinder.core.mysettings import MySettings
@@ -169,12 +169,11 @@ class FinderBox(QComboBox):
             return
 
     def transformGeom(self, item):
-        geometry = item.geometry
         src_crs = QgsCoordinateReferenceSystem()
         src_crs.createFromSrid(item.srid)
         dest_crs = self.mapCanvas.mapRenderer().destinationCrs()
-        geom = item.geometry
-        geom.transform( QgsCoordinateTransform(src_crs, dest_crs) )
+        geom = QgsGeometry(item.geometry)
+        geom.transform(QgsCoordinateTransform(src_crs, dest_crs))
         return geom
 
     def zoomToRubberBand(self):
