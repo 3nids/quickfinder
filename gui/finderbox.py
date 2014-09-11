@@ -100,20 +100,25 @@ class FinderBox(QComboBox):
 
         QCoreApplication.processEvents(QEventLoop.ExcludeUserInputEvents)
 
-        # create categories in special order and count activated ones
+        self.findersToStart = []
         for finder in self.finders.values():
             if finder.activated():
-                self.resultModel.addResult(finder.name)
+                self.findersToStart.append(finder)
 
         bbox = self.mapCanvas.fullExtent()
-        for finder in self.finders.values():
-            if finder.activated():
-                finder.start(toFind, bbox=bbox)
+
+        while len(self.findersToStart) > 0:
+            finder = self.findersToStart[0]
+            self.findersToStart.remove(finder)
+            self.resultModel.addResult(finder.name)
+            finder.start(toFind, bbox=bbox)
 
     def stop(self):
+        self.findersToStart = []
         for finder in self.finders.values():
             if finder.isRunning():
                 finder.stop()
+        self.finished(None)
 
     def resultFound(self, finder, layername, value, geometry, srid):
         self.resultModel.addResult(finder.name, layername, value, geometry, srid)
@@ -123,6 +128,8 @@ class FinderBox(QComboBox):
         self.resultModel.addEllipsys(finder.name, layername)
 
     def finished(self, finder):
+        if len(self.findersToStart) > 0:
+            return
         for finder in self.finders.values():
             if finder.isRunning():
                 return
