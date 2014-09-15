@@ -1,5 +1,11 @@
 ##  Changelog
 
+** Version 3.1.2 ** 03.09.2014
+
+* Fix start and stop detection
+* Avoid timeout messages
+* Added buttons tooltips
+
 ** Version 3.1.1 ** 03.09.2014
 
 * Reload finders when loading new project (also fix initialization)

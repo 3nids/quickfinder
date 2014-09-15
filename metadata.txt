@@ -2,9 +2,9 @@
 
 name=Quick Finder
 
-description=Quickly find features over all layers and online services, from a single place.
+description=Quick Finder offers a single place to perform searches on project layers and online remote services
 
-version=3.1.1
+version=3.1.2
 
 qgisMinimumVersion=2.4
 
