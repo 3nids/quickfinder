@@ -26,7 +26,7 @@
 from PyQt4.QtCore import Qt, QCoreApplication, pyqtSignal, QEventLoop
 from PyQt4.QtGui import QComboBox, QSizePolicy, QTreeView, QIcon, QApplication, QColor
 
-from qgis.core import QgsCoordinateReferenceSystem, QgsCoordinateTransform
+from qgis.core import QgsGeometry, QgsCoordinateReferenceSystem, QgsCoordinateTransform
 from qgis.gui import QgsRubberBand
 
 from quickfinder.core.mysettings import MySettings
@@ -100,20 +100,25 @@ class FinderBox(QComboBox):
 
         QCoreApplication.processEvents(QEventLoop.ExcludeUserInputEvents)
 
-        # create categories in special order and count activated ones
+        self.findersToStart = []
         for finder in self.finders.values():
             if finder.activated():
-                self.resultModel.addResult(finder.name)
+                self.findersToStart.append(finder)
 
         bbox = self.mapCanvas.fullExtent()
-        for finder in self.finders.values():
-            if finder.activated():
-                finder.start(toFind, bbox=bbox)
+
+        while len(self.findersToStart) > 0:
+            finder = self.findersToStart[0]
+            self.findersToStart.remove(finder)
+            self.resultModel.addResult(finder.name)
+            finder.start(toFind, bbox=bbox)
 
     def stop(self):
+        self.findersToStart = []
         for finder in self.finders.values():
             if finder.isRunning():
                 finder.stop()
+        self.finished(None)
 
     def resultFound(self, finder, layername, value, geometry, srid):
         self.resultModel.addResult(finder.name, layername, value, geometry, srid)
@@ -123,6 +128,8 @@ class FinderBox(QComboBox):
         self.resultModel.addEllipsys(finder.name, layername)
 
     def finished(self, finder):
+        if len(self.findersToStart) > 0:
+            return
         for finder in self.finders.values():
             if finder.isRunning():
                 return
@@ -169,12 +176,11 @@ class FinderBox(QComboBox):
             return
 
     def transformGeom(self, item):
-        geometry = item.geometry
         src_crs = QgsCoordinateReferenceSystem()
         src_crs.createFromSrid(item.srid)
         dest_crs = self.mapCanvas.mapRenderer().destinationCrs()
-        geom = item.geometry
-        geom.transform( QgsCoordinateTransform(src_crs, dest_crs) )
+        geom = QgsGeometry(item.geometry)
+        geom.transform(QgsCoordinateTransform(src_crs, dest_crs))
         return geom
 
     def zoomToRubberBand(self):
