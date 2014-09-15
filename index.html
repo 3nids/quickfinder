@@ -1,0 +1,68 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Quickfinder by 3nids</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="javascripts/scale.fix.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Quickfinder</h1>
+        <p>Quick Finder is a QGIS plugin offering a single place to perform searches on project layers and online remote services.</p>
+        <p class="view"><a href="https://github.com/3nids/quickfinder">View the Project on GitHub <small>3nids/quickfinder</small></a></p>
+        <ul>
+          <li><a href="https://github.com/3nids/quickfinder/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/3nids/quickfinder/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/3nids/quickfinder">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <p>Quick Finder is a QGIS plugin offering a single place to perform searches on project layers and online remote services.</p>
+
+<p>All searches are configured in the settings panel.</p>
+
+<h3>
+<a name="define-searches-for-project-layers" class="anchor" href="#define-searches-for-project-layers"><span class="octicon octicon-link"></span></a>Define searches for project layers</h3>
+
+<p>To search in layers, QuickFinder is indexing the layers in a SQLite database: the <em>QuckFinder file</em>. In the <em>project search</em> tab, create a new file using the <em>create</em> button. This file is related to the current project and should be kept along.</p>
+
+<p>Then to add a layer search, click on <img src="https://raw.githubusercontent.com/3nids/quickfinder/master/icons/add.png" alt="add button">. In this dialog, you will define:</p>
+
+<ul>
+<li>the search name (it will be used to group the results by search name)</li>
+<li>the layer</li>
+<li>the field used for this search (or an expression to combine several)</li>
+<li>priority</li>
+</ul><p>If checking record entry, the search will be directly indexed on the QuickFinder file. Uncheck this if you want to create several searches on very large layers (from ~100'000 elements). You will be able to index them all at once later.</p>
+
+<p>Since the searches are indexed on an external file, editing in QGIS the layers will make the indexed file obsolete. You can define a delay after which the plugin will propose you to update the searches.</p>
+
+<h3>
+<a name="online-remote-services" class="anchor" href="#online-remote-services"><span class="octicon octicon-link"></span></a>Online remote services</h3>
+
+<p>At the moment, you can use an Open Street Map and/or a GeoMapFish service.</p>
+
+<h3>
+<a name="searching" class="anchor" href="#searching"><span class="octicon octicon-link"></span></a>Searching</h3>
+
+<p>A text box is displayed in QGIS toolbars. Use this to search whithin your defined project searches and remote services. All results will be displayed under it.</p>
+      </section>
+    </div>
+    <footer>
+      <p>Project maintained by <a href="https://github.com/3nids">3nids</a></p>
+      <p>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></p>
+    </footer>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+    
+  </body>
+</html>
