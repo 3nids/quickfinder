@@ -17,7 +17,7 @@ QGISDIR=.qgis2
 
 PY_FILES = __init__.py $(PLUGINNAME).py
 EXTRAS = metadata.txt resources.qrc
-TOOL_DIR = gui core ui qgiscombomanager qgissettingmanager
+TOOL_DIR = gui core ui qgissettingmanager
 ICONS_DIR = icons
 
 UI_SOURCES=$(wildcard ui/*.ui)
