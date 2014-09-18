@@ -83,7 +83,7 @@ class quickFinder(QObject):
             self.iface.mainWindow())
         self.actions['help'].triggered.connect(
             lambda: QDesktopServices().openUrl(
-                QUrl("https://github.com/3nids/quickfinder/wiki")))
+                QUrl("http://3nids.github.io/quickfinder")))
         self.iface.addPluginToMenu(self.name, self.actions['help'])
         self._initToolbar()
         self.rubber = QgsRubberBand(self.iface.mapCanvas())
