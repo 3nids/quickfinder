@@ -24,7 +24,8 @@
 #---------------------------------------------------------------------
 
 from PyQt4.QtCore import Qt, QCoreApplication, pyqtSignal, QEventLoop
-from PyQt4.QtGui import QComboBox, QSizePolicy, QTreeView, QIcon, QApplication, QColor
+from PyQt4.QtGui import (QComboBox, QSizePolicy, QTreeView, QIcon, QApplication, QColor,
+                         QPushButton, QCursor, QHBoxLayout)
 
 from qgis.core import QgsGeometry, QgsCoordinateReferenceSystem, QgsCoordinateTransform
 from qgis.gui import QgsRubberBand
@@ -77,10 +78,38 @@ class FinderBox(QComboBox):
             finder.limitReached.connect(self.limitReached)
             finder.finished.connect(self.finished)
 
+        self.clearButton = QPushButton(self)
+        self.clearButton.setIcon(QIcon(":/plugins/quickfinder/icons/draft.svg"))
+        self.clearButton.setText('')
+        self.clearButton.setFlat(True)
+        self.clearButton.setCursor(QCursor(Qt.ArrowCursor))
+        self.clearButton.setStyleSheet('border: 0px; padding: 0px;')
+        self.clearButton.clicked.connect(self.clear)
+
+        layout = QHBoxLayout(self)
+        self.setLayout(layout)
+        layout.addStretch()
+        layout.addWidget(self.clearButton)
+        layout.addSpacing(20)
+
+        buttonSize = self.clearButton.sizeHint()
+        # frameWidth = self.lineEdit().style().pixelMetric(QtGui.QStyle.PM_DefaultFrameWidth)
+        padding = buttonSize.width()  # + frameWidth + 1
+        self.lineEdit().setStyleSheet('QLineEdit {padding-right: %dpx; }' % padding)
+
     def __del__(self):
         if self.rubber:
             self.iface.mapCanvas().scene().removeItem(self.rubber)
             del self.rubber
+
+    def clearSelection(self):
+        self.resultModel.setSelected(None, self.resultView.palette())
+        self.rubber.reset()
+
+    def clear(self):
+        self.clearSelection()
+        self.resultModel.clearResults()
+        self.lineEdit().setText('')
 
     def search(self):
         if self.running:
@@ -93,6 +122,7 @@ class FinderBox(QComboBox):
         self.running = True
         self.searchStarted.emit()
 
+        self.clearSelection()
         self.resultModel.clearResults()
         self.resultModel.truncateHistory(MySettings().value("historyLength"))
         self.resultModel.setLoading(True)
@@ -171,9 +201,7 @@ class FinderBox(QComboBox):
             return
 
         if item.__class__.__name__ == 'QStandardItem':
-            self.resultModel.setSelected(None, self.resultView.palette())
-            self.rubber.reset()
-            return
+            self.clearSelection()
 
     def transformGeom(self, item):
         src_crs = QgsCoordinateReferenceSystem()
