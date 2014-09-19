@@ -1,5 +1,10 @@
 ##  Changelog
 
+** Version 3.1.3 ** 19.09.2014
+
+* Updated help link
+* Fix first project search and reloading
+
 ** Version 3.1.2 ** 03.09.2014
 
 * Fix start and stop detection
