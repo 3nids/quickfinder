@@ -27,6 +27,7 @@ import urllib, urllib2, json
 from PyQt4.QtCore import QUrl
 from PyQt4.QtNetwork import QNetworkRequest, QNetworkReply
 from qgis.core import QgsNetworkAccessManager
+from qgis.core import QgsLogger
 from qgis.gui import QgsMessageBar
 
 from .abstractfinder import AbstractFinder
@@ -50,6 +51,7 @@ class HttpFinder(AbstractFinder):
             url = QUrl(url)
             for key, value in params.iteritems():
                 url.addQueryItem(key, value)
+            QgsLogger.debug('Request: {}'.format(url.toEncoded()))
             request = QNetworkRequest(url)
             self.reply = QgsNetworkAccessManager.instance().get(request)
             self.reply.finished.connect(self.replyFinished)
@@ -68,8 +70,9 @@ class HttpFinder(AbstractFinder):
     def replyFinished(self):
         error = self.reply.error()
         if error == QNetworkReply.NoError:
-            response = self.reply.readAll().data()
-            data = json.loads(response)
+            response_text = reply.readAll().data()
+            QgsLogger.debug('Response: {}'.format(response_text))
+            data = json.loads(response_text)
             self.loadData(data)
         else:
             errorMessage = self.getErrorMessage(error)
