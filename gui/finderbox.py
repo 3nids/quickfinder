@@ -111,6 +111,11 @@ class FinderBox(QComboBox):
         self.resultModel.clearResults()
         self.lineEdit().setText('')
 
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Escape:
+            self.clearSelection()
+        QComboBox.keyPressEvent(self, event)
+
     def search(self):
         if self.running:
             return
