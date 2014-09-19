@@ -58,6 +58,9 @@ class AbstractFinder(QObject):
     def activated(self):
         return self.settings.value(self.name)
 
+    def close(self):
+        pass
+
     def _finish(self):
         self.continueSearch = False
         self.finished.emit(self)

@@ -44,7 +44,7 @@ class quickFinder(QObject):
     name = u"&Quick Finder"
     actions = None
     toolbar = None
-    finders = None
+    finders = {}
 
     loadingIcon = None
 
@@ -127,17 +127,16 @@ class quickFinder(QObject):
         self.toolbar.setVisible(True)
 
     def _initFinders(self):
-        self.finders = {
-            'geomapfish': GeomapfishFinder(self),
-            'osm': OsmFinder(self),
-            'project': ProjectFinder(self)
-        }
+        self.finders['geomapfish'] = GeomapfishFinder(self)
+        self.finders['osm'] = OsmFinder(self)
+        self.finders['project'] = ProjectFinder(self)
         for key in self.finders.keys():
             self.finders[key].message.connect(self.displayMessage)
         self.refreshProject()
 
     def _reloadFinders(self):
         for key in self.finders.keys():
+            self.finders[key].close()
             self.finders[key].reload()
         self.refreshProject()
 
@@ -147,7 +146,7 @@ class quickFinder(QObject):
 
     def showSettings(self):
         if ConfigurationDialog().exec_():
-            self._initFinders()
+            self._reloadFinders()
 
     def searchStarted(self):
         self.searchAction.setVisible(False)
