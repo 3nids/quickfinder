@@ -148,6 +148,9 @@ class FinderBox(QComboBox):
             self.resultModel.addResult(finder.name)
             finder.start(toFind, bbox=bbox)
 
+        # For case there is no finder activated
+        self.finished(None)
+
     def stop(self):
         self.findersToStart = []
         for finder in self.finders.values():
