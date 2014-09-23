@@ -7,3 +7,5 @@ ui_*.py
 .project
 .pydevproject
 .settings/
+*.zip
+*.qm
