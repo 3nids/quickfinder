@@ -94,7 +94,9 @@ class quickFinder(QObject):
         self.rubber.setBrushStyle(Qt.NoBrush)
 
     def unload(self):
-        """Remove the plugin menu item and icon """
+        """ Unload plugin """
+        for key in self.finders.keys():
+            self.finders[key].close()
         for action in self.actions.itervalues():
             self.iface.removePluginMenu(self.name, action)
         if self.toolbar:
