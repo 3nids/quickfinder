@@ -55,7 +55,7 @@ class GroupItem(BaseItem):
 
     def data(self, role):
         if role == Qt.DisplayRole:
-            return '{0} ({1})'.format(self.name, self.count)
+            return '{0} ({1})'.format(self.name.encode('utf-8'), self.count).decode('utf-8')
         else:
             return super(GroupItem, self).data(role)
 
