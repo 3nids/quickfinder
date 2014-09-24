@@ -1,5 +1,11 @@
 ##  Changelog
 
+** Version 3.2 ** 24.09.2014
+
+* Clear button in text box
+* Clear highlight using ESC key
+* Access to secure search on GeoMapFish
+
 ** Version 3.1.3 ** 19.09.2014
 
 * Updated help link
