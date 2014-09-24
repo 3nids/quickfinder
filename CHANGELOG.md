@@ -1,5 +1,9 @@
 ##  Changelog
 
+** Version 3.2.1 ** 24.09.2014
+
+* Fix encoding
+
 ** Version 3.2 ** 24.09.2014
 
 * Clear button in text box
