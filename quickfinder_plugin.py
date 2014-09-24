@@ -67,8 +67,7 @@ class quickFinder(QObject):
         if os.path.exists(localePath):
             self.translator = QTranslator()
             self.translator.load(localePath)
-            if qVersion() > '4.3.3':
-                QCoreApplication.installTranslator(self.translator)
+            QCoreApplication.installTranslator(self.translator)
 
     def initGui(self):
         self.actions['showSettings'] = QAction(
