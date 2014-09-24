@@ -15,7 +15,7 @@ icon=icons/quickfinder.svg
 
 tags=search,find,feature,full-text search,openstreetmap,geomapfish
 
-homepage=https://github.com/3nids/quickfinder/wiki
+homepage=http://3nids.github.io/quickfinder
 tracker=https://github.com/3nids/quickfinder/issues
 repository=https://github.com/3nids/quickfinder
 
