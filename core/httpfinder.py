@@ -40,7 +40,7 @@ class HttpFinder(AbstractFinder):
         self.asynchonous = True
         self.reply = None
 
-    def _sendRequest(self, url, params):
+    def _sendRequest(self, url, params, headers={}):
         if self.asynchonous:
 
             if self.reply is not None:
@@ -53,6 +53,8 @@ class HttpFinder(AbstractFinder):
                 url.addQueryItem(key, value)
             QgsLogger.debug('Request: {}'.format(url.toEncoded()))
             request = QNetworkRequest(url)
+            for key, value in headers.iteritems():
+                request.setRawHeader(key, value)
             self.reply = QgsNetworkAccessManager.instance().get(request)
             self.reply.finished.connect(self.replyFinished)
 
@@ -70,7 +72,7 @@ class HttpFinder(AbstractFinder):
     def replyFinished(self):
         error = self.reply.error()
         if error == QNetworkReply.NoError:
-            response_text = reply.readAll().data()
+            response_text = self.reply.readAll().data()
             QgsLogger.debug('Response: {}'.format(response_text))
             data = json.loads(response_text)
             self.loadData(data)

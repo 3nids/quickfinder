@@ -29,7 +29,7 @@ from osgeo import ogr
 from qgis.core import QgsGeometry
 
 from quickfinder.core.httpfinder import HttpFinder
-
+from PyQt4 import QtCore
 
 class GeomapfishFinder(HttpFinder):
 
@@ -46,7 +46,15 @@ class GeomapfishFinder(HttpFinder):
             'limit'          : str(self.settings.value('totalLimit')),
             'partitionlimit' : str(self.settings.value('categoryLimit'))
         }
-        self._sendRequest(url, params)
+        headers = {}
+
+        if self.settings.value('geomapfishUser') != '':
+            user = self.settings.value('geomapfishUser')
+            password = self.settings.value('geomapfishPass')
+            authdata = "{}:{}".format(user, password)
+            b64 = QtCore.QByteArray(authdata).toBase64()
+            headers['Authorization'] = 'Basic ' + b64
+        self._sendRequest(url, params, headers)
 
     def loadData(self, data):
         srv_crs_authid = self.settings.value('geomapfishCrs')
