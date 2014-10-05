@@ -58,6 +58,9 @@ class AbstractFinder(QObject):
     def activated(self):
         return self.settings.value(self.name)
 
+    def setActivated(self, activated):
+        self.settings.setValue(self.name, activated)
+
     def close(self):
         pass
 

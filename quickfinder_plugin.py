@@ -25,7 +25,7 @@
 
 import os.path
 from PyQt4.QtCore import Qt, QObject, QSettings, QCoreApplication, QTranslator, QUrl, pyqtSlot
-from PyQt4.QtGui import QAction, QIcon, QColor, QDesktopServices, QMessageBox
+from PyQt4.QtGui import QAction, QMenu, QToolButton, QIcon, QColor, QDesktopServices, QMessageBox
 from qgis.gui import QgsRubberBand, QgsMessageBar
 
 from quickfinder.core.projectfinder import ProjectFinder, nDaysAgoIsoDate
@@ -125,7 +125,28 @@ class quickFinder(QObject):
         self.stopAction.setVisible(False)
         self.stopAction.triggered.connect(self.finderBox.stop)
         self.toolbar.addAction(self.stopAction)
+        toolButton = QToolButton(self.toolbar)
+        toolButton.setIcon(QIcon(":/plugins/quickfinder/icons/settings.svg"))
+        self.menu = QMenu("", toolButton)
+        toolButton.setText(self.tr(""))
+        toolButton.setMenu(self.menu);
+        toolButton.setPopupMode(QToolButton.InstantPopup)
+        self.toolbar.addWidget(toolButton)
+        self._updateMenu()
         self.toolbar.setVisible(True)
+
+    def _updateMenu(self):
+        self.menu.clear()
+        for finder in self.finders.values():
+            action = QAction(finder.name, self.menu)
+            action.finder = finder
+            action.setCheckable(True)
+            action.setChecked(finder.activated())
+            action.toggled.connect(finder.setActivated)
+            self.menu.addAction(action)
+        self.menu.addSeparator()
+        self.menu.addAction(self.actions['showSettings'])
+        self.menu.addAction(self.actions['help'])
 
     def _initFinders(self):
         self.finders['geomapfish'] = GeomapfishFinder(self)
@@ -140,6 +161,7 @@ class quickFinder(QObject):
             self.finders[key].close()
             self.finders[key].reload()
         self.refreshProject()
+        self._updateMenu()
 
     @pyqtSlot(str, QgsMessageBar.MessageLevel)
     def displayMessage(self, message, level):
