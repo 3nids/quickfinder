@@ -26,13 +26,15 @@
 import sqlite3
 import binascii
 from datetime import date, datetime, timedelta
-from collections import OrderedDict
+
+try:
+    from collections import OrderedDict
+except ImportError:
+    from ordereddict import OrderedDict
 
 from PyQt4.QtCore import pyqtSignal, QCoreApplication
-
 from qgis.core import QgsMapLayerRegistry, QgsFeatureRequest, QgsExpression, QgsGeometry
 from qgis.gui import QgsMessageBar
-
 from quickfinder.core.projectsearch import ProjectSearch
 from quickfinder.core.abstractfinder import AbstractFinder
 
