@@ -2,6 +2,10 @@
 
 ** Version 3.2.2 ** 24.09.2014
 
+* Fix python 2.6
+
+** Version 3.2.2 ** 24.09.2014
+
 * Fix encoding again
 
 ** Version 3.2.1 ** 24.09.2014
