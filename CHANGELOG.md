@@ -1,6 +1,10 @@
 ##  Changelog
 
-** Version 3.2.2 ** 24.09.2014
+** Version 3.2.4 ** 07.10.2014
+
+* Fix bad packaging
+
+** Version 3.2.3 ** 07.10.2014
 
 * Fix python 2.6
 
