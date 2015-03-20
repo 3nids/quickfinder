@@ -34,9 +34,9 @@ class MySettings(SettingManager):
         SettingManager.__init__(self, pluginName)
 
         # general settings
-        self.addSetting("historyLength", "integer", "project", 3)
-        self.addSetting("categoryLimit", "integer", "project", 10)
-        self.addSetting("totalLimit", "integer", "project", 80)
+        self.addSetting("historyLength", "integer", "global", 3)
+        self.addSetting("categoryLimit", "integer", "global", 10)
+        self.addSetting("totalLimit", "integer", "global", 80)
 
         # project settings
         self.addSetting("project", "bool", "project", True)
@@ -48,14 +48,14 @@ class MySettings(SettingManager):
         self.addSetting("refreshLastAsked", "string", "project", "")
 
         # OpenStreetMap settings
-        self.addSetting("osm", "bool", "project", True)
-        self.addSetting("osmUrl", "string", "project",
+        self.addSetting("osm", "bool", "global", True)
+        self.addSetting("osmUrl", "string", "global",
                         'http://nominatim.openstreetmap.org/search')
 
         # GeoMapFish settings
-        self.addSetting("geomapfish", "bool", "project", True)
-        self.addSetting("geomapfishUrl", "string", "project",
+        self.addSetting("geomapfish", "bool", "global", True)
+        self.addSetting("geomapfishUrl", "string", "global",
                         'http://mapfish-geoportal.demo-camptocamp.com/1.5/search')
-        self.addSetting("geomapfishCrs", "string", "project", 'EPSG:3857')
-        self.addSetting("geomapfishUser", "string", "project", '')
-        self.addSetting("geomapfishPass", "string", "project", '')
+        self.addSetting("geomapfishCrs", "string", "global", 'EPSG:3857')
+        self.addSetting("geomapfishUser", "string", "global", '')
+        self.addSetting("geomapfishPass", "string", "global", '')
