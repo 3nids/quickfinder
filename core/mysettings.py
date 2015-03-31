@@ -55,7 +55,7 @@ class MySettings(SettingManager):
         # GeoMapFish settings
         self.addSetting("geomapfish", "bool", "project", True)
         self.addSetting("geomapfishUrl", "string", "project",
-                        'http://mapfish-geoportal.demo-camptocamp.com/demo/wsgi/fulltextsearch')
+                        'http://mapfish-geoportal.demo-camptocamp.com/1.5/search')
         self.addSetting("geomapfishCrs", "string", "project", 'EPSG:3857')
         self.addSetting("geomapfishUser", "string", "project", '')
         self.addSetting("geomapfishPass", "string", "project", '')
