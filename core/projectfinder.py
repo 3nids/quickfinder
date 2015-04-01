@@ -133,6 +133,8 @@ class ProjectFinder(AbstractFinder):
         return searches
 
     def find(self, toFind):
+        if self.settings.value("qftsfilepath") == '':
+            return
         if not self.isValid:
             self.message.emit("Cannot search in project. QuickFinder file is probably currently in use.",QgsMessageBar.WARNING)
             return
