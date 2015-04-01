@@ -39,7 +39,7 @@ class MySettings(SettingManager):
         self.addSetting("totalLimit", "integer", "global", 80)
 
         # project settings
-        self.addSetting("project", "bool", "project", True)
+        self.addSetting("project", "bool", "project", False)
         self.addSetting("layerId", "string", "project", '')
         self.addSetting("fieldName", "string", "project", '')
         self.addSetting("qftsfilepath", "string", "project", '')
