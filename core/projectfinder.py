@@ -30,7 +30,7 @@ from datetime import date, datetime, timedelta
 try:
     from collections import OrderedDict
 except ImportError:
-    from ordereddict import OrderedDict
+    from ordereddict import OrderedDict  # for Python < 2.7
 
 from PyQt4.QtCore import pyqtSignal, QCoreApplication
 from qgis.core import QgsMapLayerRegistry, QgsFeatureRequest, QgsExpression, QgsGeometry
