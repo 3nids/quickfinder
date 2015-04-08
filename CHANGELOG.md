@@ -1,5 +1,11 @@
 ## Changelog
 
+**Version 3.2.6** 08.04.2015
+
+* Use new full-text search url
+* Do not perform search if file is not defined
+* Use global settings for remote services and general settings
+
 **Version 3.2.5** 08.10.2014
 
 * Fix python 2.6 again
