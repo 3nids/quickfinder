@@ -1,5 +1,9 @@
 ## Changelog
 
+**Version 3.2.7** 08.04.2015
+
+* Fix bad packaging
+
 **Version 3.2.6** 08.04.2015
 
 * Use new full-text search url

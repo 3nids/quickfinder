@@ -4,7 +4,7 @@ name=Quick Finder
 
 description=Quick Finder offers a single place to perform searches on project layers and online remote services
 
-version=3.2.6
+version=3.2.7
 
 qgisMinimumVersion=2.4
 
