@@ -192,6 +192,12 @@ class ProjectFinder(AbstractFinder):
         cur.execute(sql)
         sql = "DELETE FROM quickfinder_toc WHERE search_id = '{0}'".format(searchId)
         cur.execute(sql)
+        sql = "INSERT INTO quickfinder_data(quickfinder_data) VALUES('rebuild');"
+        cur.execute(sql)
+        sql = "INSERT INTO quickfinder_data(quickfinder_data) VALUES('optimize');"
+        cur.execute(sql)
+        sql = "VACUUM;"
+        cur.execute(sql)
         self.conn.commit()
         return True
 
