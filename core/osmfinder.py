@@ -48,7 +48,7 @@ class OsmFinder(HttpFinder):
                                        bbox.yMinimum())
 
         params = {
-            'q'            : toFind.encode('utf-8'),
+            'q'            : toFind,
             'format'       : 'json',
             'polygon_text' : '1',
             'viewbox'      : viewbox,
