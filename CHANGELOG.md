@@ -1,5 +1,10 @@
 ## Changelog
 
+**Version 3.2.8** 08.04.2015
+
+* Issue #37: coordinate transform
+* Fix crashes with empty geometries
+
 **Version 3.2.7** 08.04.2015
 
 * Fix bad packaging

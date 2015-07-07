@@ -4,7 +4,9 @@ name=Quick Finder
 
 description=Quick Finder offers a single place to perform searches on project layers and online remote services
 
-version=3.2.7
+about=The plugins allows to search by two different means. First, you can use online web services such as OSM or GeoMapFish. Second, you can define your own searches on local layers using expressions. These are stored on a local SQLite database which allow very fast searches.
+
+version=3.2.8
 
 qgisMinimumVersion=2.4
 
