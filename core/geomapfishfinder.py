@@ -66,6 +66,8 @@ class GeomapfishFinder(HttpFinder):
             wkt = ogr_geom.ExportToWkt()
             geometry = QgsGeometry.fromWkt(wkt)
             properties = f['properties']
+            if geometry is None:
+                continue
             self.resultFound.emit(self,
                                   properties['layer_name'],
                                   properties['label'],
