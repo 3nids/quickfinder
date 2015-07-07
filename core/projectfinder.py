@@ -33,7 +33,7 @@ except ImportError:
     from ordereddict import OrderedDict  # for Python < 2.7
 
 from PyQt4.QtCore import pyqtSignal, QCoreApplication
-from qgis.core import QgsMapLayerRegistry, QgsFeatureRequest, QgsExpression, QgsGeometry
+from qgis.core import QgsMapLayerRegistry, QgsFeatureRequest, QgsExpression, QgsGeometry, QgsCoordinateReferenceSystem
 from qgis.gui import QgsMessageBar
 from quickfinder.core.projectsearch import ProjectSearch
 from quickfinder.core.abstractfinder import AbstractFinder
@@ -172,11 +172,13 @@ class ProjectFinder(AbstractFinder):
             geometry = QgsGeometry()
             geometry.fromWkb(binascii.a2b_hex(wkb_geom))
 
+            crs = QgsCoordinateReferenceSystem()
+            crs.createFromString(self._searches[search_id].srid)
             self.resultFound.emit(self,
                                   self._searches[search_id].searchName,
                                   content,
                                   geometry,
-                                  self._searches[search_id].srid)
+                                  crs.postgisSrid())
 
             nFound += 1
             if nFound >= totalLimit:
