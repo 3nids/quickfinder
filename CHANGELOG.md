@@ -1,6 +1,11 @@
 ## Changelog
 
-**Version 3.2.8** 08.04.2015
+**Version 3.2.9** 06.07.2015
+
+* Issue #35: Vaccum so file does not keep increasing its size
+* Issue #36: fix encoding in OSM
+
+**Version 3.2.8** 06.07.2015
 
 * Issue #37: coordinate transform
 * Fix crashes with empty geometries
