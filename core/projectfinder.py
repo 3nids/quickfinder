@@ -139,7 +139,7 @@ class ProjectFinder(AbstractFinder):
             self.message.emit("Cannot search in project. QuickFinder file is probably currently in use.",QgsMessageBar.WARNING)
             return
         # add star after each word except numbers
-        toFind = toFind.split(' ')
+        toFind = toFind.lower().split(' ')
         for i,word in enumerate(toFind):
             try:
                 int(word)
