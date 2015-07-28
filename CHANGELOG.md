@@ -1,5 +1,9 @@
 ## Changelog
 
+**Version 3.2.10** 06.07.2015
+
+* Issue #25: fix case sensitive match
+
 **Version 3.2.9** 06.07.2015
 
 * Issue #35: Vaccum so file does not keep increasing its size
