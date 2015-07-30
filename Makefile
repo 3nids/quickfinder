@@ -85,7 +85,7 @@ zip: clean deploy dclean
 	rm -f $(PLUGINNAME)-$(VERSION).zip
 	cd $(QGISDIR)/python/plugins; zip -9r $(CURDIR)/$(PLUGINNAME)-$(VERSION).zip $(PLUGINNAME)
 
-publish: zip
+release: zip
 	$(OPEN) http://plugins.qgis.org/plugins/$(PLUGINNAME)/version/add/ &
 
 
