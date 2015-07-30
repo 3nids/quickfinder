@@ -1,5 +1,9 @@
 ## Changelog
 
+**Version 3.2.12** 30.07.2015
+
+* handle old packages of SQLite (without unicode61)
+
 **Version 3.2.11** 30.07.2015
 
 * Issue #38: fix latin diatrics
