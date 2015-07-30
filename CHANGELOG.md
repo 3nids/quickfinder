@@ -1,6 +1,10 @@
 ## Changelog
 
-**Version 3.2.10** 06.07.2015
+**Version 3.2.11** 30.07.2015
+
+* Issue #38: fix latin diatrics
+
+**Version 3.2.10** 29.07.2015
 
 * Issue #25: fix case sensitive match
 
