@@ -46,7 +46,7 @@ def createFTSfile(filepath):
     sql += "INSERT INTO quickfinder_info (key,value) VALUES ('scope','quickfinder');"
     sql += "INSERT INTO quickfinder_info (key,value) VALUES ('db_version','1.0');"
     sql += "CREATE TABLE quickfinder_toc (search_id text, search_name text, layer_id text, layer_name text, expression text, priority integer, srid text, date_evaluated text);"
-    sql += "CREATE VIRTUAL TABLE quickfinder_data USING fts4 (search_id, content, x real, y real, wkb_geom text);"
+    sql += "CREATE VIRTUAL TABLE quickfinder_data USING fts4 (tokenize=unicode61 \"remove_diacritics=1\", search_id, content, x real, y real, wkb_geom text);"
     cur = conn.cursor()
     cur.executescript(sql)
     conn.close()
@@ -139,7 +139,7 @@ class ProjectFinder(AbstractFinder):
             self.message.emit("Cannot search in project. QuickFinder file is probably currently in use.",QgsMessageBar.WARNING)
             return
         # add star after each word except numbers
-        toFind = toFind.lower().split(' ')
+        toFind = toFind.split(' ')
         for i,word in enumerate(toFind):
             try:
                 int(word)
