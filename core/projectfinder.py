@@ -52,6 +52,7 @@ def createFTSfile(filepath):
     try:
         cur.executescript(sql_unicode61)
     except sqlite3.OperationalError:
+        print "Could not use unicode61. You might have problems with accents. Please use a more recent QGIS version."
         cur.executescript(sql)
 
     conn.close()
@@ -154,16 +155,12 @@ class ProjectFinder(AbstractFinder):
         # FTS request
         sql = "SELECT search_id,content,x,y,wkb_geom FROM quickfinder_data WHERE content MATCH ?"
         cur = self.conn.cursor()
-        cur.execute(sql, [toFind])
+
         catLimit = self.settings.value("categoryLimit")
         totalLimit = self.settings.value("totalLimit")
-        nFound = 0
         catFound = {}
-        while True:
-            s = cur.fetchone()
-            if s is None:
-                return
-            search_id, content, x, y, wkb_geom = s
+        for row in cur.execute(sql, [toFind]):
+            search_id, content, x, y, wkb_geom = row
             if catFound.has_key(search_id):
                 if catFound[search_id] >= catLimit:
                     continue
@@ -185,28 +182,20 @@ class ProjectFinder(AbstractFinder):
                                   geometry,
                                   crs.postgisSrid())
 
-            nFound += 1
-            if nFound >= totalLimit:
+            if sum(catFound.values()) >= totalLimit:
                 break
 
     def deleteSearch(self, searchId, commit=True):
         if not self.isValid:
             return False
         cur = self.conn.cursor()
-        sql = "DELETE FROM quickfinder_data WHERE search_id = '{0}'".format(searchId)
-        cur.execute(sql)
-        sql = "DELETE FROM quickfinder_toc WHERE search_id = '{0}'".format(searchId)
-        cur.execute(sql)
-        sql = "INSERT INTO quickfinder_data(quickfinder_data) VALUES('rebuild');"
-        cur.execute(sql)
-        sql = "INSERT INTO quickfinder_data(quickfinder_data) VALUES('optimize');"
-        cur.execute(sql)
-        sql = "VACUUM;"
-        cur.execute(sql)
+        cur.execute("DELETE FROM quickfinder_data WHERE search_id = '{0}';".format(searchId))
+        cur.execute("DELETE FROM quickfinder_toc WHERE search_id = '{0}';".format(searchId))
         self.conn.commit()
+        self.optimize()
         return True
 
-    def recordSearch(self, projectSearch):
+    def recordSearch(self, projectSearch, optimize=True):
         if not self.isValid:
             return False, "The index file is invalid. Use another one or create new one."
 
@@ -241,8 +230,19 @@ class ProjectFinder(AbstractFinder):
                                                         (searchId , searchName , layerid , layer.name(), expression_esc, priority, today         , layer.crs().authid()))
             self.conn.commit()
 
+        if optimize:
+            self.optimize()
+
         projectSearch.dateEvaluated = today
         return True, ""
+
+    def optimize(self):
+        print "optimize"
+        cur = self.conn.cursor()
+        cur.executescript("""INSERT INTO quickfinder_data(quickfinder_data) VALUES('rebuild');
+                          INSERT INTO quickfinder_data(quickfinder_data) VALUES('optimize');
+                          VACUUM;""")
+        self.conn.commit()
 
     def expressionIterator(self, layer, expression):
         featReq = QgsFeatureRequest()
