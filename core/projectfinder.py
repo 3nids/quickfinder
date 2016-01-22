@@ -258,7 +258,7 @@ class ProjectFinder(AbstractFinder):
             evaluated = unicode(qgsExpression.evaluate(f))
             if qgsExpression.hasEvalError():
                 continue
-            if f.geometry().centroid() is None:
+            if f.geometry() is None or f.geometry().centroid() is None:
                 continue
             centroid = f.geometry().centroid().asPoint()
             wkb = binascii.b2a_hex(f.geometry().asWkb())
