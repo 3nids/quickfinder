@@ -1,5 +1,10 @@
 ## Changelog
 
+**Version 3.2.13** 22.01.2016
+
+* refresh content table after adding new project search
+* Issue #40: fix crash with geometry less feature
+
 **Version 3.2.12** 30.07.2015
 
 * handle old packages of SQLite (without unicode61)
