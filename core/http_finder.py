@@ -61,7 +61,7 @@ class HttpFinder(AbstractFinder):
         else:
             response = urllib2.urlopen(self.url + '?' + urllib.urlencode(params))
             data = json.load(response)
-            self.loadData(data)
+            self.load_data(data)
 
     def stop(self):
         if self.reply:
@@ -76,7 +76,7 @@ class HttpFinder(AbstractFinder):
             QgsLogger.debug('Response: {}'.format(response_text))
             try:
                 data = json.loads(response_text)
-                self.loadData(data)
+                self.load_data(data)
             except ValueError:
                 self.message.emit(self.tr('The service did not reply properly. Please check service definition.'), QgsMessageBar.WARNING)
         else:

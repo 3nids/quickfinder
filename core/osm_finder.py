@@ -26,8 +26,8 @@
 import json
 
 from qgis.core import QgsGeometry
-
 from quickfinder.core.httpfinder import HttpFinder
+
 
 class OsmFinder(HttpFinder):
 
@@ -57,7 +57,7 @@ class OsmFinder(HttpFinder):
         # 'bounded' : '1'
         self._sendRequest(url, params)
 
-    def loadData(self, data):
+    def load_data(self, data):
         for d in data:
             try:
                 wkt = d['geotext']

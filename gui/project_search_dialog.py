@@ -31,12 +31,12 @@ from quickfinder.ui.ui_projectsearch import Ui_ProjectSearch
 
 
 class ProjectSearchDialog(QDialog, Ui_ProjectSearch):
-    def __init__(self, projectFinder, projectSearchModel, projectSearch=None):
+    def __init__(self, project_finder, project_search_model, projectSearch=None):
         QDialog.__init__(self)
         self.setupUi(self)
 
-        self.projectFinder = projectFinder
-        self.projectSearchModel = projectSearchModel
+        self.project_finder = project_finder
+        self.project_search_model = project_search_model
         self.projectSearch = projectSearch
 
         self.layerCombo.setFilters(QgsMapLayerProxyModel.HasGeometry)
@@ -45,10 +45,10 @@ class ProjectSearchDialog(QDialog, Ui_ProjectSearch):
 
         self.progressBar.hide()
         self.cancelButton.hide()
-        self.cancelButton.clicked.connect(self.projectFinder.stop_record)
+        self.cancelButton.clicked.connect(self.project_finder.stop_record)
         self.okButton.clicked.connect(self.process)
 
-        self.projectFinder.recordingSearchProgress.connect(self.progressBar.setValue)
+        self.project_finder.recordingSearchProgress.connect(self.progressBar.setValue)
 
         if projectSearch is not None:
             self.searchName.setText(projectSearch.searchName)
@@ -65,7 +65,7 @@ class ProjectSearchDialog(QDialog, Ui_ProjectSearch):
         evaluateDirectly = self.evaluateCheckBox.isChecked()
 
         if self.projectSearch is None:
-            self.projectSearch = self.projectSearchModel.addSearch(searchName, layer, expression, priority)
+            self.projectSearch = self.project_search_model.addSearch(searchName, layer, expression, priority)
         else:
             self.projectSearch.edit(searchName, layer.id(), layer.name(), expression, priority, srid)
 
@@ -75,7 +75,7 @@ class ProjectSearchDialog(QDialog, Ui_ProjectSearch):
             self.progressBar.show()
             self.cancelButton.show()
 
-            ok, message = self.projectFinder.recordSearch(self.projectSearch)
+            ok, message = self.project_finder.recordSearch(self.projectSearch)
 
             self.progressBar.hide()
             self.cancelButton.hide()

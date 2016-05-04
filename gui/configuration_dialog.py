@@ -49,28 +49,28 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
         SettingDialog.__init__(self, self.settings)
 
         # new declaration of ProjectFinder since changes can be cancelled
-        self.projectFinder = ProjectFinder(self)
+        self.project_finder = ProjectFinder(self)
 
         # table model
-        self.projectSearchModel = ProjectSearchModel(self.projectFinder)
+        self.project_search_model = ProjectSearchModel(self.project_finder)
 
         self.proxyModel = QSortFilterProxyModel(self)
-        self.proxyModel.setSourceModel(self.projectSearchModel)
+        self.proxyModel.setSourceModel(self.project_search_model)
         self.projectSearchTable.setModel(self.proxyModel)
 
         header = self.projectSearchTable.horizontalHeader()
         header.setResizeMode(QHeaderView.ResizeToContents)
 
         # open/create QuickFinder file
-        self.createFileButton.clicked.connect(self.createQFTSfile)
-        self.openFileButton.clicked.connect(self.openQFTSfile)
-        self.readQFTSfile()
+        self.createFileButton.clicked.connect(self.create_QFTS_file)
+        self.openFileButton.clicked.connect(self.open_QFTS_file)
+        self.read_QFTS_file()
 
         # project search
-        self.addSearchButton.clicked.connect(self.addProjectSearch)
-        self.removeSearchButton.clicked.connect(self.removeProjectSearch)
-        self.editSearchButton.clicked.connect(self.editProjectSearch)
-        self.refreshButton.clicked.connect(self.refreshProjectSearch)
+        self.addSearchButton.clicked.connect(self.add_project_search)
+        self.removeSearchButton.clicked.connect(self.remove_project_search)
+        self.editSearchButton.clicked.connect(self.edit_project_search)
+        self.refreshButton.clicked.connect(self.refresh_project_search)
         self.projectSearchTable.selectionModel().selectionChanged.connect(self.enableButtons)
         self.enableButtons()
 
@@ -78,16 +78,16 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
         self.geomapfishCrsButton.clicked.connect(self.geomapfishCrsButtonClicked)
 
     def reject(self):
-        if self.closeAndControl():
+        if self.close_and_control():
             QDialog.reject(self)
 
     def accept(self):
-        if self.closeAndControl():
+        if self.close_and_control():
             QDialog.accept(self)
 
-    def closeAndControl(self):
-        self.projectFinder.close()
-        for search in self.projectFinder.searches.values():
+    def close_and_control(self):
+        self.project_finder.close()
+        for search in self.project_finder.searches.values():
             if search.dateEvaluated is None:
                 box = QMessageBox(QMessageBox.Warning,
                                   "Quick Finder",
@@ -98,17 +98,17 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
                 if ret == QMessageBox.Cancel:
                     return False
                 elif ret == QMessageBox.Yes:
-                    self.refreshProjectSearch()
+                    self.refresh_project_search()
                     return False
         return True
 
-    def readQFTSfile(self):
+    def read_QFTS_file(self):
         filepath = self.qftsfilepath.text()
-        self.projectFinder.setFile(filepath)
-        self.projectSearchTable.setEnabled(self.projectFinder.isValid)
-        self.projectSearchButtonsWidget.setEnabled(self.projectFinder.isValid)
+        self.project_finder.setFile(filepath)
+        self.projectSearchTable.setEnabled(self.project_finder.isValid)
+        self.projectSearchButtonsWidget.setEnabled(self.project_finder.isValid)
 
-    def createQFTSfile(self):
+    def create_QFTS_file(self):
         prjPath = QgsProject.instance().homePath()
         filepath = QFileDialog.getSaveFileName(self, "Create Quickfinder index file", prjPath,
                                                "Quickfinder file (*.qfts)")
@@ -119,21 +119,21 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
                 remove(filepath)
             createFTSfile(filepath)
             self.qftsfilepath.setText(filepath)
-            self.readQFTSfile()
+            self.read_QFTS_file()
 
-    def openQFTSfile(self):
+    def open_QFTS_file(self):
         prjPath = QgsProject.instance().homePath()
         filepath = QFileDialog.getOpenFileName(self, "Open Quickfinder index file",
                                                prjPath, "Quickfinder file (*.qfts)")
         if filepath:
             self.qftsfilepath.setText(filepath)
-            self.readQFTSfile()
+            self.read_QFTS_file()
 
-    def addProjectSearch(self):
-        ProjectSearchDialog(self.projectFinder, self.projectSearchModel).exec_()
+    def add_project_search(self):
+        ProjectSearchDialog(self.project_finder, self.project_search_model).exec_()
 
-    def removeProjectSearch(self):
-        sel = self.selectedSearchIds()
+    def remove_project_search(self):
+        sel = self.selected_search_ids()
         if len(sel) == 0:
             return
         box = QMessageBox(QMessageBox.Warning,
@@ -144,32 +144,32 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
         ret = box.exec_()
         if ret == QMessageBox.Cancel:
             return
-        self.projectSearchModel.removeSearches(sel)
+        self.project_search_model.removeSearches(sel)
 
-    def editProjectSearch(self):
-        sel = self.selectedSearchIds()
+    def edit_project_search(self):
+        sel = self.selected_search_ids()
         if len(sel) != 1:
             return
-        if not self.projectSearchModel.searches.has_key(sel[0]):
+        if not self.project_search_model.searches.has_key(sel[0]):
             return
-        search = self.projectSearchModel.searches[sel[0]]
+        search = self.project_search_model.searches[sel[0]]
         if search:
-            ProjectSearchDialog(self.projectFinder, self.projectSearchModel, search).exec_()
+            ProjectSearchDialog(self.project_finder, self.project_search_model, search).exec_()
 
-    def refreshProjectSearch(self):
-        RefreshDialog(self.projectFinder, self.projectSearchModel, self.selectedSearchIds()).exec_()
+    def refresh_project_search(self):
+        RefreshDialog(self.project_finder, self.project_search_model, self.selected_search_ids()).exec_()
 
-    def selectedSearchIds(self):
+    def selected_search_ids(self):
         selectedSearchId = []
         for idx in self.projectSearchTable.selectionModel().selectedRows():
             selectedSearchId.append(self.proxyModel.data(idx, SearchIdRole))
         return selectedSearchId
 
     def enableButtons(self):
-        n = len(self.selectedSearchIds())
+        n = len(self.selected_search_ids())
         self.removeSearchButton.setEnabled(n > 0)
         self.editSearchButton.setEnabled(n == 1)
-        self.projectSearchButtonsWidget.setEnabled(self.projectFinder.isValid)
+        self.projectSearchButtonsWidget.setEnabled(self.project_finder.isValid)
 
     def geomapfishCrsButtonClicked(self):
         dlg = QgsGenericProjectionSelector(self)

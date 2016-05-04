@@ -56,7 +56,7 @@ class GeomapfishFinder(HttpFinder):
             headers['Authorization'] = 'Basic ' + b64
         self._sendRequest(url, params, headers)
 
-    def loadData(self, data):
+    def load_data(self, data):
         srv_crs_authid = self.settings.value('geomapfishCrs')
         srv_crs_authid = int(srv_crs_authid.replace('EPSG:', ''))
         features = data['features']

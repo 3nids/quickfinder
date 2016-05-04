@@ -36,17 +36,17 @@ class RefreshDialog(QDialog, Ui_Refresh):
     searchProgress = 0
     currentLayerLength = 0
 
-    def __init__(self, projectFinder, projectSearchModel=None, selectedRows=None):
+    def __init__(self, project_finder, project_search_model=None, selectedRows=None):
         QDialog.__init__(self)
         self.setupUi(self)
         self.progressBar.setValue(0)
 
         self.settings = MySettings()
-        self.projectFinder = projectFinder
-        self.projectSearchModel = projectSearchModel
+        self.project_finder = project_finder
+        self.project_search_model = project_search_model
         self.selectedRows = selectedRows
 
-        if projectSearchModel is None:
+        if project_search_model is None:
             self.selectionWidget.hide()
             self.unrecordedCheckBox.hide()
             self.unevaluatedCheckBox.setChecked(True)
@@ -58,10 +58,10 @@ class RefreshDialog(QDialog, Ui_Refresh):
         self.cancelButton.clicked.connect(self.cancel)
         self.refreshButton.clicked.connect(self.refresh)
 
-        self.projectFinder.recordingSearchProgress.connect(self.setProgress)
+        self.project_finder.recordingSearchProgress.connect(self.setProgress)
 
     def refresh(self):
-        searches = self.projectFinder.searches
+        searches = self.project_finder.searches
 
         self.stop = False
         self.cancelButton.show()
@@ -94,10 +94,10 @@ class RefreshDialog(QDialog, Ui_Refresh):
             # delete search if layer has been deleted
             layer = search.layer()
             if layer is None and removeDeleted:
-                if self.projectSearchModel is not None:
-                    self.projectSearchModel.removeSearches([search.searchId])
+                if self.project_search_model is not None:
+                    self.project_search_model.removeSearches([search.searchId])
                 else:
-                    self.projectFinder.deleteSearch(search.searchId)
+                    self.project_finder.deleteSearch(search.searchId)
                 continue
 
             # if specified do not process recently evaluated search
@@ -114,9 +114,9 @@ class RefreshDialog(QDialog, Ui_Refresh):
                     continue
 
             self.currentLayerLength = layer.featureCount()
-            ok, message = self.projectFinder.recordSearch(search, False)
+            ok, message = self.project_finder.recordSearch(search, False)
 
-        self.projectFinder.optimize()
+        self.project_finder.optimize()
 
         self.progressBar.hide()
         self.cancelButton.hide()
@@ -127,7 +127,7 @@ class RefreshDialog(QDialog, Ui_Refresh):
         e.accept()
 
     def cancel(self):
-        self.projectFinder.stop_record()
+        self.project_finder.stop_record()
         self.stop = True
 
     def setProgress(self, value=0):

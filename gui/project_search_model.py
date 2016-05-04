@@ -34,14 +34,14 @@ class ProjectSearchModel(QAbstractItemModel):
 
     searches = {}
 
-    def __init__(self, projectFinder):
+    def __init__(self, project_finder):
         QAbstractItemModel.__init__(self)
-        self.projectFinder = projectFinder
-        self.projectFinder.fileChanged.connect(self.fileChanged)
+        self.project_finder = project_finder
+        self.project_finder.fileChanged.connect(self.fileChanged)
 
     def fileChanged(self):
         self.beginResetModel()
-        self.searches = self.projectFinder.searches
+        self.searches = self.project_finder.searches
         for search in self.searches.values():
             search.changed.connect(self.searchChanged)
         self.endResetModel()
@@ -59,7 +59,7 @@ class ProjectSearchModel(QAbstractItemModel):
     def removeSearches(self, searchIds):
         self.beginResetModel()
         for searchId in searchIds:
-            self.projectFinder.deleteSearch(searchId)
+            self.project_finder.deleteSearch(searchId)
             del self.searches[searchId]
         self.endResetModel()
 
