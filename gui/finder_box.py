@@ -74,8 +74,8 @@ class FinderBox(QComboBox):
 
         self.finders = finders
         for finder in self.finders.values():
-            finder.resultFound.connect(self.resultFound)
-            finder.limitReached.connect(self.limitReached)
+            finder.result_found.connect(self.result_found)
+            finder.limit_reached.connect(self.limit_reached)
             finder.finished.connect(self.finished)
 
         self.clearButton = QPushButton(self)
@@ -154,22 +154,22 @@ class FinderBox(QComboBox):
     def stop(self):
         self.findersToStart = []
         for finder in self.finders.values():
-            if finder.isRunning():
+            if finder.is_running():
                 finder.stop()
         self.finished(None)
 
-    def resultFound(self, finder, layername, value, geometry, srid):
+    def result_found(self, finder, layername, value, geometry, srid):
         self.resultModel.addResult(finder.name, layername, value, geometry, srid)
         self.resultView.expandAll()
 
-    def limitReached(self, finder, layername):
+    def limit_reached(self, finder, layername):
         self.resultModel.addEllipsys(finder.name, layername)
 
     def finished(self, finder):
         if len(self.findersToStart) > 0:
             return
         for finder in self.finders.values():
-            if finder.isRunning():
+            if finder.is_running():
                 return
 
         self.running = False

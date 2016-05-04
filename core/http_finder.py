@@ -30,7 +30,7 @@ from qgis.core import QgsNetworkAccessManager
 from qgis.core import QgsLogger
 from qgis.gui import QgsMessageBar
 
-from .abstractfinder import AbstractFinder
+from .abstract_finder import AbstractFinder
 
 
 class HttpFinder(AbstractFinder):
@@ -44,7 +44,7 @@ class HttpFinder(AbstractFinder):
         if self.asynchonous:
 
             if self.reply is not None:
-                self.reply.finished.disconnect(self.replyFinished)
+                self.reply.finished.disconnect(self.reply_finished)
                 self.reply.abort()
                 self.reply = None
 
@@ -56,7 +56,7 @@ class HttpFinder(AbstractFinder):
             for key, value in headers.iteritems():
                 request.setRawHeader(key, value)
             self.reply = QgsNetworkAccessManager.instance().get(request)
-            self.reply.finished.connect(self.replyFinished)
+            self.reply.finished.connect(self.reply_finished)
 
         else:
             response = urllib2.urlopen(self.url + '?' + urllib.urlencode(params))
@@ -69,7 +69,7 @@ class HttpFinder(AbstractFinder):
             self.reply = None
         self._finish()
 
-    def replyFinished(self):
+    def reply_finished(self):
         error = self.reply.error()
         if error == QNetworkReply.NoError:
             response_text = self.reply.readAll().data()
@@ -80,13 +80,13 @@ class HttpFinder(AbstractFinder):
             except ValueError:
                 self.message.emit(self.tr('The service did not reply properly. Please check service definition.'), QgsMessageBar.WARNING)
         else:
-            error_message = self.getErrorMessage(error)
+            error_message = self.get_error_message(error)
             self.message.emit(error_message, QgsMessageBar.WARNING)
             self._finish()
         self.reply.deleteLater()
         self.reply = None
 
-    def getErrorMessage(self, error):
+    def get_error_message(self, error):
         if error == QNetworkReply.NoError:
             # No error condition.
             # Note: When the HTTP protocol returns a redirect no error will be reported.

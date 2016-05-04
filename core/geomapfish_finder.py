@@ -68,7 +68,7 @@ class GeomapfishFinder(HttpFinder):
             properties = f['properties']
             if geometry is None:
                 continue
-            self.resultFound.emit(self,
+            self.result_found.emit(self,
                                   properties['layer_name'],
                                   properties['label'],
                                   geometry,

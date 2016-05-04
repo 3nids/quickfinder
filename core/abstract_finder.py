@@ -40,8 +40,8 @@ class AbstractFinder(QObject):
 
     # progress = pyqtSignal(QObject, int, int)  # total current
 
-    resultFound = pyqtSignal(QObject, str, str, QgsGeometry, int)
-    limitReached = pyqtSignal(QObject, str)
+    result_found = pyqtSignal(QObject, str, str, QgsGeometry, int)
+    limit_reached = pyqtSignal(QObject, str)
     finished = pyqtSignal(QObject)
     message = pyqtSignal(str, QgsMessageBar.MessageLevel)
 
@@ -65,7 +65,7 @@ class AbstractFinder(QObject):
         self.continueSearch = False
         self.finished.emit(self)
 
-    def isRunning(self):
+    def is_running(self):
         return self.continueSearch
 
     def reload(self):

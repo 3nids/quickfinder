@@ -45,7 +45,7 @@ class ProjectSearchDialog(QDialog, Ui_ProjectSearch):
 
         self.progressBar.hide()
         self.cancelButton.hide()
-        self.cancelButton.clicked.connect(self.projectFinder.stopRecord)
+        self.cancelButton.clicked.connect(self.projectFinder.stop_record)
         self.okButton.clicked.connect(self.process)
 
         self.projectFinder.recordingSearchProgress.connect(self.progressBar.setValue)

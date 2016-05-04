@@ -64,7 +64,7 @@ class OsmFinder(HttpFinder):
             except KeyError:
                 wkt = 'POINT(%s %s)' % (d['lon'], d['lat'])
             geometry = QgsGeometry.fromWkt(wkt)
-            self.resultFound.emit(self,
+            self.result_found.emit(self,
                                   d['type'],
                                   d['display_name'],
                                   geometry,

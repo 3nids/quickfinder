@@ -127,7 +127,7 @@ class RefreshDialog(QDialog, Ui_Refresh):
         e.accept()
 
     def cancel(self):
-        self.projectFinder.stopRecord()
+        self.projectFinder.stop_record()
         self.stop = True
 
     def setProgress(self, value=0):

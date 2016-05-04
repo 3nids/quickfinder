@@ -176,7 +176,7 @@ class ProjectFinder(AbstractFinder):
 
             crs = QgsCoordinateReferenceSystem()
             crs.createFromString(self._searches[search_id].srid)
-            self.resultFound.emit(self,
+            self.result_found.emit(self,
                                   self._searches[search_id].searchName,
                                   content,
                                   geometry,
@@ -264,6 +264,6 @@ class ProjectFinder(AbstractFinder):
             wkb = binascii.b2a_hex(f.geometry().asWkb())
             yield ( evaluated, centroid.x(), centroid.y(), wkb )
 
-    def stopRecord(self):
+    def stop_record(self):
         self.stopLoop = True
 
