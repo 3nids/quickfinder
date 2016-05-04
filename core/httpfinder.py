@@ -74,11 +74,14 @@ class HttpFinder(AbstractFinder):
         if error == QNetworkReply.NoError:
             response_text = self.reply.readAll().data()
             QgsLogger.debug('Response: {}'.format(response_text))
-            data = json.loads(response_text)
-            self.loadData(data)
+            try:
+                data = json.loads(response_text)
+                self.loadData(data)
+            except ValueError:
+                self.message.emit(self.tr('The service did not reply properly. Please check service definition.'), QgsMessageBar.WARNING)
         else:
-            errorMessage = self.getErrorMessage(error)
-            self.message.emit(errorMessage, QgsMessageBar.WARNING)
+            error_message = self.getErrorMessage(error)
+            self.message.emit(error_message, QgsMessageBar.WARNING)
             self._finish()
         self.reply.deleteLater()
         self.reply = None
