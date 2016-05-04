@@ -1,5 +1,10 @@
 ## Changelog
 
+**Version 3.2.14** 22.01.2016
+
+* fix crash if service issues a 404 page
+* improved setting management
+
 **Version 3.2.13** 22.01.2016
 
 * refresh content table after adding new project search
