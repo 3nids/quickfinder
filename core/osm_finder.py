@@ -26,7 +26,7 @@
 import json
 
 from qgis.core import QgsGeometry
-from quickfinder.core.httpfinder import HttpFinder
+from http_finder import HttpFinder
 
 
 class OsmFinder(HttpFinder):
@@ -36,8 +36,8 @@ class OsmFinder(HttpFinder):
     def __init__(self, parent):
         HttpFinder.__init__(self, parent)
 
-    def start(self, toFind, bbox=None):
-        super(OsmFinder, self).start(toFind, bbox)
+    def start(self, to_find, bbox=None):
+        super(OsmFinder, self).start(to_find, bbox)
 
         url = self.settings.value('osmUrl')
 
@@ -48,7 +48,7 @@ class OsmFinder(HttpFinder):
                                        bbox.yMinimum())
 
         params = {
-            'q'            : toFind,
+            'q'            : to_find,
             'format'       : 'json',
             'polygon_text' : '1',
             'viewbox'      : viewbox,

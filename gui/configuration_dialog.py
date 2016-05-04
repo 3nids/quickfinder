@@ -32,13 +32,13 @@ from PyQt4.QtGui import (QDialog, QFileDialog, QMessageBox,
 from qgis.core import QgsProject
 from qgis.gui import QgsGenericProjectionSelector
 
-from quickfinder.qgissettingmanager import SettingDialog
-from quickfinder.core.mysettings import MySettings
-from quickfinder.core.projectfinder import ProjectFinder, createFTSfile
-from quickfinder.gui.projectsearchdialog import ProjectSearchDialog
-from quickfinder.gui.projectsearchmodel import ProjectSearchModel, SearchIdRole
-from quickfinder.gui.refreshdialog import RefreshDialog
-from quickfinder.ui.ui_configuration import Ui_Configuration
+from ..qgissettingmanager import SettingDialog
+from ..core.my_settings import MySettings
+from ..core.project_finder import ProjectFinder, create_FTS_file
+from project_search_dialog import ProjectSearchDialog
+from project_search_model import ProjectSearchModel, SearchIdRole
+from refresh_dialog import RefreshDialog
+from ..ui.ui_configuration import Ui_Configuration
 
 
 class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
@@ -117,7 +117,7 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
                 filepath += ".qfts"
             if path.isfile(filepath):
                 remove(filepath)
-            createFTSfile(filepath)
+            create_FTS_file(filepath)
             self.qftsfilepath.setText(filepath)
             self.read_QFTS_file()
 

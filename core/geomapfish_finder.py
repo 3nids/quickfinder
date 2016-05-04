@@ -25,11 +25,10 @@
 
 import json
 from osgeo import ogr
-
+from PyQt4.QtCore import QByteArray
 from qgis.core import QgsGeometry
+from http_finder import HttpFinder
 
-from quickfinder.core.httpfinder import HttpFinder
-from PyQt4 import QtCore
 
 class GeomapfishFinder(HttpFinder):
 
@@ -38,21 +37,21 @@ class GeomapfishFinder(HttpFinder):
     def __init__(self, parent):
         HttpFinder.__init__(self, parent)
 
-    def start(self, toFind, crs=None, bbox=None):
-        super(GeomapfishFinder, self).start(toFind, bbox)
+    def start(self, to_find, crs=None, bbox=None):
+        super(GeomapfishFinder, self).start(to_find, bbox)
         url = self.settings.value('geomapfishUrl')
         params = {
-            'query'          : toFind,
-            'limit'          : str(self.settings.value('totalLimit')),
-            'partitionlimit' : str(self.settings.value('categoryLimit'))
+            'query': to_find,
+            'limit': str(self.settings.value('totalLimit')),
+            'partitionlimit': str(self.settings.value('categoryLimit'))
         }
         headers = {}
 
         if self.settings.value('geomapfishUser') != '':
             user = self.settings.value('geomapfishUser')
             password = self.settings.value('geomapfishPass')
-            authdata = "{}:{}".format(user, password)
-            b64 = QtCore.QByteArray(authdata).toBase64()
+            auth_data = "{}:{}".format(user, password)
+            b64 = QByteArray(auth_data).toBase64()
             headers['Authorization'] = 'Basic ' + b64
         self._sendRequest(url, params, headers)
 
@@ -69,8 +68,8 @@ class GeomapfishFinder(HttpFinder):
             if geometry is None:
                 continue
             self.result_found.emit(self,
-                                  properties['layer_name'],
-                                  properties['label'],
-                                  geometry,
-                                  srv_crs_authid)
+                                   properties['layer_name'],
+                                   properties['label'],
+                                   geometry,
+                                   srv_crs_authid)
         self._finish()

@@ -35,11 +35,11 @@ except ImportError:
 from PyQt4.QtCore import pyqtSignal, QCoreApplication
 from qgis.core import QgsMapLayerRegistry, QgsFeatureRequest, QgsExpression, QgsGeometry, QgsCoordinateReferenceSystem
 from qgis.gui import QgsMessageBar
-from quickfinder.core.projectsearch import ProjectSearch
-from quickfinder.core.abstractfinder import AbstractFinder
+from project_search import ProjectSearch
+from abstract_finder import AbstractFinder
 
 
-def createFTSfile(filepath):
+def create_FTS_file(filepath):
     conn = sqlite3.connect(filepath)
 
     sql = "CREATE TABLE quickfinder_info (key text,value text);"
@@ -57,7 +57,7 @@ def createFTSfile(filepath):
 
     conn.close()
 
-def nDaysAgoIsoDate(nDays):
+def n_days_ago_iso_date(nDays):
     return unicode( ( datetime.now() - timedelta(days=nDays) ).date().isoformat() )
 
 class ProjectFinder(AbstractFinder):
@@ -85,9 +85,9 @@ class ProjectFinder(AbstractFinder):
         filepath = self.settings.value("qftsfilepath")
         self.setFile(filepath)
 
-    def start(self, toFind, bbox=None):
-        super(ProjectFinder, self).start(toFind, bbox)
-        self.find(toFind)
+    def start(self, to_find, bbox=None):
+        super(ProjectFinder, self).start(to_find, bbox)
+        self.find(to_find)
         self._finish()
 
     def setFile(self, filepath):
@@ -138,20 +138,20 @@ class ProjectFinder(AbstractFinder):
             searches[s[0]] = ProjectSearch( s[0], s[1], s[2], s[3], s[4].replace("\\'","'"), s[5], s[6], s[7] )
         return searches
 
-    def find(self, toFind):
+    def find(self, to_find):
         if self.settings.value("qftsfilepath") == '':
             return
         if not self.isValid:
             self.message.emit("Cannot search in project. QuickFinder file is probably currently in use.",QgsMessageBar.WARNING)
             return
         # add star after each word except numbers
-        toFind = toFind.split(' ')
-        for i,word in enumerate(toFind):
+        to_find = to_find.split(' ')
+        for i,word in enumerate(to_find):
             try:
                 int(word)
             except ValueError:
-                toFind[i] = '%s*' % word
-        toFind = ' '.join(toFind)
+                to_find[i] = '%s*' % word
+        to_find = ' '.join(to_find)
         # FTS request
         sql = "SELECT search_id,content,x,y,wkb_geom FROM quickfinder_data WHERE content MATCH ?"
         cur = self.conn.cursor()
@@ -159,7 +159,7 @@ class ProjectFinder(AbstractFinder):
         catLimit = self.settings.value("categoryLimit")
         totalLimit = self.settings.value("totalLimit")
         catFound = {}
-        for row in cur.execute(sql, [toFind]):
+        for row in cur.execute(sql, [to_find]):
             search_id, content, x, y, wkb_geom = row
             if catFound.has_key(search_id):
                 if catFound[search_id] >= catLimit:

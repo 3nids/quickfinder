@@ -25,9 +25,9 @@
 
 from PyQt4.QtCore import QCoreApplication
 from PyQt4.QtGui import QDialog
-from quickfinder.core.projectfinder import nDaysAgoIsoDate
-from quickfinder.core.mysettings import MySettings
-from quickfinder.ui.ui_refresh import Ui_Refresh
+from ..core.project_finder import n_days_ago_iso_date
+from ..core.my_settings import MySettings
+from ..ui.ui_refresh import Ui_Refresh
 
 
 class RefreshDialog(QDialog, Ui_Refresh):
@@ -76,7 +76,7 @@ class RefreshDialog(QDialog, Ui_Refresh):
         unEvaluatedDelay = self.unevalutedDaysSpinBox.value()
         removeDeleted = self.deletedLayersCheckBox.isChecked()
 
-        limit_date = nDaysAgoIsoDate(unEvaluatedDelay)
+        limit_date = n_days_ago_iso_date(unEvaluatedDelay)
 
         self.searchProgress = -1
 

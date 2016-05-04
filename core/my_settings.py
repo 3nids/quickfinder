@@ -1,9 +1,9 @@
-#-----------------------------------------------------------
+# -----------------------------------------------------------
 #
 # QGIS Quick Finder Plugin
 # Copyright (C) 2014 Denis Rouzaud, Arnaud Morvan
 #
-#-----------------------------------------------------------
+# -----------------------------------------------------------
 #
 # licensed under the terms of GNU GPL 2
 #
@@ -21,10 +21,9 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-#---------------------------------------------------------------------
+# ---------------------------------------------------------------------
 
-from PyQt4.QtGui import QColor
-from quickfinder.qgissettingmanager import SettingManager, Scope, Bool, String, Integer
+from ..qgissettingmanager import SettingManager, Scope, Bool, String, Integer
 
 pluginName = "quickfinder_plugin"
 

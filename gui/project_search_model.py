@@ -1,9 +1,9 @@
-#-----------------------------------------------------------
+# -----------------------------------------------------------
 #
 # QGIS Quick Finder Plugin
 # Copyright (C) 2013 Denis Rouzaud
 #
-#-----------------------------------------------------------
+# -----------------------------------------------------------
 #
 # licensed under the terms of GNU GPL 2
 #
@@ -21,11 +21,11 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-#---------------------------------------------------------------------
+# ---------------------------------------------------------------------
 
 from uuid import uuid1
 from PyQt4.QtCore import Qt, QAbstractItemModel, QModelIndex
-from quickfinder.core.projectsearch import ProjectSearch
+from ..core.project_search import ProjectSearch
 
 LayerIdRole = Qt.UserRole + 1
 SearchIdRole = Qt.UserRole + 2

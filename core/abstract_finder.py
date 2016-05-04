@@ -28,14 +28,14 @@ from PyQt4.QtCore import QObject, pyqtSignal
 from qgis.core import QgsGeometry
 from qgis.gui import QgsMessageBar
 
-from quickfinder.core.mysettings import MySettings
+from my_settings import MySettings
 
 
 class AbstractFinder(QObject):
 
     name = ''  # to be defined in subclasses
 
-    continueSearch = False
+    continue_search = False
     transform = None  # to be defined by subclasses
 
     # progress = pyqtSignal(QObject, int, int)  # total current
@@ -49,11 +49,11 @@ class AbstractFinder(QObject):
         QObject.__init__(self, parent)
         self.settings = MySettings()
 
-    def start(self, toFind, bbox=None):
-        self.continueSearch = True
+    def start(self, to_find, bbox=None):
+        self.continue_search = True
 
     def stop(self):
-        self.continueSearch = False
+        self.continue_search = False
 
     def activated(self):
         return self.settings.value(self.name)
@@ -62,11 +62,11 @@ class AbstractFinder(QObject):
         pass
 
     def _finish(self):
-        self.continueSearch = False
+        self.continue_search = False
         self.finished.emit(self)
 
     def is_running(self):
-        return self.continueSearch
+        return self.continue_search
 
     def reload(self):
         pass

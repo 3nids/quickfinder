@@ -28,18 +28,18 @@ from PyQt4.QtCore import Qt, QObject, QSettings, QCoreApplication, QTranslator, 
 from PyQt4.QtGui import QAction, QIcon, QColor, QDesktopServices, QMessageBox
 from qgis.gui import QgsRubberBand, QgsMessageBar
 
-from quickfinder.core.projectfinder import ProjectFinder, nDaysAgoIsoDate
-from quickfinder.core.osmfinder import OsmFinder
-from quickfinder.core.geomapfishfinder import GeomapfishFinder
-from quickfinder.core.mysettings import MySettings
-from quickfinder.gui.configurationdialog import ConfigurationDialog
-from quickfinder.gui.refreshdialog import RefreshDialog
-from quickfinder.gui.finderbox import FinderBox
+from core.project_finder import ProjectFinder, n_days_ago_iso_date
+from core.osm_finder import OsmFinder
+from core.geomapfish_finder import GeomapfishFinder
+from core.my_settings import MySettings
+from gui.configuration_dialog import ConfigurationDialog
+from gui.refresh_dialog import RefreshDialog
+from gui.finder_box import FinderBox
 
 import resources_rc
 
 
-class quickFinder(QObject):
+class QuickFinder(QObject):
 
     name = u"&Quick Finder"
     actions = None
@@ -54,11 +54,12 @@ class quickFinder(QObject):
         self.actions = {}
         self.finders = {}
         self.settings = MySettings()
+        self.rubber = None
 
-        self._initFinders()
+        self._init_finders()
 
-        self.iface.projectRead.connect(self._reloadFinders)
-        self.iface.newProjectCreated.connect(self._reloadFinders)
+        self.iface.projectRead.connect(self._reload_finders)
+        self.iface.newProjectCreated.connect(self._reload_finders)
 
         # translation environment
         self.plugin_dir = os.path.dirname(__file__)
@@ -74,7 +75,7 @@ class quickFinder(QObject):
             QIcon(":/plugins/quickfinder/icons/settings.svg"),
             self.tr(u"&Settings"),
             self.iface.mainWindow())
-        self.actions['showSettings'].triggered.connect(self.showSettings)
+        self.actions['showSettings'].triggered.connect(self.show_settings)
         self.iface.addPluginToMenu(self.name, self.actions['showSettings'])
         self.actions['help'] = QAction(
             QIcon(":/plugins/quickfinder/icons/help.svg"),
@@ -84,7 +85,7 @@ class quickFinder(QObject):
             lambda: QDesktopServices().openUrl(
                 QUrl("http://3nids.github.io/quickfinder")))
         self.iface.addPluginToMenu(self.name, self.actions['help'])
-        self._initToolbar()
+        self._init_toolbar()
         self.rubber = QgsRubberBand(self.iface.mapCanvas())
         self.rubber.setColor(QColor(255, 255, 50, 200))
         self.rubber.setIcon(self.rubber.ICON_CIRCLE)
@@ -104,79 +105,74 @@ class quickFinder(QObject):
             self.iface.mapCanvas().scene().removeItem(self.rubber)
             del self.rubber
 
-    def _initToolbar(self):
+    def _init_toolbar(self):
         """setup the plugin toolbar."""
         self.toolbar = self.iface.addToolBar(self.name)
         self.toolbar.setObjectName('mQuickFinderToolBar')
-        self.searchAction = QAction(QIcon(":/plugins/quickfinder/icons/magnifier13.svg"),
-                                     self.tr("Search"),
-                                     self.toolbar)
-        self.stopAction = QAction(
-            QIcon(":/plugins/quickfinder/icons/wrong2.svg"),
-            self.tr("Cancel"),
-            self.toolbar)
-        self.finderBox = FinderBox(self.finders, self.iface, self.toolbar)
-        self.finderBox.searchStarted.connect(self.searchStarted)
-        self.finderBox.searchFinished.connect(self.searchFinished)
-        self.finderBoxAction = self.toolbar.addWidget(self.finderBox)
-        self.finderBoxAction.setVisible(True)
-        self.searchAction.triggered.connect(self.finderBox.search)
-        self.toolbar.addAction(self.searchAction)
-        self.stopAction.setVisible(False)
-        self.stopAction.triggered.connect(self.finderBox.stop)
-        self.toolbar.addAction(self.stopAction)
+        self.search_action = QAction(QIcon(":/plugins/quickfinder/icons/magnifier13.svg"), self.tr("Search"), self.toolbar)
+        self.stop_action = QAction(QIcon(":/plugins/quickfinder/icons/wrong2.svg"), self.tr("Cancel"), self.toolbar)
+        self.finder_box = FinderBox(self.finders, self.iface, self.toolbar)
+        self.finder_box.search_started.connect(self.search_started)
+        self.finder_box.search_finished.connect(self.search_finished)
+        self.finder_box_action = self.toolbar.addWidget(self.finder_box)
+        self.finder_box_action.setVisible(True)
+        self.search_action.triggered.connect(self.finder_box.search)
+        self.toolbar.addAction(self.search_action)
+        self.stop_action.setVisible(False)
+        self.stop_action.triggered.connect(self.finder_box.stop)
+        self.toolbar.addAction(self.stop_action)
         self.toolbar.setVisible(True)
 
-    def _initFinders(self):
+    def _init_finders(self):
         self.finders['geomapfish'] = GeomapfishFinder(self)
         self.finders['osm'] = OsmFinder(self)
         self.finders['project'] = ProjectFinder(self)
         for key in self.finders.keys():
-            self.finders[key].message.connect(self.displayMessage)
-        self.refreshProject()
+            self.finders[key].message.connect(self.display_message)
+        self.refresh_project()
 
-    def _reloadFinders(self):
+    def _reload_finders(self):
         for key in self.finders.keys():
             self.finders[key].close()
             self.finders[key].reload()
-        self.refreshProject()
+        self.refresh_project()
 
     @pyqtSlot(str, QgsMessageBar.MessageLevel)
-    def displayMessage(self, message, level):
+    def display_message(self, message, level):
         self.iface.messageBar().pushMessage("QuickFinder", message, level)
 
-    def showSettings(self):
+    def show_settings(self):
         if ConfigurationDialog().exec_():
-            self._reloadFinders()
+            self._reload_finders()
 
-    def searchStarted(self):
-        self.searchAction.setVisible(False)
-        self.stopAction.setVisible(True)
+    def search_started(self):
+        self.search_action.setVisible(False)
+        self.stop_action.setVisible(True)
 
-    def searchFinished(self):
-        self.searchAction.setVisible(True)
-        self.stopAction.setVisible(False)
+    def search_finished(self):
+        self.search_action.setVisible(True)
+        self.stop_action.setVisible(False)
 
-    def refreshProject(self):
+    def refresh_project(self):
         if not self.finders['project'].activated:
             return
         if not self.settings.value("refreshAuto"):
             return
-        nDays = self.settings.value("refreshDelay")
+        n_days = self.settings.value("refreshDelay")
         # do not ask more ofen than 3 days
-        askLimit = min(3, nDays)
-        recentlyAsked = self.settings.value("refreshLastAsked") >= nDaysAgoIsoDate(askLimit)
-        if recentlyAsked:
+        ask_limit = min(3, n_days)
+        recently_asked = self.settings.value("refreshLastAsked") >= n_days_ago_iso_date(ask_limit)
+        if recently_asked:
             return
-        threshDate = nDaysAgoIsoDate(nDays)
+        thresh_date = n_days_ago_iso_date(n_days)
         uptodate = True
         for search in self.finders['project'].searches.values():
-            if search.dateEvaluated <= threshDate:
+            if search.dateEvaluated <= thresh_date:
                 uptodate = False
                 break
         if uptodate:
             return
-        self.settings.setValue("refreshLastAsked", nDaysAgoIsoDate(0))
+        self.settings.setValue("refreshLastAsked", n_days_ago_iso_date(0))
         ret = QMessageBox(QMessageBox.Warning,
                           "Quick Finder",
                           QCoreApplication.translate("Auto Refresh", "Some searches are outdated. Do you want to refresh them ?"),

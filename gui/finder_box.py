@@ -30,17 +30,17 @@ from PyQt4.QtGui import (QComboBox, QSizePolicy, QTreeView, QIcon, QApplication,
 from qgis.core import QgsGeometry, QgsCoordinateReferenceSystem, QgsCoordinateTransform
 from qgis.gui import QgsRubberBand
 
-from quickfinder.core.mysettings import MySettings
-from quickfinder.gui.resultmodel import ResultModel, GroupItem, ResultItem
+from ..core.mysettings import MySettings
+from resultmodel import ResultModel, GroupItem, ResultItem
 
 
 class FinderBox(QComboBox):
 
     running = False
-    toFinish = 0
+    to_finish = 0
 
-    searchStarted = pyqtSignal()
-    searchFinished = pyqtSignal()
+    search_started = pyqtSignal()
+    search_finished = pyqtSignal()
 
     def __init__(self, finders, iface, parent=None):
         self.iface = iface
@@ -62,15 +62,15 @@ class FinderBox(QComboBox):
         self.insertSeparator(0)
         self.lineEdit().returnPressed.connect(self.search)
 
-        self.resultView = QTreeView()
-        self.resultView.setHeaderHidden(True)
-        self.resultView.setMinimumHeight(300)
-        self.resultView.activated.connect(self.itemActivated)
-        self.resultView.pressed.connect(self.itemPressed)
-        self.setView(self.resultView)
+        self.result_view = QTreeView()
+        self.result_view.setHeaderHidden(True)
+        self.result_view.setMinimumHeight(300)
+        self.result_view.activated.connect(self.itemActivated)
+        self.result_view.pressed.connect(self.itemPressed)
+        self.setView(self.result_view)
 
-        self.resultModel = ResultModel(self)
-        self.setModel(self.resultModel)
+        self.result_model = ResultModel(self)
+        self.setModel(self.result_model)
 
         self.finders = finders
         for finder in self.finders.values():
@@ -92,9 +92,9 @@ class FinderBox(QComboBox):
         layout.addWidget(self.clearButton)
         layout.addSpacing(20)
 
-        buttonSize = self.clearButton.sizeHint()
+        button_size = self.clearButton.sizeHint()
         # frameWidth = self.lineEdit().style().pixelMetric(QtGui.QStyle.PM_DefaultFrameWidth)
-        padding = buttonSize.width()  # + frameWidth + 1
+        padding = button_size.width()  # + frameWidth + 1
         self.lineEdit().setStyleSheet('QLineEdit {padding-right: %dpx; }' % padding)
 
     def __del__(self):
@@ -103,12 +103,12 @@ class FinderBox(QComboBox):
             del self.rubber
 
     def clearSelection(self):
-        self.resultModel.setSelected(None, self.resultView.palette())
+        self.result_model.setSelected(None, self.result_view.palette())
         self.rubber.reset()
 
     def clear(self):
         self.clearSelection()
-        self.resultModel.clearResults()
+        self.result_model.clearResults()
         self.lineEdit().setText('')
 
     def keyPressEvent(self, event):
@@ -120,98 +120,98 @@ class FinderBox(QComboBox):
         if self.running:
             return
 
-        toFind = self.lineEdit().text()
-        if not toFind or toFind == '':
+        to_find = self.lineEdit().text()
+        if not to_find or to_find == '':
             return
 
         self.running = True
-        self.searchStarted.emit()
+        self.search_started.emit()
 
         self.clearSelection()
-        self.resultModel.clearResults()
-        self.resultModel.truncateHistory(MySettings().value("historyLength"))
-        self.resultModel.setLoading(True)
+        self.result_model.clearResults()
+        self.result_model.truncateHistory(MySettings().value("historyLength"))
+        self.result_model.setLoading(True)
         self.showPopup()
 
         QCoreApplication.processEvents(QEventLoop.ExcludeUserInputEvents)
 
-        self.findersToStart = []
+        self.finders_to_start = []
         for finder in self.finders.values():
             if finder.activated():
-                self.findersToStart.append(finder)
+                self.finders_to_start.append(finder)
 
         bbox = self.mapCanvas.fullExtent()
 
-        while len(self.findersToStart) > 0:
-            finder = self.findersToStart[0]
-            self.findersToStart.remove(finder)
-            self.resultModel.addResult(finder.name)
-            finder.start(toFind, bbox=bbox)
+        while len(self.finders_to_start) > 0:
+            finder = self.finders_to_start[0]
+            self.finders_to_start.remove(finder)
+            self.result_model.addResult(finder.name)
+            finder.start(to_find, bbox=bbox)
 
         # For case there is no finder activated
         self.finished(None)
 
     def stop(self):
-        self.findersToStart = []
+        self.finders_to_start = []
         for finder in self.finders.values():
             if finder.is_running():
                 finder.stop()
         self.finished(None)
 
     def result_found(self, finder, layername, value, geometry, srid):
-        self.resultModel.addResult(finder.name, layername, value, geometry, srid)
-        self.resultView.expandAll()
+        self.result_model.addResult(finder.name, layername, value, geometry, srid)
+        self.result_view.expandAll()
 
     def limit_reached(self, finder, layername):
-        self.resultModel.addEllipsys(finder.name, layername)
+        self.result_model.addEllipsys(finder.name, layername)
 
     def finished(self, finder):
-        if len(self.findersToStart) > 0:
+        if len(self.finders_to_start) > 0:
             return
         for finder in self.finders.values():
             if finder.is_running():
                 return
 
         self.running = False
-        self.searchFinished.emit()
+        self.search_finished.emit()
 
-        self.resultModel.setLoading(False)
+        self.result_model.setLoading(False)
 
         QCoreApplication.processEvents(QEventLoop.ExcludeUserInputEvents)
 
     def itemActivated(self, index):
-        item = self.resultModel.itemFromIndex(index)
+        item = self.result_model.itemFromIndex(index)
         self.showItem(item)
 
     def itemPressed(self, index):
-        item = self.resultModel.itemFromIndex(index)
+        item = self.result_model.itemFromIndex(index)
         if QApplication.mouseButtons() == Qt.LeftButton:
             self.showItem(item)
 
     def showItem(self, item):
         if isinstance(item, ResultItem):
-            self.resultModel.setSelected(item, self.resultView.palette())
-            geometry = self.transformGeom(item)
+            self.result_model.setSelected(item, self.result_view.palette())
+            geometry = self.transform_geom(item)
             self.rubber.reset(geometry.type())
             self.rubber.setToGeometry(geometry, None)
-            self.zoomToRubberBand()
+            self.zoom_to_rubberband()
             return
 
         if isinstance(item, GroupItem):
             child = item.child(0)
             if isinstance(child, ResultItem):
-                self.resultModel.setSelected(item, self.resultView.palette())
+                self.result_model.setSelected(item, self.result_view.palette())
                 self.rubber.reset(child.geometry.type())
                 for i in xrange(0, item.rowCount()):
-                    geometry = self.transformGeom(item.child(i))
+                    geometry = self.transform_geom(item.child(i))
                     self.rubber.addGeometry(geometry, None)
-                self.zoomToRubberBand()
+                self.zoom_to_rubberband()
             return
 
         if item.__class__.__name__ == 'QStandardItem':
             self.clearSelection()
 
-    def transformGeom(self, item):
+    def transform_geom(self, item):
         src_crs = QgsCoordinateReferenceSystem()
         src_crs.createFromSrid(item.srid)
         dest_crs = self.mapCanvas.mapRenderer().destinationCrs()
@@ -219,7 +219,7 @@ class FinderBox(QComboBox):
         geom.transform(QgsCoordinateTransform(src_crs, dest_crs))
         return geom
 
-    def zoomToRubberBand(self):
+    def zoom_to_rubberband(self):
         geom = self.rubber.asGeometry()
         if geom:
             rect = geom.boundingBox()

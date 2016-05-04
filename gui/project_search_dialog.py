@@ -24,10 +24,8 @@
 #---------------------------------------------------------------------
 
 from PyQt4.QtGui import QDialog, QErrorMessage
-
 from qgis.gui import QgsMapLayerProxyModel
-
-from quickfinder.ui.ui_projectsearch import Ui_ProjectSearch
+from ..ui.ui_projectsearch import Ui_ProjectSearch
 
 
 class ProjectSearchDialog(QDialog, Ui_ProjectSearch):
@@ -57,19 +55,19 @@ class ProjectSearchDialog(QDialog, Ui_ProjectSearch):
             self.priorityBox.setValue(projectSearch.priority)
 
     def process(self):
-        searchName = self.searchName.text()
+        search_name = self.searchName.text()
         layer = self.layerCombo.currentLayer()
         expression = self.fieldExpressionWidget.currentField()[0]
         priority = self.priorityBox.value()
         srid = layer.crs().authid()
-        evaluateDirectly = self.evaluateCheckBox.isChecked()
+        evaluate_directly = self.evaluateCheckBox.isChecked()
 
         if self.projectSearch is None:
-            self.projectSearch = self.project_search_model.addSearch(searchName, layer, expression, priority)
+            self.projectSearch = self.project_search_model.addSearch(search_name, layer, expression, priority)
         else:
-            self.projectSearch.edit(searchName, layer.id(), layer.name(), expression, priority, srid)
+            self.projectSearch.edit(search_name, layer.id(), layer.name(), expression, priority, srid)
 
-        if evaluateDirectly:
+        if evaluate_directly:
             self.progressBar.setMinimum(0)
             self.progressBar.setMaximum(layer.featureCount())
             self.progressBar.show()
