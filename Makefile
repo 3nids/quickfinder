@@ -50,7 +50,7 @@ GEN_FILES = ${UI_FILES} ${RC_FILES}
 all: $(GEN_FILES)
 
 $(UI_FILES): %.py: %.ui
-	pyuic4 -o $@ $<
+	PYTHONPATH=$PYTHONPATH:/usr/share/qgis/python python -m qgis.PyQt.uic.pyuic -o $@ $<
 
 $(RC_FILES): %_rc.py: %.qrc
 	pyrcc4 -o $@ $<
