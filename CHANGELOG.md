@@ -1,6 +1,10 @@
 ## Changelog
 
-**Version 3.2.14** 22.01.2016
+**Version 3.2.14** 04.05.2016
+
+* fix bad packaging
+
+**Version 3.2.14** 04.05.2016
 
 * fix crash if service issues a 404 page
 * improved setting management
