@@ -25,7 +25,7 @@
 
 import json
 from urllib.request import urlopen
-from PyQt5.QtCore import QUrl
+from PyQt5.QtCore import QUrl, QUrlQuery
 from PyQt5.QtNetwork import QNetworkRequest, QNetworkReply
 from qgis.core import QgsNetworkAccessManager
 from qgis.core import QgsLogger
@@ -49,8 +49,10 @@ class HttpFinder(AbstractFinder):
                 self.reply = None
 
             url = QUrl(url)
+            q = QUrlQuery(url)
             for key, value in params.items():
-                url.addQueryItem(key, value)
+                q.addQueryItem(key, value)
+            url.setQuery(q)
             QgsLogger.debug('Request: {}'.format(url.toEncoded()))
             request = QNetworkRequest(url)
             for key, value in headers.items():
@@ -72,7 +74,7 @@ class HttpFinder(AbstractFinder):
     def reply_finished(self):
         error = self.reply.error()
         if error == QNetworkReply.NoError:
-            response_text = self.reply.readAll().data()
+            response_text = self.reply.readAll().data().decode('utf-8')
             QgsLogger.debug('Response: {}'.format(response_text))
             try:
                 data = json.loads(response_text)

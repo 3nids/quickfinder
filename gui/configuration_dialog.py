@@ -58,7 +58,7 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
         self.projectSearchTable.setModel(self.proxyModel)
 
         header = self.projectSearchTable.horizontalHeader()
-        header.setResizeMode(QHeaderView.ResizeToContents)
+        header.setSectionResizeMode(QHeaderView.ResizeToContents)
 
         # open/create QuickFinder file
         self.createFileButton.clicked.connect(self.create_QFTS_file)

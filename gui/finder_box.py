@@ -202,7 +202,7 @@ class FinderBox(QComboBox):
             if isinstance(child, ResultItem):
                 self.result_model.setSelected(item, self.result_view.palette())
                 self.rubber.reset(child.geometry.type())
-                for i in xrange(0, item.rowCount()):
+                for i in range(0, item.rowCount()):
                     geometry = self.transform_geom(item.child(i))
                     self.rubber.addGeometry(geometry, None)
                 self.zoom_to_rubberband()

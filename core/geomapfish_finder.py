@@ -51,8 +51,8 @@ class GeomapfishFinder(HttpFinder):
             user = self.settings.value('geomapfishUser')
             password = self.settings.value('geomapfishPass')
             auth_data = "{}:{}".format(user, password)
-            b64 = QByteArray(auth_data).toBase64()
-            headers['Authorization'] = 'Basic ' + b64
+            b64 = QByteArray(auth_data.encode()).toBase64()
+            headers[QByteArray('Authorization'.encode())] = QByteArray('Basic '.encode()) + b64
         self._sendRequest(url, params, headers)
 
     def load_data(self, data):
