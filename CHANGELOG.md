@@ -1,6 +1,10 @@
 ## Changelog
 
-**Version 3.2.14** 04.05.2016
+**Version 3.3** 04.08.2016
+
+* Update to QGIS 3 API and PyQt5
+
+**Version 3.2.15** 04.05.2016
 
 * fix bad packaging
 

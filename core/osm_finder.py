@@ -23,10 +23,8 @@
 #
 #---------------------------------------------------------------------
 
-import json
-
 from qgis.core import QgsGeometry
-from http_finder import HttpFinder
+from .http_finder import HttpFinder
 
 
 class OsmFinder(HttpFinder):

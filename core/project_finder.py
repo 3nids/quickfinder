@@ -27,16 +27,12 @@ import sqlite3
 import binascii
 from datetime import date, datetime, timedelta
 
-try:
-    from collections import OrderedDict
-except ImportError:
-    from ordereddict import OrderedDict  # for Python < 2.7
-
-from PyQt4.QtCore import pyqtSignal, QCoreApplication
+from collections import OrderedDict
+from PyQt5.QtCore import pyqtSignal, QCoreApplication
 from qgis.core import QgsMapLayerRegistry, QgsFeatureRequest, QgsExpression, QgsGeometry, QgsCoordinateReferenceSystem
 from qgis.gui import QgsMessageBar
-from project_search import ProjectSearch
-from abstract_finder import AbstractFinder
+from .project_search import ProjectSearch
+from .abstract_finder import AbstractFinder
 
 
 def create_FTS_file(filepath):
@@ -52,7 +48,7 @@ def create_FTS_file(filepath):
     try:
         cur.executescript(sql_unicode61)
     except sqlite3.OperationalError:
-        print "Could not use unicode61. You might have problems with accents. Please use a more recent QGIS version."
+        print("Could not use unicode61. You might have problems with accents. Please use a more recent QGIS version.")
         cur.executescript(sql)
 
     conn.close()
@@ -237,7 +233,7 @@ class ProjectFinder(AbstractFinder):
         return True, ""
 
     def optimize(self):
-        print "optimize"
+        print("optimize")
         cur = self.conn.cursor()
         cur.executescript("""INSERT INTO quickfinder_data(quickfinder_data) VALUES('rebuild');
                           INSERT INTO quickfinder_data(quickfinder_data) VALUES('optimize');

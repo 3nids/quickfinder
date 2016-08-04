@@ -25,9 +25,9 @@
 
 import json
 from osgeo import ogr
-from PyQt4.QtCore import QByteArray
+from PyQt5.QtCore import QByteArray
 from qgis.core import QgsGeometry
-from http_finder import HttpFinder
+from .http_finder import HttpFinder
 
 
 class GeomapfishFinder(HttpFinder):

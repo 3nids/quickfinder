@@ -24,19 +24,20 @@
 #---------------------------------------------------------------------
 
 import os.path
-from PyQt4.QtCore import Qt, QObject, QSettings, QCoreApplication, QTranslator, QUrl, pyqtSlot
-from PyQt4.QtGui import QAction, QIcon, QColor, QDesktopServices, QMessageBox
+from PyQt5.QtCore import Qt, QObject, QSettings, QCoreApplication, QTranslator, QUrl, pyqtSlot
+from PyQt5.QtWidgets import QAction, QMessageBox
+from PyQt5.QtGui import QIcon, QColor, QDesktopServices
 from qgis.gui import QgsRubberBand, QgsMessageBar
 
-from core.project_finder import ProjectFinder, n_days_ago_iso_date
-from core.osm_finder import OsmFinder
-from core.geomapfish_finder import GeomapfishFinder
-from core.my_settings import MySettings
-from gui.configuration_dialog import ConfigurationDialog
-from gui.refresh_dialog import RefreshDialog
-from gui.finder_box import FinderBox
+from .core.project_finder import ProjectFinder, n_days_ago_iso_date
+from .core.osm_finder import OsmFinder
+from .core.geomapfish_finder import GeomapfishFinder
+from .core.my_settings import MySettings
+from .gui.configuration_dialog import ConfigurationDialog
+from .gui.refresh_dialog import RefreshDialog
+from .gui.finder_box import FinderBox
 
-import resources_rc
+from .resources_rc import *
 
 
 class QuickFinder(QObject):
@@ -97,7 +98,7 @@ class QuickFinder(QObject):
         """ Unload plugin """
         for key in self.finders.keys():
             self.finders[key].close()
-        for action in self.actions.itervalues():
+        for action in self.actions.values():
             self.iface.removePluginMenu(self.name, action)
         if self.toolbar:
             del self.toolbar

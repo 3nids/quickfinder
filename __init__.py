@@ -23,7 +23,6 @@
 #
 #---------------------------------------------------------------------
 
-
 def classFactory(iface):
     from .quickfinder_plugin import QuickFinder
     return QuickFinder(iface)

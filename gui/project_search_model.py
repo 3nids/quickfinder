@@ -24,11 +24,12 @@
 # ---------------------------------------------------------------------
 
 from uuid import uuid1
-from PyQt4.QtCore import Qt, QAbstractItemModel, QModelIndex
+from PyQt5.QtCore import Qt, QAbstractItemModel, QModelIndex
 from ..core.project_search import ProjectSearch
 
 LayerIdRole = Qt.UserRole + 1
 SearchIdRole = Qt.UserRole + 2
+
 
 class ProjectSearchModel(QAbstractItemModel):
 

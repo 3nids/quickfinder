@@ -24,8 +24,8 @@
 #---------------------------------------------------------------------
 
 
-from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QStandardItemModel, QStandardItem, QFont, QIcon
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QStandardItemModel, QStandardItem, QFont, QIcon
 
 
 class BaseItem(QStandardItem):

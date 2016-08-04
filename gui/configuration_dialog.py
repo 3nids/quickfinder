@@ -25,9 +25,8 @@
 
 from os import remove, path
 
-from PyQt4.QtCore import QCoreApplication
-from PyQt4.QtGui import (QDialog, QFileDialog, QMessageBox,
-                        QSortFilterProxyModel, QHeaderView)
+from PyQt5.QtCore import QCoreApplication, QSortFilterProxyModel
+from PyQt5.QtWidgets import QDialog, QFileDialog, QMessageBox, QHeaderView
 
 from qgis.core import QgsProject
 from qgis.gui import QgsGenericProjectionSelector
@@ -35,9 +34,9 @@ from qgis.gui import QgsGenericProjectionSelector
 from ..qgissettingmanager import SettingDialog
 from ..core.my_settings import MySettings
 from ..core.project_finder import ProjectFinder, create_FTS_file
-from project_search_dialog import ProjectSearchDialog
-from project_search_model import ProjectSearchModel, SearchIdRole
-from refresh_dialog import RefreshDialog
+from .project_search_dialog import ProjectSearchDialog
+from .project_search_model import ProjectSearchModel, SearchIdRole
+from .refresh_dialog import RefreshDialog
 from ..ui.ui_configuration import Ui_Configuration
 
 

@@ -23,7 +23,7 @@
 #
 #---------------------------------------------------------------------
 
-from PyQt4.QtGui import QDialog, QErrorMessage
+from PyQt5.QtWidgets import QDialog, QErrorMessage
 from qgis.gui import QgsMapLayerProxyModel
 from ..ui.ui_projectsearch import Ui_ProjectSearch
 

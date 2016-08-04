@@ -23,15 +23,15 @@
 #
 #---------------------------------------------------------------------
 
-from PyQt4.QtCore import Qt, QCoreApplication, pyqtSignal, QEventLoop
-from PyQt4.QtGui import (QComboBox, QSizePolicy, QTreeView, QIcon, QApplication, QColor,
-                         QPushButton, QCursor, QHBoxLayout)
+from PyQt5.QtCore import Qt, QCoreApplication, pyqtSignal, QEventLoop
+from PyQt5.QtWidgets import QComboBox, QSizePolicy, QTreeView, QApplication, QPushButton, QHBoxLayout
+from PyQt5.QtGui import QCursor, QColor, QIcon
 
 from qgis.core import QgsGeometry, QgsCoordinateReferenceSystem, QgsCoordinateTransform
 from qgis.gui import QgsRubberBand
 
-from ..core.mysettings import MySettings
-from resultmodel import ResultModel, GroupItem, ResultItem
+from ..core.my_settings import MySettings
+from .result_model import ResultModel, GroupItem, ResultItem
 
 
 class FinderBox(QComboBox):

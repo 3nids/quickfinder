@@ -24,7 +24,7 @@
 #
 #---------------------------------------------------------------------
 
-from PyQt4.QtCore import pyqtSignal, QObject
+from PyQt5.QtCore import pyqtSignal, QObject
 from qgis.core import QgsMapLayerRegistry
 
 

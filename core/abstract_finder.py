@@ -23,12 +23,12 @@
 #
 #---------------------------------------------------------------------
 
-from PyQt4.QtCore import QObject, pyqtSignal
+from PyQt5.QtCore import QObject, pyqtSignal
 
 from qgis.core import QgsGeometry
 from qgis.gui import QgsMessageBar
 
-from my_settings import MySettings
+from .my_settings import MySettings
 
 
 class AbstractFinder(QObject):

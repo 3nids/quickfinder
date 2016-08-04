@@ -15,7 +15,7 @@
 # CONFIGURATION
 
 # QGIS DIR
-QGISDIR = $(HOME)/.qgis2
+QGISDIR = $(HOME)/.qgis-dev
 
 # i18n
 LN_DIR = i18n
@@ -50,13 +50,13 @@ GEN_FILES = ${UI_FILES} ${RC_FILES}
 all: $(GEN_FILES)
 
 $(UI_FILES): %.py: %.ui
-	PYTHONPATH=$PYTHONPATH:/usr/share/qgis/python python -m qgis.PyQt.uic.pyuic -o $@ $<
+	PYTHONPATH=$(PYTHONPATH):/usr/share/qgis/python python3 -m qgis.PyQt.uic.pyuic --from-imports -o $@ $<
 
 $(RC_FILES): %_rc.py: %.qrc
-	pyrcc4 -o $@ $<
+	pyrcc5 -o $@ $<
 
 $(LN_FILES): %.qm: %.ts
-	lrelease-qt4 $<
+	lrelease-qt5 $<
 
 clean:
 	rm -f $(GEN_FILES) *.pyc
