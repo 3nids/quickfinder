@@ -97,7 +97,7 @@ class RefreshDialog(QDialog, Ui_Refresh):
                 if self.project_search_model is not None:
                     self.project_search_model.removeSearches([search.searchId])
                 else:
-                    self.project_finder.deleteSearch(search.searchId)
+                    self.project_finder.delete_search(search.searchId)
                 continue
 
             # if specified do not process recently evaluated search
@@ -114,7 +114,7 @@ class RefreshDialog(QDialog, Ui_Refresh):
                     continue
 
             self.currentLayerLength = layer.featureCount()
-            ok, message = self.project_finder.recordSearch(search, False)
+            ok, message = self.project_finder.record_search(search, False)
 
         self.project_finder.optimize()
 

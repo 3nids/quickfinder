@@ -60,7 +60,7 @@ class ProjectSearchModel(QAbstractItemModel):
     def removeSearches(self, searchIds):
         self.beginResetModel()
         for searchId in searchIds:
-            self.project_finder.deleteSearch(searchId)
+            self.project_finder.delete_search(searchId)
             del self.searches[searchId]
         self.endResetModel()
 

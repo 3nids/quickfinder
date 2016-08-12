@@ -29,7 +29,7 @@ from datetime import date, datetime, timedelta
 
 from collections import OrderedDict
 from PyQt5.QtCore import pyqtSignal, QCoreApplication
-from qgis.core import QgsMapLayerRegistry, QgsFeatureRequest, QgsExpression, QgsGeometry, QgsCoordinateReferenceSystem
+from qgis.core import QgsMapLayerRegistry, QgsFeatureRequest, QgsExpression, QgsExpressionContext, QgsGeometry, QgsCoordinateReferenceSystem
 from qgis.gui import QgsMessageBar
 from .project_search import ProjectSearch
 from .abstract_finder import AbstractFinder
@@ -101,7 +101,7 @@ class ProjectFinder(AbstractFinder):
             return
 
         self.isValid = True
-        self._searches = self.readSearches()
+        self._searches = self.read_searches()
         self.fileChanged.emit()
 
     def close(self):
@@ -124,7 +124,7 @@ class ProjectFinder(AbstractFinder):
         cur.execute("UPDATE quickfinder_info SET value = ? WHERE key = ?", [value, key])
         self.conn.commit()
 
-    def readSearches(self):
+    def read_searches(self):
         searches = OrderedDict()
         if not self.isValid:
             return searches
@@ -181,7 +181,7 @@ class ProjectFinder(AbstractFinder):
             if sum(catFound.values()) >= totalLimit:
                 break
 
-    def deleteSearch(self, searchId, commit=True):
+    def delete_search(self, searchId, commit=True):
         if not self.isValid:
             return False
         cur = self.conn.cursor()
@@ -191,7 +191,7 @@ class ProjectFinder(AbstractFinder):
         self.optimize()
         return True
 
-    def recordSearch(self, projectSearch, optimize=True):
+    def record_search(self, projectSearch, optimize=True):
         if not self.isValid:
             return False, "The index file is invalid. Use another one or create new one."
 
@@ -212,10 +212,10 @@ class ProjectFinder(AbstractFinder):
         cur = self.conn.cursor()
 
         # always remove existing search with same id
-        self.deleteSearch(searchId, False)
+        self.delete_search(searchId, False)
 
         sql = "INSERT INTO quickfinder_data (search_id, content, x, y, wkb_geom) VALUES ('{0}',?,?,?,?)".format(searchId)
-        cur.executemany(sql, self.expressionIterator(layer, expression))
+        cur.executemany(sql, self.expression_iterator(layer, expression))
 
         if self.stopLoop:
             self.conn.rollback()
@@ -240,9 +240,10 @@ class ProjectFinder(AbstractFinder):
                           VACUUM;""")
         self.conn.commit()
 
-    def expressionIterator(self, layer, expression):
+    def expression_iterator(self, layer, expression):
         featReq = QgsFeatureRequest()
-        qgsExpression = QgsExpression(expression)
+        expression = QgsExpression(expression)
+        context = QgsExpressionContext()
         self.stopLoop = False
         i = 0
         for f in layer.getFeatures(featReq):
@@ -251,8 +252,9 @@ class ProjectFinder(AbstractFinder):
                 break
             self.recordingSearchProgress.emit(i)
             i += 1
-            evaluated = unicode(qgsExpression.evaluate(f))
-            if qgsExpression.hasEvalError():
+            context.setFeature(f)
+            evaluated = unicode(expression.evaluate(context))
+            if expression.hasEvalError():
                 continue
             if f.geometry() is None or f.geometry().centroid() is None:
                 continue
