@@ -41,7 +41,7 @@ def create_FTS_file(filepath):
     sql = "CREATE TABLE quickfinder_info (key text,value text);"
     sql += "INSERT INTO quickfinder_info (key,value) VALUES ('scope','quickfinder');"
     sql += "INSERT INTO quickfinder_info (key,value) VALUES ('db_version','1.0');"
-    sql += "CREATE TABLE quickfinder_toc (search_id text, search_name text, layer_id text, layer_name text, expression text, priority integer, srid text, date_evaluated text);"
+    sql += "CREATE TABLE quickfinder_toc (search_id text, search_name text, layer_id text, layer_name text, expression text, geometry_storage text, priority integer, srid text, date_evaluated text);"
     sql_unicode61 = sql + "CREATE VIRTUAL TABLE quickfinder_data USING fts4 (tokenize=unicode61 \"remove_diacritics=1\", search_id, content, x real, y real, wkb_geom text);"
     sql += "CREATE VIRTUAL TABLE quickfinder_data USING fts4 (search_id, content, x real, y real, wkb_geom text);"
     cur = conn.cursor()
@@ -128,10 +128,14 @@ class ProjectFinder(AbstractFinder):
         searches = OrderedDict()
         if not self.isValid:
             return searches
-        sql = "SELECT search_id, search_name, layer_id, layer_name, expression, priority, srid, date_evaluated FROM quickfinder_toc ORDER BY date_evaluated ASC;"
+        sql = "SELECT search_id, search_name, layer_id, layer_name, expression, geometry_storage, priority, srid, date_evaluated FROM quickfinder_toc ORDER BY date_evaluated ASC;"
         cur = self.conn.cursor()
-        for s in cur.execute(sql):
-            searches[s[0]] = ProjectSearch( s[0], s[1], s[2], s[3], s[4].replace("\\'","'"), s[5], s[6], s[7] )
+        try:
+            for s in cur.execute(sql):
+                searches[s[0]] = ProjectSearch( s[0], s[1], s[2], s[3], s[4].replace("\\'","'"), s[5], s[6], s[7], s[8] )
+        except:
+            print "Error while fetching searches"
+
         return searches
 
     def find(self, to_find):
@@ -167,8 +171,13 @@ class ProjectFinder(AbstractFinder):
             if not self._searches.has_key(search_id):
                 continue
 
+            gs = self._searches[search_id].geometryStorage
             geometry = QgsGeometry()
-            geometry.fromWkb(binascii.a2b_hex(wkb_geom))
+            if gs == 'wkb':
+                geometry.fromWkb(binascii.a2b_hex(wkb_geom))
+            else:
+                # wkt or extent are stored as wkt
+                geometry = geometry.fromWkt(wkb_geom)
 
             crs = QgsCoordinateReferenceSystem()
             crs.createFromString(self._searches[search_id].srid)
@@ -197,6 +206,7 @@ class ProjectFinder(AbstractFinder):
 
         layerid = projectSearch.layerid
         searchName = projectSearch.searchName
+        geometryStorage = projectSearch.geometryStorage
         priority = projectSearch.priority
         searchId = projectSearch.searchId
         expression = projectSearch.expression
@@ -215,15 +225,23 @@ class ProjectFinder(AbstractFinder):
         self.delete_search(searchId, False)
 
         sql = "INSERT INTO quickfinder_data (search_id, content, x, y, wkb_geom) VALUES ('{0}',?,?,?,?)".format(searchId)
-        cur.executemany(sql, self.expression_iterator(layer, expression))
+        cur.executemany(sql, self.expression_iterator(layer, expression, geometryStorage))
 
         if self.stopLoop:
             self.conn.rollback()
             return False, "Cancel by user"
         else:
-            cur.execute( """INSERT INTO quickfinder_toc (search_id, search_name, layer_id, layer_name  , expression   , priority , date_evaluated, srid)
-                            VALUES                      (?        , ?          , ?       , ?           , ?            , ?        , ?             , ?    ) """,
-                                                        (searchId , searchName , layerid , layer.name(), expression_esc, priority, today         , layer.crs().authid()))
+            lsrid = layer.crs().authid()
+            cur.execute(
+                """INSERT INTO quickfinder_toc (
+                search_id, search_name, layer_id, layer_name,   expression,     geometry_storage, priority, date_evaluated, srid
+                )
+                VALUES (
+                ?        , ?          , ?       , ?           , ?             , ?               , ?       , ?             , ?
+                ) """,(
+                searchId,  searchName,  layerid,  layer.name(), expression_esc, geometryStorage,  priority, today,          lsrid
+                )
+            )
             self.conn.commit()
 
         if optimize:
@@ -240,7 +258,7 @@ class ProjectFinder(AbstractFinder):
                           VACUUM;""")
         self.conn.commit()
 
-    def expression_iterator(self, layer, expression):
+    def expression_iterator(self, layer, expression, geometryStorage):
         featReq = QgsFeatureRequest()
         expression = QgsExpression(expression)
         context = QgsExpressionContext()
@@ -259,8 +277,13 @@ class ProjectFinder(AbstractFinder):
             if f.geometry() is None or f.geometry().centroid() is None:
                 continue
             centroid = f.geometry().centroid().asPoint()
-            wkb = binascii.b2a_hex(f.geometry().asWkb())
-            yield ( evaluated, centroid.x(), centroid.y(), wkb )
+            if geometryStorage == 'wkb':
+                geom = binascii.b2a_hex(f.geometry().asWkb())
+            elif geometryStorage == 'wkt':
+                geom = f.geometry().exportToWkt()
+            elif geometryStorage == 'extent':
+                geom = f.geometry().boundingBox().asWktPolygon()
+            yield ( evaluated, centroid.x(), centroid.y(), geom )
 
     def stop_record(self):
         self.stopLoop = True
