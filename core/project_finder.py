@@ -44,7 +44,7 @@ def create_FTS_file(filepath):
 
     sql = "CREATE TABLE quickfinder_info (key text,value text);"
     sql += "INSERT INTO quickfinder_info (key,value) VALUES ('scope','quickfinder');"
-    sql += "INSERT INTO quickfinder_info (key,value) VALUES ('db_version','1.0');"
+    sql += "INSERT INTO quickfinder_info (key,value) VALUES ('db_version','2.0');"
     sql += "CREATE TABLE quickfinder_toc (search_id text, search_name text, layer_id text, layer_name text, expression text, geometry_storage text, priority integer, srid text, date_evaluated text);"
     sql_unicode61 = sql + "CREATE VIRTUAL TABLE quickfinder_data USING fts4 (tokenize=unicode61 \"remove_diacritics=1\", search_id, content, x real, y real, wkb_geom text);"
     sql += "CREATE VIRTUAL TABLE quickfinder_data USING fts4 (search_id, content, x real, y real, wkb_geom text);"
@@ -65,7 +65,7 @@ class ProjectFinder(AbstractFinder):
     name = 'project'
 
     isValid = False
-    version = '1.0'  # version of the SQLite file. Will be used if any changes to the format are made.
+    version = '2.0'  # version of the SQLite file. Will be used if any changes to the format are made.
     stopLoop = False
 
     conn = None
@@ -104,6 +104,11 @@ class ProjectFinder(AbstractFinder):
             self.close()
             return
 
+        # Database migration
+        if self.getInfo("db_version") != self.version:
+            print "Run database migrations"
+            self.runDatabaseMigration()
+
         self.isValid = True
         self._searches = self.readSearches()
         self.fileChanged.emit()
@@ -127,6 +132,33 @@ class ProjectFinder(AbstractFinder):
         cur = self.conn.cursor()
         cur.execute("UPDATE quickfinder_info SET value = ? WHERE key = ?", [value, key])
         self.conn.commit()
+
+    def runDatabaseMigration(self):
+        dbMigrations = [
+            {
+                'version': '2.0',
+                'script': """
+                    ALTER TABLE quickfinder_toc ADD COLUMN geometry_storage text;
+                    UPDATE quickfinder_toc SET geometry_storage = 'wkb';
+                """
+            }
+        ]
+        db_version = self.getInfo("db_version")
+        idb_version = int(db_version.replace('.', ''))
+        orderedDbMigrations = sorted(dbMigrations, key=lambda k: int(k['version'].replace('.','')))
+        for item in orderedDbMigrations:
+            version = item['version']
+            iversion = int(version.replace('.', ''))
+            if iversion > idb_version:
+                try:
+                    cur = self.conn.cursor()
+                    sql = item['script']
+                    sql+= "UPDATE quickfinder_info SET value = '%s' WHERE key = 'db_version';" % version
+                    cur.executescript(sql)
+                    self.conn.commit()
+                except sqlite3.OperationalError:
+                    print "An error occured whild migrating database into %s in step %s" % (db_version, version)
+
 
     def readSearches(self):
         searches = OrderedDict()
