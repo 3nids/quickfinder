@@ -47,10 +47,10 @@ class ProjectSearchModel(QAbstractItemModel):
             search.changed.connect(self.searchChanged)
         self.endResetModel()
 
-    def addSearch(self, searchName, layer, expression, priority):
+    def addSearch(self, searchName, layer, expression, geometryStorage, priority):
         searchId = unicode(uuid1())
         srid = layer.crs().authid()
-        projectSearch = ProjectSearch(searchId, searchName, layer.id(), layer.name(), expression, priority, srid)
+        projectSearch = ProjectSearch(searchId, searchName, layer.id(), layer.name(), expression, geometryStorage, priority, srid)
         self.beginInsertRows(QModelIndex(), 0, 0)
         self.searches[searchId] = projectSearch
         self.searches[searchId].changed.connect(self.searchChanged)
@@ -79,7 +79,7 @@ class ProjectSearchModel(QAbstractItemModel):
         return len(self.searches)
 
     def columnCount(self, parent=QModelIndex()):
-        return 5
+        return 6
 
     def headerData(self, section, Orientation, role=Qt.DisplayRole):
         if role == Qt.DisplayRole:
@@ -90,8 +90,10 @@ class ProjectSearchModel(QAbstractItemModel):
             elif section == 2:
                 return 'Expression'
             elif section == 3:
-                return 'Priority'
+                return 'Geometry storage'
             elif section == 4:
+                return 'Priority'
+            elif section == 5:
                 return 'Evaluated on'
         return None
 
@@ -113,8 +115,10 @@ class ProjectSearchModel(QAbstractItemModel):
             elif col == 2:
                 return search.expression
             elif col == 3:
-                return search.priority
+                return search.geometryStorage
             elif col == 4:
+                return search.priority
+            elif col == 5:
                 return search.dateEvaluated
 
         if role == LayerIdRole:
@@ -124,7 +128,7 @@ class ProjectSearchModel(QAbstractItemModel):
             return search.searchId
 
         if role == Qt.TextAlignmentRole:
-            if col == 3:
+            if col == 4:
                 return Qt.AlignVCenter + Qt.AlignRight
 
         return None

@@ -24,6 +24,7 @@
 #---------------------------------------------------------------------
 
 from PyQt5.QtWidgets import QDialog, QErrorMessage
+from PyQt5.QtCore import Qt
 from qgis.gui import QgsMapLayerProxyModel
 from ..ui.ui_projectsearch import Ui_ProjectSearch
 
@@ -52,20 +53,24 @@ class ProjectSearchDialog(QDialog, Ui_ProjectSearch):
             self.searchName.setText(projectSearch.searchName)
             self.layerCombo.setLayer(projectSearch.layer())
             self.fieldExpressionWidget.setField(projectSearch.expression)
+            gsIndex = self.geometryStorageCombo.findText(projectSearch.geometryStorage, Qt.MatchFixedString)
+            if gsIndex:
+                self.geometryStorageCombo.setCurrentIndex(gsIndex)
             self.priorityBox.setValue(projectSearch.priority)
 
     def process(self):
         search_name = self.searchName.text()
         layer = self.layerCombo.currentLayer()
         expression = self.fieldExpressionWidget.currentField()[0]
+        geometryStorage = self.geometryStorageCombo.currentText()
         priority = self.priorityBox.value()
         srid = layer.crs().authid()
         evaluate_directly = self.evaluateCheckBox.isChecked()
 
         if self.projectSearch is None:
-            self.projectSearch = self.project_search_model.addSearch(search_name, layer, expression, priority)
+            self.projectSearch = self.project_search_model.addSearch(search_name, layer, expression, geometryStorage, priority)
         else:
-            self.projectSearch.edit(search_name, layer.id(), layer.name(), expression, priority, srid)
+            self.projectSearch.edit(search_name, layer.id(), layer.name(), expression, geometryStorage, priority, srid)
 
         if evaluate_directly:
             self.progressBar.setMinimum(0)
