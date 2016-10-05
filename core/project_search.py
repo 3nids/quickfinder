@@ -43,6 +43,8 @@ class ProjectSearch(QObject):
     @property
     def expression(self): return self._expression
     @property
+    def geometryStorage(self): return self._geometryStorage
+    @property
     def priority(self): return self._priority
     @property
     def srid(self): return self._srid
@@ -54,7 +56,7 @@ class ProjectSearch(QObject):
         self._status = "evaluated"
         self.changed.emit()
 
-    def __init__(self, searchId, searchName, layerid, layerName, expression, priority, srid, dateEvaluated=None):
+    def __init__(self, searchId, searchName, layerid, layerName, expression, geometryStorage, priority, srid, dateEvaluated=None):
         QObject.__init__(self)
 
         self._searchId = searchId
@@ -62,6 +64,7 @@ class ProjectSearch(QObject):
         self._layerid = layerid
         self._layerName = layerName
         self._expression = expression
+        self._geometryStorage = geometryStorage
         self._priority = priority
         self._srid = srid
         self._dateEvaluated = dateEvaluated
@@ -75,11 +78,12 @@ class ProjectSearch(QObject):
         return QgsMapLayerRegistry.instance().mapLayer(self._layerid)
 
 
-    def edit(self, searchName, layerid, layerName, expression, priority, srid):
+    def edit(self, searchName, layerid, layerName, expression, geometryStorage, priority, srid):
         self._searchName = searchName
         self._layerid = layerid
         self._layerName = layerName
         self._expression = expression
+        self._geometryStorage = geometryStorage
         self._priority = priority
         self._srid = srid
         self._dateEvaluated = None

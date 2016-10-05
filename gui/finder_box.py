@@ -30,8 +30,8 @@ from PyQt4.QtGui import (QComboBox, QSizePolicy, QTreeView, QIcon, QApplication,
 from qgis.core import QgsGeometry, QgsCoordinateReferenceSystem, QgsCoordinateTransform
 from qgis.gui import QgsRubberBand
 
-from ..core.mysettings import MySettings
-from resultmodel import ResultModel, GroupItem, ResultItem
+from ..core.my_settings import MySettings
+from result_model import ResultModel, GroupItem, ResultItem
 
 
 class FinderBox(QComboBox):

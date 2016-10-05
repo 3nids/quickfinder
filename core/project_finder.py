@@ -44,8 +44,8 @@ def create_FTS_file(filepath):
 
     sql = "CREATE TABLE quickfinder_info (key text,value text);"
     sql += "INSERT INTO quickfinder_info (key,value) VALUES ('scope','quickfinder');"
-    sql += "INSERT INTO quickfinder_info (key,value) VALUES ('db_version','1.0');"
-    sql += "CREATE TABLE quickfinder_toc (search_id text, search_name text, layer_id text, layer_name text, expression text, priority integer, srid text, date_evaluated text);"
+    sql += "INSERT INTO quickfinder_info (key,value) VALUES ('db_version','2.0');"
+    sql += "CREATE TABLE quickfinder_toc (search_id text, search_name text, layer_id text, layer_name text, expression text, geometry_storage text, priority integer, srid text, date_evaluated text);"
     sql_unicode61 = sql + "CREATE VIRTUAL TABLE quickfinder_data USING fts4 (tokenize=unicode61 \"remove_diacritics=1\", search_id, content, x real, y real, wkb_geom text);"
     sql += "CREATE VIRTUAL TABLE quickfinder_data USING fts4 (search_id, content, x real, y real, wkb_geom text);"
     cur = conn.cursor()
@@ -65,7 +65,7 @@ class ProjectFinder(AbstractFinder):
     name = 'project'
 
     isValid = False
-    version = '1.0'  # version of the SQLite file. Will be used if any changes to the format are made.
+    version = '2.0'  # version of the SQLite file. Will be used if any changes to the format are made.
     stopLoop = False
 
     conn = None
@@ -104,6 +104,11 @@ class ProjectFinder(AbstractFinder):
             self.close()
             return
 
+        # Database migration
+        if self.getInfo("db_version") != self.version:
+            print "Run database migrations"
+            self.runDatabaseMigration()
+
         self.isValid = True
         self._searches = self.readSearches()
         self.fileChanged.emit()
@@ -128,14 +133,44 @@ class ProjectFinder(AbstractFinder):
         cur.execute("UPDATE quickfinder_info SET value = ? WHERE key = ?", [value, key])
         self.conn.commit()
 
+    def runDatabaseMigration(self):
+        dbMigrations = [
+            {
+                'version': '2.0',
+                'script': """
+                    ALTER TABLE quickfinder_toc ADD COLUMN geometry_storage text;
+                    UPDATE quickfinder_toc SET geometry_storage = 'wkb';
+                """
+            }
+        ]
+        db_version = self.getInfo("db_version")
+        idb_version = int(db_version.replace('.', ''))
+        orderedDbMigrations = sorted(dbMigrations, key=lambda k: int(k['version'].replace('.','')))
+        for item in orderedDbMigrations:
+            version = item['version']
+            iversion = int(version.replace('.', ''))
+            if iversion > idb_version:
+                try:
+                    cur = self.conn.cursor()
+                    sql = item['script']
+                    sql+= "UPDATE quickfinder_info SET value = '%s' WHERE key = 'db_version';" % version
+                    cur.executescript(sql)
+                    self.conn.commit()
+                except sqlite3.OperationalError:
+                    print "An error occured whild migrating database into %s in step %s" % (db_version, version)
+
+
     def readSearches(self):
         searches = OrderedDict()
         if not self.isValid:
             return searches
-        sql = "SELECT search_id, search_name, layer_id, layer_name, expression, priority, srid, date_evaluated FROM quickfinder_toc ORDER BY date_evaluated ASC;"
+        sql = "SELECT search_id, search_name, layer_id, layer_name, expression, geometry_storage, priority, srid, date_evaluated FROM quickfinder_toc ORDER BY date_evaluated ASC;"
         cur = self.conn.cursor()
-        for s in cur.execute(sql):
-            searches[s[0]] = ProjectSearch( s[0], s[1], s[2], s[3], s[4].replace("\\'","'"), s[5], s[6], s[7] )
+        try:
+            for s in cur.execute(sql):
+                searches[s[0]] = ProjectSearch( s[0], s[1], s[2], s[3], s[4].replace("\\'","'"), s[5], s[6], s[7], s[8] )
+        except:
+            print "Error while fetching searches"
         return searches
 
     def find(self, to_find):
@@ -171,8 +206,13 @@ class ProjectFinder(AbstractFinder):
             if not self._searches.has_key(search_id):
                 continue
 
+            gs = self._searches[search_id].geometryStorage
             geometry = QgsGeometry()
-            geometry.fromWkb(binascii.a2b_hex(wkb_geom))
+            if gs == 'wkb':
+                geometry.fromWkb(binascii.a2b_hex(wkb_geom))
+            else:
+                # wkt or extent are stored as wkt
+                geometry = geometry.fromWkt(wkb_geom)
 
             crs = QgsCoordinateReferenceSystem()
             crs.createFromString(self._searches[search_id].srid)
@@ -201,6 +241,7 @@ class ProjectFinder(AbstractFinder):
 
         layerid = projectSearch.layerid
         searchName = projectSearch.searchName
+        geometryStorage = projectSearch.geometryStorage
         priority = projectSearch.priority
         searchId = projectSearch.searchId
         expression = projectSearch.expression
@@ -219,15 +260,23 @@ class ProjectFinder(AbstractFinder):
         self.deleteSearch(searchId, False)
 
         sql = "INSERT INTO quickfinder_data (search_id, content, x, y, wkb_geom) VALUES ('{0}',?,?,?,?)".format(searchId)
-        cur.executemany(sql, self.expressionIterator(layer, expression))
+        cur.executemany(sql, self.expressionIterator(layer, expression, geometryStorage))
 
         if self.stopLoop:
             self.conn.rollback()
             return False, "Cancel by user"
         else:
-            cur.execute( """INSERT INTO quickfinder_toc (search_id, search_name, layer_id, layer_name  , expression   , priority , date_evaluated, srid)
-                            VALUES                      (?        , ?          , ?       , ?           , ?            , ?        , ?             , ?    ) """,
-                                                        (searchId , searchName , layerid , layer.name(), expression_esc, priority, today         , layer.crs().authid()))
+            lsrid = layer.crs().authid()
+            cur.execute(
+                """INSERT INTO quickfinder_toc (
+                search_id, search_name, layer_id, layer_name,   expression,     geometry_storage, priority, date_evaluated, srid
+                )
+                VALUES (
+                ?        , ?          , ?       , ?           , ?             , ?               , ?       , ?             , ?
+                ) """,(
+                searchId,  searchName,  layerid,  layer.name(), expression_esc, geometryStorage,  priority, today,          lsrid
+                )
+            )
             self.conn.commit()
 
         if optimize:
@@ -244,7 +293,7 @@ class ProjectFinder(AbstractFinder):
                           VACUUM;""")
         self.conn.commit()
 
-    def expressionIterator(self, layer, expression):
+    def expressionIterator(self, layer, expression, geometryStorage):
         featReq = QgsFeatureRequest()
         qgsExpression = QgsExpression(expression)
         self.stopLoop = False
@@ -261,8 +310,13 @@ class ProjectFinder(AbstractFinder):
             if f.geometry() is None or f.geometry().centroid() is None:
                 continue
             centroid = f.geometry().centroid().asPoint()
-            wkb = binascii.b2a_hex(f.geometry().asWkb())
-            yield ( evaluated, centroid.x(), centroid.y(), wkb )
+            if geometryStorage == 'wkb':
+                geom = binascii.b2a_hex(f.geometry().asWkb())
+            elif geometryStorage == 'wkt':
+                geom = f.geometry().exportToWkt()
+            else:
+                geom = f.geometry().boundingBox().asWktPolygon()
+            yield ( evaluated, centroid.x(), centroid.y(), geom )
 
     def stop_record(self):
         self.stopLoop = True
