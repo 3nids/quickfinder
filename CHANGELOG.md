@@ -1,6 +1,10 @@
 ## Changelog
 
-**Version 3.2.14** 04.05.2016
+**Version 3.3.0** 05.10.2016
+
+* Added option to store geometry in WKB, WKT or extent in WKT.
+
+**Version 3.2.15** 04.05.2016
 
 * fix bad packaging
 
