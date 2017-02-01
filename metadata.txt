@@ -6,9 +6,9 @@ description=Quick Finder offers a single place to perform searches on project la
 
 about=The plugins allows to search by two different means. First, you can use online web services such as OSM or GeoMapFish. Second, you can define your own searches on local layers using expressions. These are stored on a local SQLite database which allow very fast searches.
 
-version=3.3.0
+version=3.3.1
 
-qgisMinimumVersion=2.4
+qgisMinimumVersion=2.14
 
 author=Denis Rouzaud, Arnaud Morvan
 email=denis.rouzaud@gmail.com

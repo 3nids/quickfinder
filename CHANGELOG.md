@@ -1,5 +1,9 @@
 ## Changelog
 
+**Version 3.3.1** 01.02.2017
+
+* Allow relative path for FTS file
+
 **Version 3.3.0** 05.10.2016
 
 * Added option to store geometry in WKB, WKT or extent in WKT.
