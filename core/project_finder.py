@@ -32,8 +32,8 @@ try:
 except ImportError:
     from ordereddict import OrderedDict  # for Python < 2.7
 
-from PyQt4.QtCore import pyqtSignal, QCoreApplication
-from qgis.core import QgsMapLayerRegistry, QgsFeatureRequest, QgsExpression, QgsGeometry, QgsCoordinateReferenceSystem
+from qgis.PyQt.QtCore import pyqtSignal, QCoreApplication, QFile, QDir
+from qgis.core import QgsMapLayerRegistry, QgsFeatureRequest, QgsExpression, QgsGeometry, QgsCoordinateReferenceSystem, QgsProject
 from qgis.gui import QgsMessageBar
 from project_search import ProjectSearch
 from abstract_finder import AbstractFinder
@@ -94,10 +94,17 @@ class ProjectFinder(AbstractFinder):
         self.close()
         self.isValid = False
 
-        try:
-            f = open(filepath)
-        except IOError:
+        if not filepath:
             return
+
+        f = QFile(filepath)
+        if not f.exists():
+            d = QDir(QgsProject.instance().homePath())
+            p = d.absoluteFilePath(filepath)
+            filepath = QDir.cleanPath(p)
+            f = QFile(filepath)
+            if not f.exists():
+                return
 
         self.conn = sqlite3.connect(filepath)
         if self.getInfo("scope") != "quickfinder":
