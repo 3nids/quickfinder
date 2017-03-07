@@ -31,6 +31,7 @@ from qgis.gui import QgsRubberBand, QgsMessageBar
 from core.project_finder import ProjectFinder, n_days_ago_iso_date
 from core.osm_finder import OsmFinder
 from core.geomapfish_finder import GeomapfishFinder
+from core.pg_finder import PgFinder
 from core.my_settings import MySettings
 from gui.configuration_dialog import ConfigurationDialog
 from gui.refresh_dialog import RefreshDialog
@@ -127,6 +128,7 @@ class QuickFinder(QObject):
         self.finders['geomapfish'] = GeomapfishFinder(self)
         self.finders['osm'] = OsmFinder(self)
         self.finders['project'] = ProjectFinder(self)
+        self.finders['postgres'] = PgFinder(self)
         for key in self.finders.keys():
             self.finders[key].message.connect(self.display_message)
         self.refresh_project()

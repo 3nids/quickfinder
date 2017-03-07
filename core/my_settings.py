@@ -56,3 +56,7 @@ class MySettings(SettingManager):
         self.add_setting(String("geomapfishCrs", Scope.Global, 'EPSG:3857'))
         self.add_setting(String("geomapfishUser", Scope.Global, ''))
         self.add_setting(String("geomapfishPass", Scope.Global, ''))
+
+        # Postgres settings
+        self.add_setting(Bool("postgres", Scope.Global, False))
+        self.add_setting(String("pgConnection", Scope.Global, ''))
