@@ -360,7 +360,7 @@
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_6">
        <item>
-        <widget class="QGroupBox" name="postgres">
+        <widget class="QGroupBox" name="postgis">
          <property name="enabled">
           <bool>true</bool>
          </property>
@@ -425,17 +425,6 @@
                 </size>
                </property>
               </spacer>
-             </item>
-             <item>
-              <widget class="QToolButton" name="refreshPostgisButton">
-               <property name="text">
-                <string/>
-               </property>
-               <property name="icon">
-                <iconset resource="../resources.qrc">
-                 <normaloff>:/plugins/quickfinder/icons/refresh.svg</normaloff>:/plugins/quickfinder/icons/refresh.svg</iconset>
-               </property>
-              </widget>
              </item>
             </layout>
            </widget>

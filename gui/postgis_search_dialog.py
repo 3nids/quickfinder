@@ -23,9 +23,7 @@
 #
 #---------------------------------------------------------------------
 
-from PyQt4.QtGui import QDialog, QErrorMessage
-from PyQt4.QtCore import Qt
-from qgis.gui import QgsMapLayerProxyModel
+from PyQt4.QtGui import QDialog
 from ..ui.ui_postgissearch import Ui_PostgisSearch
 
 
@@ -45,9 +43,9 @@ class PostgisSearchDialog(QDialog, Ui_PostgisSearch):
 
         if postgisSearch is not None:
             self.searchName.setText(postgisSearch.searchName)
-            self.layerCombo.setLayer(postgisSearch.layer())
-            self.queryEdit.setField(postgisSearch.expression)
+            self.queryEdit.setText(postgisSearch.expression)
             self.priorityBox.setValue(postgisSearch.priority)
+            self.srid.setText(postgisSearch.srid)
 
     def process(self):
         search_name = self.searchName.text()
@@ -56,8 +54,8 @@ class PostgisSearchDialog(QDialog, Ui_PostgisSearch):
         priority = self.priorityBox.value()
 
         if self.postgisSearch is None:
-            self.postgisSearch = self.postgis_search_model.addSearch(search_name, expression, priority)
+            self.postgisSearch = self.postgis_search_model.addSearch(search_name, expression, priority, srid)
         else:
-            self.postgisSearch.edit(search_name, layer.id(), expression, priority, srid)
+            self.postgisSearch.edit(search_name, expression, priority, srid)
 
         self.close()

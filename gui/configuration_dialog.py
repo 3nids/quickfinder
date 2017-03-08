@@ -82,7 +82,12 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
         # table model
         self.postgis_search_model = PostgisSearchModel(self.postgis_finder)
 
-        self.postgisSearchTable.setModel(self.proxyModel)
+        self.postgisProxyModel = QSortFilterProxyModel(self)
+        self.postgisProxyModel.setSourceModel(self.postgis_search_model)
+        self.postgisSearchTable.setModel(self.postgisProxyModel)
+
+        postgisSearchTableHeader = self.postgisSearchTable.horizontalHeader()
+        postgisSearchTableHeader.setResizeMode(QHeaderView.ResizeToContents)
 
         self.addPostgisSearchButton.clicked.connect(self.add_postgis_search)
         self.removePostgisSearchButton.clicked.connect(self.remove_postgis_search)
@@ -186,7 +191,7 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
         PostgisSearchDialog(self.postgis_finder, self.postgis_search_model).exec_()
 
     def remove_postgis_search(self):
-        sel = self.selected_search_ids()
+        sel = self.selected_postgis_search_ids()
         if len(sel) == 0:
             return
         box = QMessageBox(QMessageBox.Warning,
@@ -212,7 +217,7 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
     def selected_postgis_search_ids(self):
         selectedSearchId = []
         for idx in self.postgisSearchTable.selectionModel().selectedRows():
-            selectedSearchId.append(self.proxyModel.data(idx, SearchIdRole))
+            selectedSearchId.append(self.postgisProxyModel.data(idx, SearchIdRole))
         return selectedSearchId
 
     def enableButtons(self):
@@ -225,6 +230,8 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
         self.removePostgisSearchButton.setEnabled(n > 0)
         self.editPostgisSearchButton.setEnabled(n == 1)
         self.postgisSearchButtonsWidget.setEnabled(self.postgis_finder.isValid)
+
+        self.postgisSearchTable.setEnabled(self.postgis_finder.isValid)
 
     def geomapfishCrsButtonClicked(self):
         dlg = QgsGenericProjectionSelector(self)

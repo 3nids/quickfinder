@@ -27,7 +27,7 @@ from uuid import uuid1
 from PyQt4.QtCore import Qt, QAbstractItemModel, QModelIndex
 from ..core.postgis_search import PostgisSearch
 
-SearchIdRole = Qt.UserRole + 1
+SearchIdRole = Qt.UserRole + 2
 
 class PostgisSearchModel(QAbstractItemModel):
 
@@ -37,9 +37,8 @@ class PostgisSearchModel(QAbstractItemModel):
         QAbstractItemModel.__init__(self)
         self.postgis_finder = postgis_finder
 
-    def addSearch(self, searchName, layer, expression, geometryStorage, priority):
+    def addSearch(self, searchName, expression, priority, srid):
         searchId = unicode(uuid1())
-        srid = layer.crs().authid()
         postgisSearch = PostgisSearch(searchId, searchName, expression, priority, srid)
         self.beginInsertRows(QModelIndex(), 0, 0)
         self.searches[searchId] = postgisSearch
@@ -69,7 +68,7 @@ class PostgisSearchModel(QAbstractItemModel):
         return len(self.searches)
 
     def columnCount(self, parent=QModelIndex()):
-        return 6
+        return 4
 
     def headerData(self, section, Orientation, role=Qt.DisplayRole):
         if role == Qt.DisplayRole:
@@ -79,6 +78,8 @@ class PostgisSearchModel(QAbstractItemModel):
                 return 'Expression'
             elif section == 2:
                 return 'Priority'
+            elif section == 3:
+                return 'SRID'
         return None
 
     def data(self, index, role=Qt.DisplayRole):
@@ -98,12 +99,10 @@ class PostgisSearchModel(QAbstractItemModel):
                 return search.expression
             elif col == 2:
                 return search.priority
+            elif col == 3:
+                return search.srid
 
         if role == SearchIdRole:
             return search.searchId
-
-        if role == Qt.TextAlignmentRole:
-            if col == 4:
-                return Qt.AlignVCenter + Qt.AlignRight
 
         return None

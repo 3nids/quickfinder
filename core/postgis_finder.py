@@ -107,3 +107,8 @@ class PostgisFinder(AbstractFinder):
                                    21781)
             #if sum(catFound.values()) >= totalLimit:
             #    break
+
+    def deleteSearch(self, searchId):
+        if not self.isValid:
+            return False
+        return True

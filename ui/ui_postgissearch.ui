@@ -106,9 +106,11 @@
  </widget>
  <tabstops>
   <tabstop>searchName</tabstop>
+  <tabstop>queryEdit</tabstop>
+  <tabstop>srid</tabstop>
   <tabstop>priorityBox</tabstop>
-  <tabstop>cancelButton</tabstop>
   <tabstop>okButton</tabstop>
+  <tabstop>cancelButton</tabstop>
  </tabstops>
  <resources>
   <include location="../resources.qrc"/>
