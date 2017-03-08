@@ -37,6 +37,9 @@ from ..core.my_settings import MySettings
 from ..core.project_finder import ProjectFinder, create_FTS_file
 from project_search_dialog import ProjectSearchDialog
 from project_search_model import ProjectSearchModel, SearchIdRole
+from ..core.postgis_finder import PostgisFinder
+from postgis_search_dialog import PostgisSearchDialog
+from postgis_search_model import PostgisSearchModel, SearchIdRole
 from refresh_dialog import RefreshDialog
 from ..ui.ui_configuration import Ui_Configuration
 
@@ -72,10 +75,24 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
         self.editSearchButton.clicked.connect(self.edit_project_search)
         self.refreshButton.clicked.connect(self.refresh_project_search)
         self.projectSearchTable.selectionModel().selectionChanged.connect(self.enableButtons)
-        self.enableButtons()
+
+        # postgis search
+        self.postgis_finder = PostgisFinder(self)
+
+        # table model
+        self.postgis_search_model = PostgisSearchModel(self.postgis_finder)
+
+        self.postgisSearchTable.setModel(self.proxyModel)
+
+        self.addPostgisSearchButton.clicked.connect(self.add_postgis_search)
+        self.removePostgisSearchButton.clicked.connect(self.remove_postgis_search)
+        self.editPostgisSearchButton.clicked.connect(self.edit_postgis_search)
+        self.postgisSearchTable.selectionModel().selectionChanged.connect(self.enableButtons)
 
         # geomapfish
         self.geomapfishCrsButton.clicked.connect(self.geomapfishCrsButtonClicked)
+
+        self.enableButtons()
 
     def reject(self):
         if self.close_and_control():
@@ -165,11 +182,49 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
             selectedSearchId.append(self.proxyModel.data(idx, SearchIdRole))
         return selectedSearchId
 
+    def add_postgis_search(self):
+        PostgisSearchDialog(self.postgis_finder, self.postgis_search_model).exec_()
+
+    def remove_postgis_search(self):
+        sel = self.selected_search_ids()
+        if len(sel) == 0:
+            return
+        box = QMessageBox(QMessageBox.Warning,
+                                  "Quick Finder",
+                                  QCoreApplication.translate("Configuration dialog", "Are you sure to remove {0} search(es) ? ").format(len(sel)),
+                                  QMessageBox.Yes | QMessageBox.Cancel,
+                                  self)
+        ret = box.exec_()
+        if ret == QMessageBox.Cancel:
+            return
+        self.postgis_search_model.removeSearches(sel)
+
+    def edit_postgis_search(self):
+        sel = self.selected_postgis_search_ids()
+        if len(sel) != 1:
+            return
+        if not self.postgis_search_model.searches.has_key(sel[0]):
+            return
+        search = self.postgis_search_model.searches[sel[0]]
+        if search:
+            PostgisSearchDialog(self.postgis_finder, self.postgis_search_model, search).exec_()
+
+    def selected_postgis_search_ids(self):
+        selectedSearchId = []
+        for idx in self.postgisSearchTable.selectionModel().selectedRows():
+            selectedSearchId.append(self.proxyModel.data(idx, SearchIdRole))
+        return selectedSearchId
+
     def enableButtons(self):
         n = len(self.selected_search_ids())
         self.removeSearchButton.setEnabled(n > 0)
         self.editSearchButton.setEnabled(n == 1)
         self.projectSearchButtonsWidget.setEnabled(self.project_finder.isValid)
+
+        n = len(self.selected_postgis_search_ids())
+        self.removePostgisSearchButton.setEnabled(n > 0)
+        self.editPostgisSearchButton.setEnabled(n == 1)
+        self.postgisSearchButtonsWidget.setEnabled(self.postgis_finder.isValid)
 
     def geomapfishCrsButtonClicked(self):
         dlg = QgsGenericProjectionSelector(self)

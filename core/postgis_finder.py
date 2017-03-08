@@ -39,17 +39,18 @@ from processing.tools.postgis import uri_from_name, DbError
 from .abstract_finder import AbstractFinder
 
 
-class PgFinder(AbstractFinder):
+class PostgisFinder(AbstractFinder):
 
-    name = 'postgres'
+    name = 'postgis'
+    isValid = True  # TODO: True, when connection selected
 
     def __init__(self, parent):
-        super(PgFinder, self).__init__(parent)
+        super(PostgisFinder, self).__init__(parent)
 
     def start(self, to_find, bbox=None):
-        super(PgFinder, self).start(to_find, bbox)
+        super(PostgisFinder, self).start(to_find, bbox)
         # TODO: GUI + support for multiple connections
-        dbConnectionName = self.settings.value('pgConnection')
+        dbConnectionName = self.settings.value('postgisConnection')
         try:
             connectionUri = uri_from_name(dbConnectionName)
         except DbError as err:
