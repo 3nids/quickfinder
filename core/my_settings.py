@@ -59,4 +59,5 @@ class MySettings(SettingManager):
 
         # Postgres settings
         self.add_setting(Bool("postgis", Scope.Global, False))
-        self.add_setting(String("postgisConnection", Scope.Global, ''))
+        self.add_setting(String("postgisConnection", Scope.Global, '',
+                         {'comboMode': 'text'}))

@@ -23,7 +23,7 @@
 #
 #---------------------------------------------------------------------
 
-from PyQt4.QtCore import QObject, pyqtSignal
+from PyQt4.QtCore import QObject
 
 from qgis.core import QgsGeometry, QgsCredentials
 from qgis.gui import QgsMessageBar
@@ -33,33 +33,35 @@ from my_settings import MySettings
 import psycopg2
 import binascii
 
-from processing.tools.postgis import uri_from_name, DbError
-
-
 from .abstract_finder import AbstractFinder
+
+try:
+    from processing.tools.postgis import uri_from_name, DbError
+except ImportError:
+    # Older processing versions don't have this helper
+    # PostGIS finder won't work.
+    pass  # Don't prevent quickfinder plugin from loading.
 
 
 class PostgisFinder(AbstractFinder):
 
     name = 'postgis'
-    isValid = True  # TODO: True, when connection selected
 
     def __init__(self, parent):
         super(PostgisFinder, self).__init__(parent)
 
     def start(self, to_find, bbox=None):
         super(PostgisFinder, self).start(to_find, bbox)
-        # TODO: GUI + support for multiple connections
         dbConnectionName = self.settings.value('postgisConnection')
-        try:
-            connectionUri = uri_from_name(dbConnectionName)
-        except DbError as err:
-            self.message.emit(unicode(err), QgsMessageBar.WARNING)
-            self._finish()
-            return
-        self.cur = self.connectToUri(connectionUri)
-        if self.cur:
-            self.find(to_find)
+        self.cur = None
+        if dbConnectionName:
+            try:
+                connectionUri = uri_from_name(dbConnectionName)
+                self.cur = self.connectToUri(connectionUri)
+            except DbError as err:
+                self.message.emit(unicode(err), QgsMessageBar.WARNING)
+            if self.cur:
+                self.find(to_find)
         self._finish()
 
     def connectToUri(self, uri):
@@ -109,6 +111,4 @@ class PostgisFinder(AbstractFinder):
             #    break
 
     def deleteSearch(self, searchId):
-        if not self.isValid:
-            return False
         return True

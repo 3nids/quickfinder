@@ -25,7 +25,7 @@
 
 from os import remove, path
 
-from PyQt4.QtCore import QCoreApplication
+from PyQt4.QtCore import QCoreApplication, QSettings
 from PyQt4.QtGui import (QDialog, QFileDialog, QMessageBox,
                         QSortFilterProxyModel, QHeaderView)
 
@@ -79,7 +79,7 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
         # postgis search
         self.postgis_finder = PostgisFinder(self)
 
-        # table model
+        # postgis table model
         self.postgis_search_model = PostgisSearchModel(self.postgis_finder)
 
         self.postgisProxyModel = QSortFilterProxyModel(self)
@@ -93,6 +93,9 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
         self.removePostgisSearchButton.clicked.connect(self.remove_postgis_search)
         self.editPostgisSearchButton.clicked.connect(self.edit_postgis_search)
         self.postgisSearchTable.selectionModel().selectionChanged.connect(self.enableButtons)
+
+        # postgis connection ComboBox
+        self.postgisConnection.addItems(self.dbConnectionList())
 
         # geomapfish
         self.geomapfishCrsButton.clicked.connect(self.geomapfishCrsButtonClicked)
@@ -220,6 +223,15 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
             selectedSearchId.append(self.postgisProxyModel.data(idx, SearchIdRole))
         return selectedSearchId
 
+    def dbConnectionList(self):
+        connection_names = []
+        settings = QSettings()
+        settings.beginGroup(u"/PostgreSQL/connections")
+        for name in settings.childGroups():
+            connection_names.append(name)
+        settings.endGroup()
+        return connection_names
+
     def enableButtons(self):
         n = len(self.selected_search_ids())
         self.removeSearchButton.setEnabled(n > 0)
@@ -229,9 +241,6 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
         n = len(self.selected_postgis_search_ids())
         self.removePostgisSearchButton.setEnabled(n > 0)
         self.editPostgisSearchButton.setEnabled(n == 1)
-        self.postgisSearchButtonsWidget.setEnabled(self.postgis_finder.isValid)
-
-        self.postgisSearchTable.setEnabled(self.postgis_finder.isValid)
 
     def geomapfishCrsButtonClicked(self):
         dlg = QgsGenericProjectionSelector(self)

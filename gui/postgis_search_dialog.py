@@ -36,8 +36,6 @@ class PostgisSearchDialog(QDialog, Ui_PostgisSearch):
         self.postgis_search_model = postgis_search_model
         self.postgisSearch = postgisSearch
 
-        #self.postgisConnectionCombo ...
-
         self.cancelButton.hide()
         self.okButton.clicked.connect(self.process)
 
