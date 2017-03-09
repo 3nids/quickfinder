@@ -23,7 +23,7 @@
 #
 #---------------------------------------------------------------------
 
-from PyQt4.QtCore import QObject
+from PyQt4.QtCore import QObject, QSettings
 
 from qgis.core import QgsGeometry, QgsCredentials
 from qgis.gui import QgsMessageBar
@@ -33,6 +33,7 @@ from my_settings import MySettings
 import psycopg2
 import binascii
 
+from postgis_search import PostgisSearch
 from .abstract_finder import AbstractFinder
 
 try:
@@ -47,8 +48,12 @@ class PostgisFinder(AbstractFinder):
 
     name = 'postgis'
 
+    @property
+    def searches(self): return self._searches
+
     def __init__(self, parent):
         super(PostgisFinder, self).__init__(parent)
+        self._searches = self.readSearches()
 
     def start(self, to_find, bbox=None):
         super(PostgisFinder, self).start(to_find, bbox)
@@ -93,22 +98,61 @@ class PostgisFinder(AbstractFinder):
     def find(self, to_find):
         catLimit = self.settings.value("categoryLimit")
         totalLimit = self.settings.value("totalLimit")
-        query = """SELECT r1_nummer::text,ST_AsBinary(wkb_geometry)::geometry
-            FROM av.li_liegenschaft_a
-            WHERE r1_nummer LIKE %s
-            LIMIT %s"""
-        self.cur.execute(query, (to_find, catLimit))
-        for row in self.cur.fetchall():
-            content, wkb_geom = row
-            geometry = QgsGeometry()
-            geometry.fromWkb(binascii.a2b_hex(wkb_geom))
-            self.result_found.emit(self,
-                                   'li_liegenschaft_a',
-                                   content,
-                                   geometry,
-                                   21781)
-            #if sum(catFound.values()) >= totalLimit:
-            #    break
+        for searchId, search in self._searches.iteritems():
+            self.cur.execute(search.expression, (to_find, catLimit))
+            for row in self.cur.fetchall():
+                content, wkb_geom = row
+                geometry = QgsGeometry()
+                geometry.fromWkb(binascii.a2b_hex(wkb_geom))
+                self.result_found.emit(self,
+                                       search.searchName,
+                                       content,
+                                       geometry,
+                                       search.srid)
+                #if sum(catFound.values()) >= totalLimit:
+                #    break
+
+    def searchSetting(self, searchId, name):
+        return "/plugins/%s/postgis_search/%s/%s" % (
+            self.settings.plugin_name, searchId, name)
+
+    def readSearches(self):
+        searches = {}
+        settings = QSettings()
+        settings.beginGroup(
+            "/plugins/%s/postgis_search" % self.settings.plugin_name)
+        for searchId in settings.childGroups():
+            settings.beginGroup(searchId)
+            searchName = settings.value('searchName')
+            expression = settings.value('expression')
+            priority = settings.value('priority', type=int)
+            srid = settings.value('srid')
+            searches[searchId] = PostgisSearch(
+                searchId, searchName, expression, priority, srid)
+            settings.endGroup()
+        settings.endGroup()
+        return searches
 
     def deleteSearch(self, searchId):
+        settings = QSettings()
+        settings.remove("/plugins/%s/postgis_search/%s" % (
+            self.settings.plugin_name, searchId))
         return True
+
+    def recordSearch(self, postgisSearch):
+        searchId = postgisSearch.searchId
+
+        # always remove existing search with same id
+        self.deleteSearch(searchId)
+
+        settings = QSettings()
+        settings.setValue(self.searchSetting(searchId, 'searchName'),
+                          postgisSearch.searchName)
+        settings.setValue(self.searchSetting(searchId, 'expression'),
+                          postgisSearch.expression)
+        settings.setValue(self.searchSetting(searchId, 'priority'),
+                          postgisSearch.priority)
+        settings.setValue(self.searchSetting(searchId, 'srid'),
+                          postgisSearch.srid)
+
+        return True, ""

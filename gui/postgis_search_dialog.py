@@ -56,4 +56,9 @@ class PostgisSearchDialog(QDialog, Ui_PostgisSearch):
         else:
             self.postgisSearch.edit(search_name, expression, priority, srid)
 
+        ok, message = self.postgis_finder.recordSearch(self.postgisSearch)
+        if not ok:
+            QErrorMessage().showMessage(message)
+            return
+
         self.close()

@@ -29,6 +29,7 @@ from ..core.postgis_search import PostgisSearch
 
 SearchIdRole = Qt.UserRole + 2
 
+
 class PostgisSearchModel(QAbstractItemModel):
 
     searches = {}
@@ -36,6 +37,14 @@ class PostgisSearchModel(QAbstractItemModel):
     def __init__(self, postgis_finder):
         QAbstractItemModel.__init__(self)
         self.postgis_finder = postgis_finder
+        self.searchesLoaded()
+
+    def searchesLoaded(self):
+        self.beginResetModel()
+        self.searches = self.postgis_finder.searches
+        for search in self.searches.values():
+            search.changed.connect(self.searchChanged)
+        self.endResetModel()
 
     def addSearch(self, searchName, expression, priority, srid):
         searchId = unicode(uuid1())
