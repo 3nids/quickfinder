@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>282</width>
-    <height>241</height>
+    <width>463</width>
+    <height>368</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,41 +17,51 @@
    <property name="fieldGrowthPolicy">
     <enum>QFormLayout::ExpandingFieldsGrow</enum>
    </property>
-   <item row="0" column="0">
+   <item row="1" column="0">
     <widget class="QLabel" name="label">
      <property name="text">
       <string>Search name</string>
      </property>
     </widget>
    </item>
-   <item row="0" column="1">
+   <item row="1" column="1">
     <widget class="QLineEdit" name="searchName"/>
    </item>
-   <item row="2" column="0">
+   <item row="3" column="0">
     <widget class="QLabel" name="FieldNameLabel">
      <property name="text">
       <string>SQL Query</string>
      </property>
     </widget>
    </item>
-   <item row="3" column="0">
+   <item row="4" column="0">
     <widget class="QLabel" name="label_3">
      <property name="text">
       <string>SRID</string>
      </property>
     </widget>
    </item>
-   <item row="3" column="1">
-    <widget class="QLineEdit" name="srid"/>
+   <item row="4" column="1">
+    <widget class="QLineEdit" name="srid">
+     <property name="inputMask">
+      <string notr="true">00000; </string>
+     </property>
+     <property name="text">
+      <string notr="true"/>
+     </property>
+     <property name="placeholderText">
+      <string notr="true">4326</string>
+     </property>
+    </widget>
    </item>
-   <item row="5" column="0">
+   <item row="6" column="0">
     <widget class="QLabel" name="label_2">
      <property name="text">
       <string>Priority</string>
      </property>
     </widget>
    </item>
-   <item row="5" column="1">
+   <item row="6" column="1">
     <widget class="QSpinBox" name="priorityBox">
      <property name="minimum">
       <number>1</number>
@@ -64,7 +74,7 @@
      </property>
     </widget>
    </item>
-   <item row="9" column="0" colspan="2">
+   <item row="10" column="0" colspan="2">
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <spacer name="horizontalSpacer">
@@ -95,10 +105,20 @@
      </item>
     </layout>
    </item>
-   <item row="2" column="1">
+   <item row="3" column="1">
     <widget class="QTextEdit" name="queryEdit">
+     <property name="lineWrapMode">
+      <enum>QTextEdit::NoWrap</enum>
+     </property>
      <property name="acceptRichText">
       <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0">
+    <widget class="QCheckBox" name="project">
+     <property name="text">
+      <string>Project</string>
      </property>
     </widget>
    </item>

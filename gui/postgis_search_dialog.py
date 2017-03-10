@@ -44,17 +44,21 @@ class PostgisSearchDialog(QDialog, Ui_PostgisSearch):
             self.queryEdit.setText(postgisSearch.expression)
             self.priorityBox.setValue(postgisSearch.priority)
             self.srid.setText(postgisSearch.srid)
+            self.project.setChecked(postgisSearch.project)
 
     def process(self):
         search_name = self.searchName.text()
         expression = self.queryEdit.toPlainText()
         srid = self.srid.text()
         priority = self.priorityBox.value()
+        project = self.project.isChecked()
 
         if self.postgisSearch is None:
-            self.postgisSearch = self.postgis_search_model.addSearch(search_name, expression, priority, srid)
+            self.postgisSearch = self.postgis_search_model.addSearch(
+                search_name, expression, priority, srid, project)
         else:
-            self.postgisSearch.edit(search_name, expression, priority, srid)
+            self.postgisSearch.edit(
+                search_name, expression, priority, srid, project)
 
         ok, message = self.postgis_finder.recordSearch(self.postgisSearch)
         if not ok:

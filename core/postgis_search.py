@@ -42,8 +42,11 @@ class PostgisSearch(QObject):
     def priority(self): return self._priority
     @property
     def srid(self): return self._srid
+    @property
+    def project(self): return self._project
 
-    def __init__(self, searchId, searchName, expression, priority, srid):
+    def __init__(self, searchId, searchName, expression, priority, srid,
+                 project):
         QObject.__init__(self)
 
         self._searchId = searchId
@@ -51,13 +54,14 @@ class PostgisSearch(QObject):
         self._expression = expression
         self._priority = priority
         self._srid = srid
+        self._project = project
 
-
-    def edit(self, searchName, expression, priority, srid):
+    def edit(self, searchName, expression, priority, srid,
+                 project):
         self._searchName = searchName
         self._expression = expression
         self._priority = priority
         self._srid = srid
+        self._project = project
+
         self.changed.emit()
-
-

@@ -98,19 +98,36 @@ class PostgisFinder(AbstractFinder):
     def find(self, to_find):
         catLimit = self.settings.value("categoryLimit")
         totalLimit = self.settings.value("totalLimit")
+        hasProjectSearches = len(self.settings.value("postgisSearches"))
+        catFound = {}
+        self._searches = self.readSearches()
         for searchId, search in self._searches.iteritems():
-            self.cur.execute(search.expression, (to_find, catLimit))
-            for row in self.cur.fetchall():
-                content, wkb_geom = row
-                geometry = QgsGeometry()
-                geometry.fromWkb(binascii.a2b_hex(wkb_geom))
-                self.result_found.emit(self,
-                                       search.searchName,
-                                       content,
-                                       geometry,
-                                       search.srid)
-                #if sum(catFound.values()) >= totalLimit:
-                #    break
+            if (not hasProjectSearches or
+                    searchId in self.settings.value("postgisSearches")):
+                # Expression example:
+                # SELECT textfield, ST_AsBinary(wkb_geometry)::geometry
+                #   FROM searchtable
+                #   WHERE textfield LIKE %(search)s
+                #   LIMIT %(limit)s
+                self.cur.execute(search.expression,
+                                 {'search': to_find, 'limit': catLimit})
+                for row in self.cur.fetchall():
+                    if searchId in catFound:
+                        if catFound[searchId] >= catLimit:
+                            continue
+                        catFound[searchId] += 1
+                    else:
+                        catFound[searchId] = 1
+                    content, wkb_geom = row
+                    geometry = QgsGeometry()
+                    geometry.fromWkb(binascii.a2b_hex(wkb_geom))
+                    self.result_found.emit(self,
+                                           search.searchName,
+                                           content,
+                                           geometry,
+                                           search.srid)
+                    if sum(catFound.values()) >= totalLimit:
+                        break
 
     def searchSetting(self, searchId, name):
         return "/plugins/%s/postgis_search/%s/%s" % (
@@ -127,8 +144,9 @@ class PostgisFinder(AbstractFinder):
             expression = settings.value('expression')
             priority = settings.value('priority', type=int)
             srid = settings.value('srid')
+            project = searchId in self.settings.value("postgisSearches")
             searches[searchId] = PostgisSearch(
-                searchId, searchName, expression, priority, srid)
+                searchId, searchName, expression, priority, srid, project)
             settings.endGroup()
         settings.endGroup()
         return searches
@@ -154,5 +172,11 @@ class PostgisFinder(AbstractFinder):
                           postgisSearch.priority)
         settings.setValue(self.searchSetting(searchId, 'srid'),
                           postgisSearch.srid)
+
+        # Project
+        ids = self.settings.value("postgisSearches")
+        if searchId not in ids:
+            ids.append(searchId)
+            self.settings.setValue("postgisSearches", ids)
 
         return True, ""

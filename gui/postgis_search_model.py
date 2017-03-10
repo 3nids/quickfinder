@@ -46,9 +46,10 @@ class PostgisSearchModel(QAbstractItemModel):
             search.changed.connect(self.searchChanged)
         self.endResetModel()
 
-    def addSearch(self, searchName, expression, priority, srid):
+    def addSearch(self, searchName, expression, priority, srid, project):
         searchId = unicode(uuid1())
-        postgisSearch = PostgisSearch(searchId, searchName, expression, priority, srid)
+        postgisSearch = PostgisSearch(
+            searchId, searchName, expression, priority, srid, project)
         self.beginInsertRows(QModelIndex(), 0, 0)
         self.searches[searchId] = postgisSearch
         self.searches[searchId].changed.connect(self.searchChanged)
