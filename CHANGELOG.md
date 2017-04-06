@@ -1,6 +1,10 @@
 ## Changelog
 
-**Version 3.3.1** 01.02.2017
+**Version 3.3.2** 06.04.2017
+
+** Fix GeoMapFish search by setting referer
+
+*Version 3.3.1** 01.02.2017
 
 * Allow relative path for FTS file
 
