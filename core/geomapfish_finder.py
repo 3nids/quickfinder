@@ -24,6 +24,7 @@
 #---------------------------------------------------------------------
 
 import json
+import re
 from osgeo import ogr
 from PyQt4.QtCore import QByteArray
 from qgis.core import QgsGeometry
@@ -40,12 +41,15 @@ class GeomapfishFinder(HttpFinder):
     def start(self, to_find, crs=None, bbox=None):
         super(GeomapfishFinder, self).start(to_find, bbox)
         url = self.settings.value('geomapfishUrl')
+        referer = re.findall('https?://[^/]+', url)[0]
         params = {
             'query': to_find,
             'limit': str(self.settings.value('totalLimit')),
             'partitionlimit': str(self.settings.value('categoryLimit'))
         }
-        headers = {}
+        headers = {
+            'Referer': referer
+        }
 
         if self.settings.value('geomapfishUser') != '':
             user = self.settings.value('geomapfishUser')
