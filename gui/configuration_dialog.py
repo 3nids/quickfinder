@@ -78,6 +78,8 @@ class ConfigurationDialog(QDialog, Ui_Configuration, SettingDialog):
 
         # postgis search
         self.postgis_finder = PostgisFinder(self)
+        # Disable page when initialization wasn't successful
+        self.postgis.setEnabled(self.postgis_finder.active())
 
         # postgis table model
         self.postgis_search_model = PostgisSearchModel(self.postgis_finder)

@@ -41,7 +41,7 @@ try:
 except ImportError:
     # Older processing versions don't have this helper
     # PostGIS finder won't work.
-    pass  # Don't prevent quickfinder plugin from loading.
+    print "Couldn't import helper from processing.tools.postgis - disabling PostgisFinder"
 
 
 class PostgisFinder(AbstractFinder):
@@ -54,6 +54,12 @@ class PostgisFinder(AbstractFinder):
     def __init__(self, parent):
         super(PostgisFinder, self).__init__(parent)
         self._searches = self.readSearches()
+
+    def active(self):
+        try: DbError
+        except NameError:
+            return False
+        return True
 
     def start(self, to_find, bbox=None):
         super(PostgisFinder, self).start(to_find, bbox)
