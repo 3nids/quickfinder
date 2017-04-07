@@ -25,6 +25,7 @@
 
 from PyQt4.QtGui import QDialog
 from ..ui.ui_postgissearch import Ui_PostgisSearch
+from qgis.gui import QgsGenericProjectionSelector
 
 
 class PostgisSearchDialog(QDialog, Ui_PostgisSearch):
@@ -36,8 +37,9 @@ class PostgisSearchDialog(QDialog, Ui_PostgisSearch):
         self.postgis_search_model = postgis_search_model
         self.postgisSearch = postgisSearch
 
-        self.cancelButton.hide()
         self.okButton.clicked.connect(self.process)
+        self.cancelButton.clicked.connect(self.reject)
+        self.postgisCrsButton.clicked.connect(self.postgisCrsButtonClicked)
 
         if postgisSearch is not None:
             self.searchName.setText(postgisSearch.searchName)
@@ -66,3 +68,10 @@ class PostgisSearchDialog(QDialog, Ui_PostgisSearch):
             return
 
         self.close()
+
+    def postgisCrsButtonClicked(self):
+        dlg = QgsGenericProjectionSelector(self)
+        dlg.setMessage('Select Postgis CRS')
+        dlg.setSelectedAuthId('EPSG:%s' % self.srid.text())
+        if dlg.exec_():
+            self.srid.setText(dlg.selectedAuthId().replace('EPSG:', ''))
