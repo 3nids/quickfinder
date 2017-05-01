@@ -23,7 +23,7 @@
 #
 # ---------------------------------------------------------------------
 
-from ..qgissettingmanager import SettingManager, Scope, Bool, String, Integer
+from ..qgissettingmanager import SettingManager, Scope, Bool, String, Integer, Stringlist
 
 pluginName = "quickfinder_plugin"
 
@@ -56,3 +56,9 @@ class MySettings(SettingManager):
         self.add_setting(String("geomapfishCrs", Scope.Global, 'EPSG:3857'))
         self.add_setting(String("geomapfishUser", Scope.Global, ''))
         self.add_setting(String("geomapfishPass", Scope.Global, ''))
+
+        # Postgres settings
+        self.add_setting(Bool("postgis", Scope.Global, False))
+        self.add_setting(String("postgisConnection", Scope.Global, '',
+                         {'comboMode': 'text'}))
+        self.add_setting(Stringlist("postgisSearches", Scope.Project, []))
