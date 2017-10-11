@@ -66,6 +66,8 @@ class GeomapfishFinder(HttpFinder):
         for f in features:
             json_geom = json.dumps(f['geometry'])
             ogr_geom = ogr.CreateGeometryFromJson(json_geom)
+            if ogr_geom is None:
+                continue
             wkt = ogr_geom.ExportToWkt()
             geometry = QgsGeometry.fromWkt(wkt)
             properties = f['properties']
