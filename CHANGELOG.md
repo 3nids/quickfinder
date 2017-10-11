@@ -1,5 +1,9 @@
 ## Changelog
 
+**Version 3.3.3** 10.10.2017
+
+** Fix occasional crash when searching on geomapfish
+
 **Version 3.3.2** 06.04.2017
 
 ** Fix GeoMapFish search by setting referer
