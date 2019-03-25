@@ -5,8 +5,8 @@
 Quick Finder is a __QGIS 2.x__ plugin.
 There is not port planned for QGIS 3 since most of its features are already accessible:
 - indexed search: you can use inbuilt locator filter.
-- osm: see nominatim plugin
-- geomapfish: see Geomapfish Locator plugin
+- osm: see [Nominatim Locator Filter plugin](https://github.com/rduivenvoorde/nominatim_locator_filter)
+- geomapfish: see [Geomapfish Locator plugin](https://github.com/opengisch/qgis_geomapfish_locator)
 
 ## Description
 
@@ -23,6 +23,4 @@ See demo on [youtube](http://www.youtube.com/v/bsqMLMqlCYQ&hd=1) (this version i
 
 * Rémi Bovard @rbovard
 * Michaël Douchin @mdouchin
-
-
 
